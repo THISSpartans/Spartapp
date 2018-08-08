@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp">
+
+    <ImageView
+        android:id="@+id/period_small_background"
+        android:layout_width="10dp"
+        android:layout_height="50dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/period_head_shape" />
+    <TextView
+        android:id="@+id/period_small_title"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="Class"
+        android:layout_weight="1"
+        android:padding="5dp"
+        android:textColor="@color/black"
+        android:gravity="center_vertical"
+        android:background="@drawable/period_shape"/>
+</LinearLayout>

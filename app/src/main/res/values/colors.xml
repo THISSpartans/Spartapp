@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#923aa9</color>
+    <color name="colorPrimaryDark">#772883</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="purple">#9D43B4</color>
+    <color name="orange">#F5A623</color>
+    <color name="blue">#4A90E2</color>
+    <color name="background">#f3f3f3</color>
+    <color name="shaded_background">#e6e6e6</color>
+    <color name = "black">#191919</color>
+    <color name = "white">#FEFEFE</color>
+    <color name= "red">#FF0000</color>
+
+    <color name = "powerschool">#304565</color>
+    <color name = "powerschool_shaded">#202030</color>
+
+    <!--language related-->
+    <color name = "chinese">#ffaa00</color>
+    <color name = "french">#ffaa00</color>
+    <color name = "linguistics">#ffaa00</color>
+    <color name = "els">#ffaa00</color>
+    <color name = "spanish">#ffaa00</color>
+    <color name = "english">#ffaa00</color>
+
+    <!--fine arts-->
+    <color name = "art">#0e7b00</color>
+    <color name = "filmstudies">#0e7b00</color>
+
+    <!--performing arts-->
+    <color name = "music">#72a4af</color>
+    <color name = "choir">#72a4af</color>
+    <color name = "theater">#72a4af</color>
+    <color name = "piano">#72a4af</color>
+
+    <!--social study related-->
+    <color name = "history">#af0000</color>
+    <color name = "genderstudies">#af0000</color>
+    <color name = "socialstudy">#af0000</color>
+    <color name = "economics">#af0000</color>
+
+    <!--sciency stuff-->
+    <color name = "biology">#023979</color>
+    <color name = "computer">#023979</color>
+    <color name = "math">#023979</color>
+    <color name = "steam">#023979</color>
+    <color name = "chemistry">#023979</color>
+    <color name = "physics">#023979</color>
+
+    <!--pe-->
+    <color name = "health">#ffaa99</color>
+    <color name = "fitness">#ffaa99</color>
+    <color name = "sport">#ffaa99</color>
+
+    <!--other-->
+    <color name = "highschoolenrichment">#666</color>
+    <color name = "studyhall">#666</color>
+    <color name = "none">#70391c</color>
+</resources>
