@@ -144,6 +144,7 @@ public class Schedule extends Fragment {
         super.onStart();
 
         if(getUserVisibleHint()) {
+
             load();
         }
 
