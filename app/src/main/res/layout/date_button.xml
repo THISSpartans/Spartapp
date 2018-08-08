@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RadioButton xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="25dp" android:layout_height="25dp"
+    android:layout_width="30dp" android:layout_height="30dp"
     android:background="@drawable/date_background_selector"
     android:textColor="@color/date_textcolor_selector"
     android:button="@null"
-
     android:gravity="center">
 </RadioButton>

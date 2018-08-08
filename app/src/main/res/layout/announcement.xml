@@ -9,6 +9,7 @@
         android:padding="7dp"
         android:background="@color/white">
         <EditText
+            android:id="@+id/announcement_search_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:hint="search"
@@ -16,15 +17,22 @@
             android:paddingStart="8dp"
             android:paddingEnd="8dp"/>
         <ImageView
+            android:id="@+id/announcement_search"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_gravity="center_vertical"
             android:src="@drawable/search_icon" />
         <ImageView
+            android:id="@+id/announcement_filter"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_gravity="center_vertical"
             android:src="@drawable/filter_icon"/>
     </LinearLayout>
+
+    <ListView
+        android:id="@+id/announcement_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

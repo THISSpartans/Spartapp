@@ -4,12 +4,17 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ArrayAdapter;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RadioButton;
@@ -61,9 +66,13 @@ public class Schedule extends Fragment {
     View.OnClickListener DATE = new View.OnClickListener() {
         public void onClick(View v) {
             browsingTime.set(Calendar.DATE, (int)v.getTag());
+            //RadioGroup rg = (RadioGroup)getView().findViewById(R.id.date_radio_group);
+            autoscroll();
             load();
         }
     };
+
+    RadioGroup.LayoutParams date_params;
 
     //todo i forgot the actual time, change before release!
     final int[] regularPeriodBeginning = {805, 845, 955, 1035, 1115, 1305, 1355, 1435};
@@ -134,6 +143,8 @@ public class Schedule extends Fragment {
         browsingTime = new CastratedDate();
         realTime = new CastratedDate();
 
+        date_params = new RadioGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        date_params.setMargins(15,0,15,0);
     }
 
     /**
@@ -145,6 +156,7 @@ public class Schedule extends Fragment {
 
         if(getUserVisibleHint()) {
 
+            ((RadioGroup)getView().findViewById(R.id.date_radio_group)).getChildAt(browsingTime.date-1).callOnClick();
             load();
         }
 
@@ -172,14 +184,30 @@ public class Schedule extends Fragment {
             rb.setOnClickListener(DATE);
             rb.setText(Integer.toString(i+1));
             rb.setTag(i+1);
+            rb.setLayoutParams(date_params);
             rg.addView(rb, i);
         }
 
         ((RadioButton)rg.getChildAt(browsingTime.date-1)).setChecked(true);
-
+        HorizontalScrollView scroll = (HorizontalScrollView) root.findViewById(R.id.date_scroll);
+        scroll.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                                                                   @Override
+                                                                   public void onGlobalLayout() {
+                                                                       autoscroll();
+                                                                   }
+                                                               });
+        scroll.setSmoothScrollingEnabled(true);
         last_date_length = browsingTime.month_length();
 
         return root;
+    }
+
+    private void autoscroll(){
+        HorizontalScrollView date_scroll = (HorizontalScrollView)getView().findViewById(R.id.date_scroll);
+        RadioGroup rg = (RadioGroup) getView().findViewById(R.id.date_radio_group);
+        date_scroll.smoothScrollTo(rg.getChildAt(browsingTime.date-1).getLeft()
+                + rg.getChildAt(browsingTime.date-1).getMeasuredWidth()/2
+                - date_scroll.getMeasuredWidth()/2, 0);
     }
 
     private CastratedDate getFocusedDate(){
@@ -212,6 +240,7 @@ public class Schedule extends Fragment {
                 rb.setOnClickListener(DATE);
                 rb.setText(Integer.toString(i+1));
                 rb.setTag(i+1);
+                rb.setLayoutParams(date_params);
                 rg.addView(rb, i);
             }
         }
@@ -229,6 +258,20 @@ public class Schedule extends Fragment {
 
     public void update(){
         //todo update the times and refresh UI if needed
+    }
+
+    /**
+     * This method converts dp unit to equivalent pixels, depending on device density.
+     *
+     * @param dp A value in dp (density independent pixels) unit. Which we need to convert into pixels
+     * @param context Context to get resources and device specific display metrics
+     * @return A float value to represent px equivalent to dp depending on device density
+     */
+    public static float convertDpToPixel(float dp, Context context){
+        Resources resources = context.getResources();
+        DisplayMetrics metrics = resources.getDisplayMetrics();
+        float px = dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return px;
     }
 
     private String month_text(){return browsingTime.year+" "+browsingTime.month_name();}
