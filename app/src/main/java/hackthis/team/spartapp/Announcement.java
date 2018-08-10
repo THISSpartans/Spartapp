@@ -84,6 +84,7 @@ public class Announcement extends Fragment {
         query.whereContainedIn("clubName",club_names);
         Toast.makeText(mActivity, "loading...",Toast.LENGTH_SHORT).show();
         Log.d("announcement_adapter","update called");
+        query.orderByDescending("updatedAt");
         query.findInBackground(new FindCallback<AVObject>() {
             @Override
             public void done(List<AVObject> list, AVException e) {
