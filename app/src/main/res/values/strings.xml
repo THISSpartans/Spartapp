@@ -17,4 +17,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    
+    <!-- Strings related to announcement -->
+    <string name="title_activity_filter">Subscribed Groups</string>
 </resources>

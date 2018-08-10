@@ -1,6 +1,7 @@
 package hackthis.team.spartapp;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 public class CastratedDate {
@@ -37,6 +38,16 @@ public class CastratedDate {
     CastratedDate (int year, int month, int date) {
         cal = new GregorianCalendar(year, month, date);
         //returns actual value
+        year = cal.get(Calendar.YEAR);
+        //first month is 0
+        month = cal.get(Calendar.MONTH);
+        //first day is 1
+        date = cal.get(Calendar.DATE);
+    }
+
+    CastratedDate (Date date_source){
+        cal = new GregorianCalendar();
+        cal.setTime(date_source);
         year = cal.get(Calendar.YEAR);
         //first month is 0
         month = cal.get(Calendar.MONTH);

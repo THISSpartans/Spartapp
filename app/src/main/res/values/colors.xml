@@ -12,6 +12,7 @@
     <color name = "black">#191919</color>
     <color name = "white">#FEFEFE</color>
     <color name= "red">#FF0000</color>
+    <color name = "grey">#888888</color>
 
     <color name = "powerschool">#304565</color>
     <color name = "powerschool_shaded">#202030</color>
