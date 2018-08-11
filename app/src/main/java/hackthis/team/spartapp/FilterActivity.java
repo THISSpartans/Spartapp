@@ -19,6 +19,7 @@ import com.avos.avoscloud.AVInstallation;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.FindCallback;
+import com.avos.avoscloud.PushService;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -130,20 +131,28 @@ public class FilterActivity extends AppCompatActivity implements AdapterView.OnI
     }
 
     public void save(){
-        if(!failed) {
+        if(failed) { finish(); return;}
+
             ListView root = (ListView) findViewById(R.id.filter_list);
             ArrayList<String> sub = new ArrayList<>(50);
 
             Log.d("filter_activity", clubs.toString());
 
             for (int i = 0; i < clubs.size(); i++) {
-                if (clubs.get(i).checked)
+                if (clubs.get(i).checked) {
                     sub.add(clubs.get(i).name);
+                    PushService.subscribe(this, clubs.get(i).getCorrespondingChannel(), MainActivity.class);
+                }
+                else{
+                    PushService.unsubscribe(this, clubs.get(i).getCorrespondingChannel());
+                }
             }
 
             SharedPreferences sp = getSharedPreferences("clubs", Context.MODE_PRIVATE);
             sp.edit().putStringSet("subscribed", new HashSet<>(sub)).apply();
-        }
+
+        AVInstallation.getCurrentInstallation().saveInBackground();
+
         finish();
     }
 
