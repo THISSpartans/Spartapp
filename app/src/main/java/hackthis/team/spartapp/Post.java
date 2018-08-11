@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,11 +20,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVInstallation;
 import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVPush;
 import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.FindCallback;
 import com.avos.avoscloud.SaveCallback;
+import com.avos.avoscloud.SendCallback;
 
+import org.json.JSONObject;
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -101,6 +109,7 @@ public class Post extends Fragment {
         message.put("included", true);
         message.put("announcementTitle",title);
         message.put("announcementBody",body);
+        message.put("channels", Arrays.asList(club.getCorrespondingChannel()));
         message.saveInBackground(new SaveCallback() {
             @Override
             public void done(AVException e) {
@@ -110,6 +119,34 @@ public class Post extends Fragment {
                     ti.setText("");
                     bo.setText("");
                     sp.edit().putString("title",null).putString("body",null).apply();
+
+                    JSONObject object = new JSONObject();
+                    try {
+                        object.put("alert", title);
+                    }
+                    catch (Exception exc) {
+                        exc.printStackTrace();
+                    }
+
+                    AVQuery pushQuery = AVInstallation.getQuery();
+                    pushQuery.whereEqualTo("channels", club.getCorrespondingChannel());
+                    AVPush push = new AVPush();
+                    push.setQuery(pushQuery);
+                    push.setChannel(club.getCorrespondingChannel());
+                    push.setData(object);
+                    push.setPushToAndroid(true);
+                    push.setPushToIOS(true);
+                    push.setPushToWindowsPhone(true);
+                    push.sendInBackground(new SendCallback() {
+                        @Override
+                        public void done(AVException e) {
+                            if (e == null) {
+                                Log.d("push_log","push complete");
+                            }   else {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
                 }
                 else{
                     sp.edit().putString("title",title).putString("body",body).apply();
