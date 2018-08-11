@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -21,9 +23,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVInstallation;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.FindCallback;
+import com.avos.avoscloud.PushService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,9 +45,7 @@ public class Announcement extends Fragment {
         @Override
         public void onClick(View v) {
             EditText et = (EditText) getView().findViewById(R.id.announcement_search_text);
-            if(!et.getText().toString().equals("") || !et.getText().toString().equals(" ")){
-                filter_keyword(et.getText().toString());
-            }
+
         }
     };
 
@@ -54,6 +56,8 @@ public class Announcement extends Fragment {
             startActivity(f);
         }
     };
+
+    EditText search_text;
 
     ListView list;
     ArrayList<Content> announcements;
@@ -69,6 +73,18 @@ public class Announcement extends Fragment {
         }
     }
 
+    //取自https://blog.csdn.net/u013278099/article/details/72869175
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (hidden) {   // 不在最前端显示 相当于调用了onPause();
+            return;
+        }else{  // 在最前端显示 相当于调用了onResume();
+            //网络数据刷新
+            update_list();
+        }
+    }
+
     public void update_list(){
         Log.d("filter_activity","update called");
         AVQuery<AVObject> query = new AVQuery<>("Announcements");
@@ -78,11 +94,13 @@ public class Announcement extends Fragment {
         if(subscribed_names == null){
             subscribed_names = new HashSet<>(Arrays.asList("Student Council", "{Hack,THIS}"));
             sp.edit().putStringSet("subscribed", subscribed_names).apply();
+            PushService.subscribe(mActivity, "StudentCouncil", LoginActivity.class);
+            PushService.subscribe(mActivity, "HackTHIS",LoginActivity.class);
+            AVInstallation.getCurrentInstallation().saveInBackground();
         }
         ArrayList<String> club_names = new ArrayList<>(subscribed_names);
 
         query.whereContainedIn("clubName",club_names);
-        Toast.makeText(mActivity, "loading...",Toast.LENGTH_SHORT).show();
         Log.d("announcement_adapter","update called");
         query.orderByDescending("updatedAt");
         query.findInBackground(new FindCallback<AVObject>() {
@@ -93,9 +111,8 @@ public class Announcement extends Fragment {
                     for(int i = 0; i < list.size(); i++)
                         announcements.add(new Content(list.get(i)));
                     Log.d("announcement_adapter",announcements.toString());
-                    EditText et = (EditText) getView().findViewById(R.id.announcement_search_text);
-                    if(!et.getText().toString().equals("") || !et.getText().toString().equals(" ")){
-                        filter_keyword(et.getText().toString());
+                    if(!search_text.getText().toString().equals("") || !search_text.getText().toString().equals(" ")){
+                        filter_keyword(search_text.getText().toString());
                     }
                     else{
                         filter_keyword(null);
@@ -126,9 +143,26 @@ public class Announcement extends Fragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.announcement, container, false);
-        ImageView search = (ImageView) root.findViewById(R.id.announcement_search);
-        search.setOnClickListener(SEARCH);
         ImageView filter = (ImageView) root.findViewById(R.id.announcement_filter);
+        search_text = (EditText) root.findViewById(R.id.announcement_search_text);
+        search_text.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(!search_text.getText().toString().equals("") || !search_text.getText().toString().equals(" ")){
+                    filter_keyword(search_text.getText().toString());
+                }
+            }
+        });
         filter.setOnClickListener(FILTER);
         list = (ListView)root.findViewById(R.id.announcement_list);
         return root;

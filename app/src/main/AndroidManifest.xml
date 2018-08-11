@@ -48,6 +48,7 @@
             android:label="Click to subscribe/unsubscribe groups"/>
         <activity android:name=".PostLoginActivity"
             android:label="Sign in"/>
+
     </application>
 
 </manifest>
