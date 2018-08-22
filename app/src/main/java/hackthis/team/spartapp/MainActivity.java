@@ -76,8 +76,7 @@ public class MainActivity extends Activity {
         sp = getSharedPreferences("app", Context.MODE_PRIVATE);
         boolean first = sp.getBoolean("first_launch",true);
 
-        //todo remove this
-        sp.edit().putBoolean("first_launch",true).apply();
+        sp.edit().putBoolean("first_launch",false).apply();
 
         if(first){
             setContentView(R.layout.walkthrough);
