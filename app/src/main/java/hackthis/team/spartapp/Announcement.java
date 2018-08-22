@@ -62,6 +62,8 @@ public class Announcement extends Fragment {
 
     String search_root;
 
+    int grade;
+
     ListView list;
     ArrayList<Content> announcements;
 
@@ -71,9 +73,7 @@ public class Announcement extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if(getUserVisibleHint()) {
-            update_list();
-        }
+        update_list();
     }
 
     //取自https://blog.csdn.net/u013278099/article/details/72869175
@@ -93,6 +93,8 @@ public class Announcement extends Fragment {
 
 
         SharedPreferences sp = mActivity.getSharedPreferences("clubs",Context.MODE_PRIVATE);
+
+        grade = sp.getInt("grade",9);
 
         search_root = sp.getString("school","");
         if(search_root.equals("THIS")){
@@ -117,9 +119,13 @@ public class Announcement extends Fragment {
         AVQuery<AVObject> query = new AVQuery<>("Announcements"+search_root);
 
         query.whereContainedIn("clubName",club_names);
+
+        AVQuery<AVObject> query2 = new AVQuery<>("Announcements"+search_root);
+        query2.whereEqualTo("gradeLevel",grade);
         Log.d("announcement_adapter","update called");
-        query.orderByDescending("updatedAt");
-        query.findInBackground(new FindCallback<AVObject>() {
+        AVQuery <AVObject> combined_query = AVQuery.and(Arrays.asList(query, query2));
+        combined_query.orderByDescending("updatedAt");
+        combined_query.findInBackground(new FindCallback<AVObject>() {
             @Override
             public void done(List<AVObject> list, AVException e) {
                 if(e == null){
@@ -136,7 +142,7 @@ public class Announcement extends Fragment {
                 }
                 else{
                     Toast t = Toast.makeText(mActivity,
-                            "Error occured when loading announcements, please connect to the internet", Toast.LENGTH_LONG);
+                            "Error, please connect to the internet", Toast.LENGTH_LONG);
                     t.setGravity(Gravity.CENTER, 0,0);
                     t.show();
                 }
