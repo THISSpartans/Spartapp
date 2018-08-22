@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,17 +45,61 @@ public class FilterActivity extends AppCompatActivity implements AdapterView.OnI
         }
     };
 
+    SharedPreferences sp;
+
+    TextView grade_text;
+
     ListView root;
 
     boolean failed;
+
+    int grade;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter);
+        grade_text = (TextView) findViewById(R.id.filter_grade);
         Log.d("filter_activity_log","filter activity created");
-        query = new AVQuery<>("Clubs");
+
+        sp = getSharedPreferences("clubs",Context.MODE_PRIVATE);
+
+        String search_root = sp.getString("school","");
+        if(search_root.equals("THIS")){
+            search_root = "";
+        }
+        else{
+            search_root = "_"+search_root;
+        }
+
+        query = new AVQuery<>("Clubs"+search_root);
         clubs = new ArrayList<>(50);
+
+        grade = sp.getInt("grade",0);
+        grade_text.setText(Integer.toString(grade));
+
+        ImageView left = (ImageView) findViewById(R.id.filter_left);
+        ImageView right = (ImageView) findViewById(R.id.filter_right);
+        left.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(grade > 1){
+                    grade --;
+                    grade_text.setText(Integer.toString(grade));
+                }
+            }
+        });
+
+        right.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(grade < 12){
+                    grade ++;
+                    grade_text.setText(Integer.toString(grade));
+                }
+            }
+        });
+
         query.findInBackground(new FindCallback<AVObject>() {
             @Override
             public void done(List<AVObject> list, AVException e) {
@@ -63,7 +108,7 @@ public class FilterActivity extends AppCompatActivity implements AdapterView.OnI
                         clubs.add(new Club(list.get(i).getString("name")));
                     }
 
-                    SharedPreferences sp = getSharedPreferences("clubs", Context.MODE_PRIVATE);
+
                     Set<String> subscribed_names = sp.getStringSet("subscribed",null);
                     int subscribedCount = 0;
                     if(subscribed_names == null){
@@ -131,6 +176,7 @@ public class FilterActivity extends AppCompatActivity implements AdapterView.OnI
     }
 
     public void save(){
+        sp.edit().putInt("grade",grade).apply();
         if(failed) { finish(); return;}
 
             ListView root = (ListView) findViewById(R.id.filter_list);
@@ -147,8 +193,6 @@ public class FilterActivity extends AppCompatActivity implements AdapterView.OnI
                     PushService.unsubscribe(this, clubs.get(i).getCorrespondingChannel());
                 }
             }
-
-            SharedPreferences sp = getSharedPreferences("clubs", Context.MODE_PRIVATE);
             sp.edit().putStringSet("subscribed", new HashSet<>(sub)).apply();
 
         AVInstallation.getCurrentInstallation().saveInBackground();

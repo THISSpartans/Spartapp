@@ -40,7 +40,8 @@ public class Post extends Fragment {
     private Activity mActivity;
     Club club;
     String title, body;
-    SharedPreferences sp = null;
+    SharedPreferences sp_post = null;
+    SharedPreferences sp;
     Date time;
 
     EditText ti;
@@ -57,7 +58,7 @@ public class Post extends Fragment {
     View.OnClickListener send = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            String cl = sp.getString("name",null);
+            String cl = sp_post.getString("name",null);
             if(cl == null){
                 Toast t = Toast.makeText(mActivity, "Please sign in before sending!", Toast.LENGTH_SHORT);
                 t.setGravity(Gravity.CENTER,0,0);
@@ -101,10 +102,20 @@ public class Post extends Fragment {
 
     public void send_announcement(){
 
-        String cl = sp.getString("name",null);
+        String cl = sp_post.getString("name",null);
         club = new Club(cl);
 
-        AVObject message = new AVObject("Announcements");
+        sp = mActivity.getSharedPreferences("clubs",Context.MODE_PRIVATE);
+
+        String search_root = sp.getString("school","");
+        if(search_root.equals("THIS")){
+            search_root = "";
+        }
+        else{
+            search_root = "_"+search_root;
+        }
+
+        AVObject message = new AVObject("Announcements"+search_root);
         message.put("clubName", cl);
         message.put("included", true);
         message.put("announcementTitle",title);
@@ -118,7 +129,7 @@ public class Post extends Fragment {
                             Toast.LENGTH_SHORT).show();
                     ti.setText("");
                     bo.setText("");
-                    sp.edit().putString("title",null).putString("body",null).apply();
+                    sp_post.edit().putString("title",null).putString("body",null).apply();
 
                     JSONObject object = new JSONObject();
                     try {
@@ -149,7 +160,7 @@ public class Post extends Fragment {
                     });
                 }
                 else{
-                    sp.edit().putString("title",title).putString("body",body).apply();
+                    sp_post.edit().putString("title",title).putString("body",body).apply();
                     Toast.makeText(mActivity, "An error has occured while sending.\nDraft saved.",
                             Toast.LENGTH_SHORT).show();
                 }
@@ -160,8 +171,8 @@ public class Post extends Fragment {
     @Override
     public void onDetach(){
 
-        if(ti.getText() != null && ti.getText().length() > 0) sp.edit().putString("name",ti.getText().toString()).apply();
-        if(bo.getText() != null && bo.getText().length() > 0) sp.edit().putString("body",bo.getText().toString()).apply();
+        if(ti.getText() != null && ti.getText().length() > 0) sp_post.edit().putString("title",ti.getText().toString()).apply();
+        if(bo.getText() != null && bo.getText().length() > 0) sp_post.edit().putString("body",bo.getText().toString()).apply();
         super.onDetach();
     }
 
@@ -177,7 +188,7 @@ public class Post extends Fragment {
         bo = (EditText) getView().findViewById(R.id.post_body);
 
         if(getUserVisibleHint()) {
-            String club = sp.getString("name",null);
+            String club = sp_post.getString("name",null);
             TextView club_name = (TextView)getView().findViewById(R.id.post_club);
             if(club == null){
                 Toast.makeText(mActivity, "Please sign in before sending!", Toast.LENGTH_SHORT).show();
@@ -185,8 +196,8 @@ public class Post extends Fragment {
             }
             else
                 club_name.setText(club);
-            title = sp.getString("title",null);
-            body = sp.getString("body",null);
+            title = sp_post.getString("title",null);
+            body = sp_post.getString("body",null);
             if(title != null) ti.setText(title);
             if(body != null) bo.setText(body);
         }
@@ -195,7 +206,7 @@ public class Post extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         mActivity = (Activity) context;
-        sp = mActivity.getSharedPreferences("post", Context.MODE_PRIVATE);
+        sp_post = mActivity.getSharedPreferences("post", Context.MODE_PRIVATE);
     }
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root;

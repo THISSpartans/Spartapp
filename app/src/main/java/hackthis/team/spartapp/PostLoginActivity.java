@@ -22,7 +22,17 @@ public class PostLoginActivity extends AppCompatActivity{
     View.OnClickListener sign_in = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            AVQuery<AVObject> query = new AVQuery<>("Clubs");
+            SharedPreferences sp = getSharedPreferences("clubs",Context.MODE_PRIVATE);
+
+            String search_root = sp.getString("school","");
+            if(search_root.equals("THIS")){
+                search_root = "";
+            }
+            else{
+                search_root = "_"+search_root;
+            }
+
+            AVQuery<AVObject> query = new AVQuery<>("Clubs"+search_root);
             final EditText et = (EditText) findViewById(R.id.post_club_name);
             final EditText pt = (EditText) findViewById(R.id.post_club_pass);
             String club = et.getText().toString();

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -59,6 +60,8 @@ public class Announcement extends Fragment {
 
     EditText search_text;
 
+    String search_root;
+
     ListView list;
     ArrayList<Content> announcements;
 
@@ -87,18 +90,31 @@ public class Announcement extends Fragment {
 
     public void update_list(){
         Log.d("filter_activity","update called");
-        AVQuery<AVObject> query = new AVQuery<>("Announcements");
+
 
         SharedPreferences sp = mActivity.getSharedPreferences("clubs",Context.MODE_PRIVATE);
+
+        search_root = sp.getString("school","");
+        if(search_root.equals("THIS")){
+            search_root = "";
+        }
+        else{
+            search_root = "_"+search_root;
+        }
+
+        //todo add default subscriptions for ISB (?)
         Set<String> subscribed_names = sp.getStringSet("subscribed",null);
         if(subscribed_names == null){
-            subscribed_names = new HashSet<>(Arrays.asList("Student Council", "{Hack,THIS}"));
+            subscribed_names =  search_root.equals("") ? new HashSet<>(Arrays.asList("Student Council", "{Hack,THIS}"))
+            :new HashSet<>(Arrays.asList("test_org"));
             sp.edit().putStringSet("subscribed", subscribed_names).apply();
             PushService.subscribe(mActivity, "StudentCouncil", LoginActivity.class);
             PushService.subscribe(mActivity, "HackTHIS",LoginActivity.class);
             AVInstallation.getCurrentInstallation().saveInBackground();
         }
         ArrayList<String> club_names = new ArrayList<>(subscribed_names);
+
+        AVQuery<AVObject> query = new AVQuery<>("Announcements"+search_root);
 
         query.whereContainedIn("clubName",club_names);
         Log.d("announcement_adapter","update called");
@@ -161,6 +177,15 @@ public class Announcement extends Fragment {
                 if(!search_text.getText().toString().equals("") || !search_text.getText().toString().equals(" ")){
                     filter_keyword(search_text.getText().toString());
                 }
+            }
+        });
+        final SwipeRefreshLayout srl = (SwipeRefreshLayout) root.findViewById(R.id.announcement_swipe_refresher);
+        srl.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                update_list();
+                list.smoothScrollToPosition(0);
+                srl.setRefreshing(false);
             }
         });
         filter.setOnClickListener(FILTER);
