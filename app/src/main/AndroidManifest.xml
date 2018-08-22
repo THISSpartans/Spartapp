@@ -45,7 +45,7 @@
         <!-- 即时通讯模块、推送 END -->
 
         <activity android:name=".FilterActivity"
-            android:label="Click to subscribe/unsubscribe groups"/>
+            android:label="Announcement Filter"/>
         <activity android:name=".PostLoginActivity"
             android:label="Sign in"/>
 
