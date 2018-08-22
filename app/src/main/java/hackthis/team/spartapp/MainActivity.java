@@ -1,22 +1,26 @@
 package hackthis.team.spartapp;
 
 import android.app.Activity;
-import android.app.ActivityGroup;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
-import android.widget.TextView;
+import android.widget.ImageView;
+import android.widget.NumberPicker;
+import android.widget.RadioButton;
 
 public class MainActivity extends Activity {
 
     Fragment schedule = null, announcement = null, post = null, current;//schedule程序开始时初始化，其余第一次navigate时初始化
     FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+    SharedPreferences sp;
 
     //switch between activities
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -45,17 +49,58 @@ public class MainActivity extends Activity {
         }
     };
 
+    View.OnClickListener save_grade_level = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            NumberPicker np = (NumberPicker) findViewById(R.id.grade_picker);
+            int grade = np.getValue();
+            sp = getSharedPreferences("clubs",Context.MODE_PRIVATE);
+            sp.edit().putInt("grade",grade).apply();
+            RadioButton THIS = (RadioButton) findViewById(R.id.radio_this);
+            RadioButton ISB = (RadioButton) findViewById(R.id.radio_isb);
+            if(THIS.isChecked()){
+                sp.edit().putString("school","THIS").apply();
+            }
+            else{
+                sp.edit().putString("school","ISB").apply();
+            }
+            init_main();
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
 
+        sp = getSharedPreferences("app", Context.MODE_PRIVATE);
+        boolean first = sp.getBoolean("first_launch",true);
+
+        //todo remove this
+        sp.edit().putBoolean("first_launch",true).apply();
+
+        if(first){
+            setContentView(R.layout.walkthrough);
+            ImageView yes = (ImageView) findViewById(R.id.yes);
+            yes.setOnClickListener(save_grade_level);
+            NumberPicker np = (NumberPicker) findViewById(R.id.grade_picker);
+            np.setMaxValue(12);
+            np.setMinValue(1);
+            np.setValue(9);
+        }
+
+        else {
+            init_main();
+        }
+    }
+
+    public void init_main(){
         //todo determine if the user already logged in, if true do follows:
 
         setContentView(R.layout.activity_main);
 
         //初始化schedule
-        if(schedule == null) {
+        if (schedule == null) {
             schedule = new Schedule();
         }
         current = schedule;
