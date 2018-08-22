@@ -48,6 +48,7 @@
             android:label="Announcement Filter"/>
         <activity android:name=".PostLoginActivity"
             android:label="Sign in"/>
+        <activity android:name=".PostGradeActivity"/>
 
     </application>
 

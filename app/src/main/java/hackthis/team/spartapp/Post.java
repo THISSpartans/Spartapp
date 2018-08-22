@@ -13,9 +13,12 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +34,7 @@ import com.avos.avoscloud.SendCallback;
 import org.json.JSONObject;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -46,6 +50,10 @@ public class Post extends Fragment {
 
     EditText ti;
     EditText bo;
+    TextView grade_text;
+
+    int to_grade;
+    ArrayList<Boolean> to_grade_list;
 
     View.OnClickListener switch_group = new View.OnClickListener() {
         @Override
@@ -100,6 +108,14 @@ public class Post extends Fragment {
         }
     };
 
+    View.OnClickListener grade_selector = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent i = new Intent(mActivity, PostGradeActivity.class);
+            startActivity(i);
+        }
+    };
+
     public void send_announcement(){
 
         String cl = sp_post.getString("name",null);
@@ -121,6 +137,12 @@ public class Post extends Fragment {
         message.put("announcementTitle",title);
         message.put("announcementBody",body);
         message.put("channels", Arrays.asList(club.getCorrespondingChannel()));
+        ArrayList<Integer> grades_list = new ArrayList<>(12);
+        for(int i = 0; i < to_grade_list.size(); i++){
+            if(to_grade_list.get(i))
+                grades_list.add(i+1);
+        }
+        message.put("gradeLevel",grades_list);
         message.saveInBackground(new SaveCallback() {
             @Override
             public void done(AVException e) {
@@ -186,10 +208,19 @@ public class Post extends Fragment {
 
         ti = (EditText) getView().findViewById(R.id.post_title);
         bo = (EditText) getView().findViewById(R.id.post_body);
+        grade_text = (TextView) getView().findViewById(R.id.post_grade_text);
 
         if(getUserVisibleHint()) {
             String club = sp_post.getString("name",null);
             TextView club_name = (TextView)getView().findViewById(R.id.post_club);
+            to_grade = sp_post.getInt("grades",4095);
+            to_grade_list = new ArrayList<>(12);
+            Log.d("post",Integer.toBinaryString(to_grade));
+            char[] temp = Integer.toBinaryString(to_grade).toCharArray();
+            for(int i = temp.length-1; i >= 0; i--){
+                to_grade_list.add(temp[i] == '1');
+            }
+            Log.d("post",to_grade_list.toString());
             if(club == null){
                 Toast.makeText(mActivity, "Please sign in before sending!", Toast.LENGTH_SHORT).show();
                 club_name.setText("<--Sign in");
@@ -200,7 +231,20 @@ public class Post extends Fragment {
             body = sp_post.getString("body",null);
             if(title != null) ti.setText(title);
             if(body != null) bo.setText(body);
+            grade_text.setText("to "+print_grades());
         }
+    }
+
+    public String print_grades(){
+        boolean allSelected = true;
+        String str = "grade ";
+        for(int i = 0; i < to_grade_list.size(); i++){
+            if(!to_grade_list.get(i))
+                allSelected = false;
+            else
+            str = str + (i+1) + " ";
+        }
+        return allSelected && to_grade_list.size() > 1? "all grades" : str;
     }
 
     public void onAttach(Context context) {
@@ -215,7 +259,8 @@ public class Post extends Fragment {
         group_icon.setOnClickListener(switch_group);
         ImageView send_icon = (ImageView) root.findViewById(R.id.post_send);
         send_icon.setOnClickListener(send);
-
+        RelativeLayout grade_select = (RelativeLayout) root.findViewById(R.id.post_grade);
+        grade_select.setOnClickListener(grade_selector);
         return root;
     }
 }

@@ -54,4 +54,33 @@
         android:scrollbars="vertical"
         android:padding="10dp"
         android:background="@drawable/club_shape"/>
+    <RelativeLayout
+        android:id="@+id/post_grade"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="30dp"
+        android:background="@drawable/club_shape">
+    <TextView
+        android:id="@+id/post_grade_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:text="To: All Grades"
+        android:padding="3dp"
+        android:layout_alignParentStart="true"
+        />
+        <ImageView
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/arrow_right_disabled"/>
+    </RelativeLayout>
 </LinearLayout>
