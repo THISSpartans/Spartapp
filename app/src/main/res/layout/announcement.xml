@@ -26,6 +26,10 @@
             android:src="@drawable/filter_icon"/>
     </LinearLayout>
 
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/announcement_swipe_refresher">
     <ListView
         android:id="@+id/announcement_list"
         android:layout_width="match_parent"
@@ -34,5 +38,6 @@
         android:divider="@null"
         android:dividerHeight="10dp"
         android:padding="7dp"/>
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </LinearLayout>
