@@ -1,19 +1,29 @@
 package hackthis.team.spartapp;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.RadioButton;
+
+import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVQuery;
 
 public class MainActivity extends Activity {
 
@@ -77,6 +87,44 @@ public class MainActivity extends Activity {
         boolean first = sp.getBoolean("first_launch",true);
 
         sp.edit().putBoolean("first_launch",false).apply();
+
+        try {
+            AVQuery versionQuery = new AVQuery("AndroidVersionInfo");
+            AVObject versionObj = versionQuery.get("5adf2f749f545433342866ec");
+            String versionName = versionObj.getString("version_name");
+            int versionCode = versionObj.getInt("version_code");
+
+            //dialogue for version name
+            try {
+                PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
+                int localVersionCode = pInfo.versionCode;
+                Log.d("VER", "local version code is " + localVersionCode);
+
+                if (localVersionCode < versionCode) {
+                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                    alertBuilder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
+                            startActivity(browserIntent);
+                        }
+                    }).setNegativeButton("no", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+
+                        }
+                    }).setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
+                            .setCancelable(true);
+                    Log.d("VER", "connected and obtained version " + versionName + " with code " + versionCode);
+                    AlertDialog dialog = alertBuilder.create();
+                    dialog.show();
+                }
+
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        catch(Exception e){
+            //handle AVException
+        }
 
         if(first){
             setContentView(R.layout.walkthrough);
