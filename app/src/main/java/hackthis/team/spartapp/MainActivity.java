@@ -22,8 +22,10 @@ import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.RadioButton;
 
+import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.GetCallback;
 
 public class MainActivity extends Activity {
 
@@ -88,43 +90,7 @@ public class MainActivity extends Activity {
 
         sp.edit().putBoolean("first_launch",false).apply();
 
-        try {
-            AVQuery versionQuery = new AVQuery("AndroidVersionInfo");
-            AVObject versionObj = versionQuery.get("5adf2f749f545433342866ec");
-            String versionName = versionObj.getString("version_name");
-            int versionCode = versionObj.getInt("version_code");
 
-            //dialogue for version name
-            try {
-                PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
-                int localVersionCode = pInfo.versionCode;
-                Log.d("VER", "local version code is " + localVersionCode);
-
-                if (localVersionCode < versionCode) {
-                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-                    alertBuilder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
-                            startActivity(browserIntent);
-                        }
-                    }).setNegativeButton("no", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-
-                        }
-                    }).setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
-                            .setCancelable(true);
-                    Log.d("VER", "connected and obtained version " + versionName + " with code " + versionCode);
-                    AlertDialog dialog = alertBuilder.create();
-                    dialog.show();
-                }
-
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-        catch(Exception e){
-            //handle AVException
-        }
 
         if(first){
             setContentView(R.layout.walkthrough);
@@ -139,6 +105,46 @@ public class MainActivity extends Activity {
         else {
             init_main();
         }
+
+        Log.d("VER","test");
+        AVQuery versionQuery = new AVQuery("AndroidVersionInfo");
+        versionQuery.getInBackground("5adf2f749f545433342866ec", new GetCallback() {
+                @Override
+                public void done(AVObject avObject, AVException e) {
+                    if(e==null) {
+                        String versionName = avObject.getString("version_name");
+                        int versionCode = avObject.getInt("version_code");
+
+                        //dialogue for version name
+                        try {
+                            PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
+                            int localVersionCode = pInfo.versionCode;
+                            Log.d("VER", "local version code is " + localVersionCode);
+
+                            if (localVersionCode < versionCode) {
+                                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(MainActivity.this);
+                                alertBuilder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
+                                        startActivity(browserIntent);
+                                    }
+                                }).setNegativeButton("no", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+
+                                    }
+                                }).setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
+                                        .setCancelable(true);
+                                Log.d("VER", "connected and obtained version " + versionName + " with code " + versionCode);
+                                AlertDialog dialog = alertBuilder.create();
+                                dialog.show();
+                            }
+
+                        } catch (PackageManager.NameNotFoundException E) {
+                            E.printStackTrace();
+                        }
+                    }
+                }
+        });
     }
 
     public void init_main(){
