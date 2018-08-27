@@ -12,10 +12,10 @@ android {
 
     compileSdkVersion 27
     defaultConfig {
-        applicationId "hackthis.team.spartapp"
+        applicationId "hackthis.spartapp"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 1
+        versionCode 12
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
