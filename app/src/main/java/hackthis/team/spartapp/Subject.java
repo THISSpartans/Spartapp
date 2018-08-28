@@ -13,4 +13,8 @@ public class Subject {
         room = r;
     }
 
+    public String name(){ return name; }
+    public String teacher() { return teacher; }
+    public String room() { return room; }
+
 }

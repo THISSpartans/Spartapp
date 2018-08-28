@@ -12,6 +12,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.util.Log;
@@ -26,6 +27,9 @@ import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.GetCallback;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 public class MainActivity extends Activity {
 
@@ -106,6 +110,14 @@ public class MainActivity extends Activity {
             init_main();
         }
 
+        //get access to internet
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                .detectDiskReads().detectDiskWrites().detectNetwork()
+                .penaltyLog().build());
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                .detectLeakedSqlLiteObjects().detectLeakedClosableObjects()
+                .penaltyLog().penaltyDeath().build());
+
         Log.d("VER","test");
         AVQuery versionQuery = new AVQuery("AndroidVersionInfo");
         versionQuery.getInBackground("5adf2f749f545433342866ec", new GetCallback() {
@@ -149,25 +161,31 @@ public class MainActivity extends Activity {
 
     public void init_main(){
         //todo determine if the user already logged in, if true do follows:
+        FileInputStream f;
+        try {
+            f = this.openFileInput("week_schedule.dat");
+            Log.d("SCHE", "perhaps");
+            setContentView(R.layout.activity_main);
 
-        setContentView(R.layout.activity_main);
+            //初始化schedule
+            if (schedule == null) {
+                schedule = new Schedule();
+            }
+            current = schedule;
 
-        //初始化schedule
-        if (schedule == null) {
-            schedule = new Schedule();
+            //加到主界面
+            transaction.add(R.id.fragment_container, schedule).commit();
+
+            //初始化选择栏
+            BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+            navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
+        }catch(Exception e){
+            Log.d("ERR", "IOE");
+            //todo if false, do follows
+            Intent login = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(login);
         }
-        current = schedule;
-
-        //加到主界面
-        transaction.add(R.id.fragment_container, schedule).commit();
-
-        //初始化选择栏
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
-        //todo if false, do follows
-        //Intent login = new Intent(MainActivity.this, LoginActivity.class)
-        //login.startActivity();
     }
 
     //https://blog.csdn.net/caroline_wendy/article/details/48492135
