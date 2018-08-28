@@ -1,27 +1,21 @@
 package hackthis.team.spartapp;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.Fragment;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.webkit.ValueCallback;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -29,36 +23,24 @@ import android.widget.TextView;
 
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVObject;
-import com.avos.avoscloud.AVQuery;
-
-import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
 
-public class Schedule extends Fragment {
+public class Schedule extends RefreshableFragment {
 
     private Activity mActivity;
-
-    public boolean isLoggedIn = true;
 
     private CastratedDate browsingTime; //the date for the exhibited schedule
     private CastratedDate focusTime; //the date that contains the next period (will be enlarged)
@@ -68,6 +50,10 @@ public class Schedule extends Fragment {
     //private LoginActivity ls = null;
 
     private HashMap<String, Subject[]> subjectTable;
+
+    ArrayAdapter<ClassPeriod> adapter;
+
+    ImageView listBackground;
 
     View.OnClickListener FETCH = new View.OnClickListener() {
         @Override
@@ -119,9 +105,9 @@ public class Schedule extends Fragment {
     public void load(){
         Log.d("spartapp_log",browsingTime.date+" "+browsingTime.month_name());
 
-        focusTime = getFocusedDate();
-
         //todo replace this with actual period reader
+
+        Log.d("sche_time",browsingTime.toString());
 
         int month = browsingTime.month;
         int yr =  browsingTime.year;
@@ -137,44 +123,72 @@ public class Schedule extends Fragment {
                 new Subject ("Period 4", "Mr. 4", "Room 4"), null,
         };*/
 
-        for(int i = 0; i < 8; i++){
-            if(subs[i] != null){
-                List<ClassPeriod> periods = new ArrayList<>(8);
-                for(int j = 0; j < 8; j++){
-                    if(subs[j] != null)
-                        periods.add(new ClassPeriod(subs[j], j));
-                }
-                Log.d("spartapp_schedule", CastratedDate.getHourMinute()+" b:"+browsingTime+" f:"+focusTime+" r:"+realTime);
-                if(browsingTime.equals(focusTime)){
-                    //for today
-                    if(focusTime.equals(realTime)){
-                        int[] beginning = realTime.get(Calendar.DAY_OF_WEEK)==Calendar.WEDNESDAY ? wednesdayPeriodBeginning : regularPeriodBeginning;
-                        int temp = CastratedDate.getHourMinute();
-                        for(ClassPeriod c : periods){
-                            if(beginning[c.period] > temp){
-                                c.focus = true;
-                                break;
+        if(subs != null) {
+            /*
+            StringBuilder sb = new StringBuilder();
+            for(int i = 0; i < 8; i++){
+                if(subs[i]!=null)sb.append(i+subs[i].toString()+" ");
+            }
+            Log.d("SCHE",sb.toString());
+            */
+            for (int i = 1; i < 8; i++){
+                if(subs[i-1]!=null && subs[i]!= null && subs[i].equals(subs[i-1]))
+                    subs[i] = null;
+            }
+            for (int i = 0; i < 8; i++) {
+                if (subs[i] != null) {
+                    List<ClassPeriod> periods = new ArrayList<>(8);
+                    for (int j = 0; j < 8; j++) {
+                        if (subs[j] != null)
+                            periods.add(new ClassPeriod(subs[j], j));
+                    }
+                    Log.d("spartapp_schedule", CastratedDate.getHourMinute() + " b:" + browsingTime + " f:" + focusTime + " r:" + realTime);
+                    if (browsingTime.equals(focusTime)) {
+                        //for today
+                        if (focusTime.equals(realTime)) {
+                            int[] beginning = realTime.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY ? wednesdayPeriodBeginning : regularPeriodBeginning;
+                            int temp = CastratedDate.getHourMinute();
+                            for (ClassPeriod c : periods) {
+                                if (beginning[c.period] > temp) {
+                                    c.focus = true;
+                                    break;
+                                }
                             }
+                        } else {
+                            //set focus to next period of next school day
+                            periods.get(0).focus = true;
                         }
                     }
-                    else{
-                        //set focus to next period of next school day
-                        periods.get(0).focus = true;
-                    }
+
+                    //convert periods into listview items
+                    adapter = new PeriodAdapter(mActivity, R.layout.period_small, periods);
+                    ListView lv = (ListView) getView().findViewById(R.id.schedule_list);
+                    listBackground.setImageDrawable(null);
+                    lv.setAdapter(adapter);
+
+                    return;
                 }
-
-                //convert periods into listview items
-                ArrayAdapter<ClassPeriod> adapter = new PeriodAdapter(mActivity, R.layout.period_small, periods);
-                ListView lv = (ListView) getView().findViewById(R.id.schedule_list);
-                lv.setAdapter(adapter);
-
-                return;
             }
+        }
+        else{
+            ListView lv = (ListView) getView().findViewById(R.id.schedule_list);
+            ArrayList<ClassPeriod> empty = new ArrayList<>(0);
+            adapter = new PeriodAdapter(mActivity, R.layout.period_small, empty);
+            Log.d("SCHE",Integer.toString(browsingTime.get(Calendar.DAY_OF_WEEK)));
+            if(browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
+                    || browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+                listBackground.setImageResource(R.drawable.weekend);
+            }
+            else{
+                listBackground.setImageResource(R.drawable.vacation);
+            }
+            lv.setAdapter(adapter);
         }
 
         //this part is reached when all subjects for browsingTime is null
         //print screen for empty day
     }
+
 
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -194,6 +208,7 @@ public class Schedule extends Fragment {
         catch(Exception e){
             Log.d("ERR", "getSchedule failed");
         }
+
     }
 
     /**
@@ -202,19 +217,27 @@ public class Schedule extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-
-        if(getUserVisibleHint()) {
-            ((RadioGroup)getView().findViewById(R.id.date_radio_group)).getChildAt(browsingTime.date-1).callOnClick();
-            load();
-        }
-
+        refresh();
     }
 
+    public void refresh(){
+
+
+        //if(getUserVisibleHint()) {
+        focusTime = getFocusedDate();
+
+        browsingTime = new CastratedDate();
+
+        Log.d("sche_onstart","onstart called "+browsingTime.toString());
+
+        updateTitleBar();
+
+        //((RadioGroup)getView().findViewById(R.id.date_radio_group)).getChildAt(browsingTime.date-1).callOnClick();
+        load();
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.schedule, container, false);
-
-        browsingTime = new CastratedDate();
 
         ImageButton f = (ImageButton) root.findViewById(R.id.schedule_fetch);
         f.setOnClickListener(FETCH);
@@ -226,12 +249,14 @@ public class Schedule extends Fragment {
         TextView m = (TextView) root.findViewById(R.id.schedule_month);
         m.setText(month_text());
 
+        listBackground = (ImageView) root.findViewById(R.id.schedule_list_background);
+
         RadioGroup rg = (RadioGroup) root.findViewById(R.id.date_radio_group);
         for(int i = 0; i < browsingTime.month_length(); i++){
             RadioButton rb = (RadioButton) mActivity.getLayoutInflater().inflate(R.layout.date_button, null);
             rb.setOnClickListener(DATE);
             rb.setText(Integer.toString(i+1));
-            rb.setTag(i+1);
+            rb.setTag(Integer.valueOf(i+1));
             rb.setLayoutParams(date_params);
             rg.addView(rb, i);
         }
@@ -267,9 +292,13 @@ public class Schedule extends Fragment {
             temp.change(Calendar.DATE, 1);
         }
 
+
+        Log.d("SCHE",temp.toString());
+
+        int count = 0;
         //todo read schedule of date c and return if it is has classes, currently it only returns today or tomorrow
-        //if(/*after school time*/) d.change(Calendar.DATE, 1);
-        //while(isVacation(d)){d.change(Calendar.DATE, 1);}
+        while(subjectTable.get(temp.toString()) == null && count < 365){temp.change(Calendar.DATE, 1);count++;}
+
         return temp;
     }
 
@@ -287,7 +316,7 @@ public class Schedule extends Fragment {
                 RadioButton rb = (RadioButton) mActivity.getLayoutInflater().inflate(R.layout.date_button, null);
                 rb.setOnClickListener(DATE);
                 rb.setText(Integer.toString(i+1));
-                rb.setTag(i+1);
+                rb.setTag(Integer.valueOf(i+1));
                 rb.setLayoutParams(date_params);
                 rg.addView(rb, i);
             }
@@ -298,14 +327,22 @@ public class Schedule extends Fragment {
                     rg.removeViewAt(i);
                 }
             }
-            ((RadioButton)rg.getChildAt(browsingTime.month_length()-1)).setChecked(true);
+
         }
 
+        //if(browsingTime.date == browsingTime.month_length())
+            ((RadioButton)rg.getChildAt(browsingTime.date-1)).setChecked(true);
+
         last_date_length = browsingTime.month_length();
+        for(int i = 0; i < rg.getChildCount(); i++){
+            if(((RadioButton)rg.getChildAt(i)).isChecked())
+                rg.getChildAt(i).callOnClick();
+        }
     }
 
     public void update(){
         //todo update the times and refresh UI if needed
+        focusTime = getFocusedDate();
     }
 
     /**
@@ -353,7 +390,7 @@ public class Schedule extends Fragment {
             dateDay = readDateDayPairs();
             Log.d("INIT_AVO", "DateDayPairs read");
         }catch(IOException e){
-            dateDay = fetchDateDayPairs("2017-08-21", true);
+            dateDay = fetchDateDayPairs("2018-08-27", true);
             Log.d("INIT_AVO", "DateDayPairs defaulted");
         }
         return dateDay;
@@ -379,7 +416,7 @@ public class Schedule extends Fragment {
 
     public HashMap<String, Integer> readDateDayPairs() throws IOException{
         try {
-            FileInputStream f = this.getContext().openFileInput("date_day.dat");
+            FileInputStream f = mActivity.openFileInput("date_day.dat");
             ObjectInputStream s = new ObjectInputStream(f);
             HashMap<String, Integer> dateDay = (HashMap<String, Integer>)s.readObject();
             s.close();
@@ -392,7 +429,7 @@ public class Schedule extends Fragment {
 
     public HashMap<Integer, Subject[]> readWeeklySchedule() throws Exception{
         Log.d("HTML_IN", "called");
-        FileInputStream f = this.getContext().openFileInput("week_schedule.dat");
+        FileInputStream f = mActivity.openFileInput("week_schedule.dat");
         Log.d("HTML_IN", "found");
         BufferedReader in = new BufferedReader(new InputStreamReader(f));
         Log.d("HTML_IN", "buffer on");

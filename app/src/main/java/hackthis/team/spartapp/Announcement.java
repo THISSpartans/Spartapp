@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Announcement extends Fragment {
+public class Announcement extends RefreshableFragment {
 
     private Activity mActivity;
 
@@ -77,77 +77,70 @@ public class Announcement extends Fragment {
     }
 
     //取自https://blog.csdn.net/u013278099/article/details/72869175
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        if (hidden) {   // 不在最前端显示 相当于调用了onPause();
-            return;
-        }else{  // 在最前端显示 相当于调用了onResume();
-            //网络数据刷新
-            update_list();
-        }
+    public void refresh(){
+        update_list();
     }
 
     public void update_list(){
+
         Log.d("filter_activity","update called");
 
+        if(getActivity()!= null) {
 
-        SharedPreferences sp = mActivity.getSharedPreferences("clubs",Context.MODE_PRIVATE);
+            SharedPreferences sp = getActivity().getSharedPreferences("clubs", Context.MODE_PRIVATE);
 
-        grade = sp.getInt("grade",9);
+            grade = sp.getInt("grade", 9);
 
-        search_root = sp.getString("school","");
-        if(search_root.equals("THIS")){
-            search_root = "";
-        }
-        else{
-            search_root = "_"+search_root;
-        }
-
-        //todo add default subscriptions for ISB (?)
-        Set<String> subscribed_names = sp.getStringSet("subscribed",null);
-        if(subscribed_names == null){
-            subscribed_names =  search_root.equals("") ? new HashSet<>(Arrays.asList("Student Council", "{Hack,THIS}"))
-            :new HashSet<>(Arrays.asList("test_org"));
-            sp.edit().putStringSet("subscribed", subscribed_names).apply();
-            PushService.subscribe(mActivity, "StudentCouncil", LoginActivity.class);
-            PushService.subscribe(mActivity, "HackTHIS",LoginActivity.class);
-            AVInstallation.getCurrentInstallation().saveInBackground();
-        }
-        ArrayList<String> club_names = new ArrayList<>(subscribed_names);
-
-        AVQuery<AVObject> query = new AVQuery<>("Announcements"+search_root);
-
-        query.whereContainedIn("clubName",club_names);
-
-        AVQuery<AVObject> query2 = new AVQuery<>("Announcements"+search_root);
-        query2.whereEqualTo("gradeLevel",grade);
-        Log.d("announcement_adapter","update called");
-        AVQuery <AVObject> combined_query = AVQuery.and(Arrays.asList(query, query2));
-        combined_query.orderByDescending("updatedAt");
-        combined_query.findInBackground(new FindCallback<AVObject>() {
-            @Override
-            public void done(List<AVObject> list, AVException e) {
-                if(e == null){
-                    announcements = new ArrayList<>(50);
-                    for(int i = 0; i < list.size(); i++)
-                        announcements.add(new Content(list.get(i)));
-                    Log.d("announcement_adapter",announcements.toString());
-                    if(!search_text.getText().toString().equals("") || !search_text.getText().toString().equals(" ")){
-                        filter_keyword(search_text.getText().toString());
-                    }
-                    else{
-                        filter_keyword(null);
-                    }
-                }
-                else{
-                    Toast t = Toast.makeText(mActivity,
-                            "Error, please connect to the internet", Toast.LENGTH_LONG);
-                    t.setGravity(Gravity.CENTER, 0,0);
-                    t.show();
-                }
+            search_root = sp.getString("school", "");
+            if (search_root.equals("THIS")) {
+                search_root = "";
+            } else {
+                search_root = "_" + search_root;
             }
-        });
+
+            //todo add default subscriptions for ISB (?)
+            Set<String> subscribed_names = sp.getStringSet("subscribed", null);
+            if (subscribed_names == null) {
+                subscribed_names = search_root.equals("") ? new HashSet<>(Arrays.asList("Student Council", "{Hack,THIS}"))
+                        : new HashSet<>(Arrays.asList("test_org"));
+                sp.edit().putStringSet("subscribed", subscribed_names).apply();
+                PushService.subscribe(mActivity, "StudentCouncil", MainActivity.class);
+                PushService.subscribe(mActivity, "HackTHIS", MainActivity.class);
+                AVInstallation.getCurrentInstallation().saveInBackground();
+            }
+            ArrayList<String> club_names = new ArrayList<>(subscribed_names);
+
+            AVQuery<AVObject> query = new AVQuery<>("Announcements" + search_root);
+
+            query.whereContainedIn("clubName", club_names);
+
+            AVQuery<AVObject> query2 = new AVQuery<>("Announcements" + search_root);
+            query2.whereEqualTo("gradeLevel", grade);
+            Log.d("announcement_adapter", "update called");
+            AVQuery<AVObject> combined_query = AVQuery.and(Arrays.asList(query, query2));
+            combined_query.orderByDescending("updatedAt");
+            combined_query.findInBackground(new FindCallback<AVObject>() {
+                @Override
+                public void done(List<AVObject> list, AVException e) {
+                    if (e == null) {
+                        announcements = new ArrayList<>(50);
+                        for (int i = 0; i < list.size(); i++)
+                            announcements.add(new Content(list.get(i)));
+                        Log.d("announcement_adapter", announcements.toString());
+                        if (!search_text.getText().toString().equals("") || !search_text.getText().toString().equals(" ")) {
+                            filter_keyword(search_text.getText().toString());
+                        } else {
+                            filter_keyword(null);
+                        }
+                    } else {
+                        Toast t = Toast.makeText(mActivity,
+                                "Error, please connect to the internet", Toast.LENGTH_LONG);
+                        t.setGravity(Gravity.CENTER, 0, 0);
+                        t.show();
+                    }
+                }
+            });
+        }
     }
 
     public void filter_keyword(String keyword){

@@ -33,7 +33,7 @@ import java.io.FileOutputStream;
 
 public class MainActivity extends Activity {
 
-    Fragment schedule = null, announcement = null, post = null, current;//schedule程序开始时初始化，其余第一次navigate时初始化
+    RefreshableFragment schedule = null, announcement = null, post = null, current;//schedule程序开始时初始化，其余第一次navigate时初始化
     FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
     SharedPreferences sp;
@@ -161,10 +161,7 @@ public class MainActivity extends Activity {
 
     public void init_main(){
         //todo determine if the user already logged in, if true do follows:
-        FileInputStream f;
         try {
-            f = this.openFileInput("week_schedule.dat");
-            Log.d("SCHE", "perhaps");
             setContentView(R.layout.activity_main);
 
             //初始化schedule
@@ -188,8 +185,10 @@ public class MainActivity extends Activity {
         }
     }
 
+
+
     //https://blog.csdn.net/caroline_wendy/article/details/48492135
-    public void switchContent(Fragment from, Fragment to) {
+    public void switchContent(RefreshableFragment from, RefreshableFragment to) {
         if (current != to) {
             current = to;
             transaction = getFragmentManager().beginTransaction();
@@ -199,6 +198,7 @@ public class MainActivity extends Activity {
                 transaction.hide(from).show(to).commit(); // 隐藏当前的fragment，显示下一个
             }
         }
+        to.refresh();
     }
 }
 

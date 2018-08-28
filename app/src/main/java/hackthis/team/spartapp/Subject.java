@@ -17,4 +17,12 @@ public class Subject {
     public String teacher() { return teacher; }
     public String room() { return room; }
 
+    public boolean equals(Object obj){
+        return ((Subject) obj).name.equals(this.name);
+    }
+
+    public String toString(){
+        return name();
+    }
+
 }

@@ -27,6 +27,7 @@ public class CastratedDate {
 
     CastratedDate () {
         cal = new GregorianCalendar();
+        cal.setTime(new Date());
         //returns actual value
         year = cal.get(Calendar.YEAR);
         //first month is 0
@@ -123,6 +124,6 @@ public class CastratedDate {
     }
 
     public String toString(){
-        return year+"."+(month+1)+"."+date;
+        return year+"-"+(month<10?"0"+Integer.toString(month):Integer.toString(month))+"-"+(date<10?"0"+Integer.toString(date):Integer.toString(date));
     }
 }

@@ -39,7 +39,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-public class Post extends Fragment {
+public class Post extends RefreshableFragment {
 
     private Activity mActivity;
     Club club;
@@ -188,6 +188,11 @@ public class Post extends Fragment {
                 }
             }
         });
+    }
+
+    @Override
+    public void refresh(){
+        return;
     }
 
     @Override
