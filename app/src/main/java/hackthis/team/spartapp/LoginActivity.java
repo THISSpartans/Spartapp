@@ -282,7 +282,8 @@ public class LoginActivity extends AppCompatActivity{
                                         //internet works, fetch calendar on this thread
                                         AVQuery query = new AVQuery("UpdateCalendar");
                                         List<AVObject> qList = query.find();
-                                        String startOfYear = qList.get(0).getString("yearStart");
+                                        String startOfYear = qList.get(0).getString("startOfYear");
+                                        Log.d("HTML", startOfYear);
                                         HashMap<String, Integer> dateDay;
 
                                         //write day list
@@ -293,7 +294,6 @@ public class LoginActivity extends AppCompatActivity{
                                         //Log.d("HTML", html);
                                         // if(!timedOut[0])
                                         writeWeeklySchedule(html);
-
                                     }
                                     catch(Exception e){
                                         Log.d("HTML", "escape failed");

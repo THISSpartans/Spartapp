@@ -28,8 +28,12 @@ import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.GetCallback;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.StringTokenizer;
 
 public class MainActivity extends Activity {
 
@@ -160,8 +164,15 @@ public class MainActivity extends Activity {
     }
 
     public void init_main(){
-        //todo determine if the user already logged in, if true do follows:
+        boolean schExist = true;
         try {
+            readWeeklySchedule();
+        }
+        catch(Exception e){
+            schExist = false;
+        }
+        //todo determine if the user already logged in, if true do follows:
+        if(schExist) {
             setContentView(R.layout.activity_main);
 
             //初始化schedule
@@ -176,8 +187,8 @@ public class MainActivity extends Activity {
             //初始化选择栏
             BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
             navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
-        }catch(Exception e){
+        }
+        else {
             Log.d("ERR", "IOE");
             //todo if false, do follows
             Intent login = new Intent(MainActivity.this, LoginActivity.class);
@@ -200,5 +211,33 @@ public class MainActivity extends Activity {
         }
         to.refresh();
     }
+
+    public HashMap<Integer, Subject[]> readWeeklySchedule() throws Exception{
+        Log.d("HTML_IN", "called");
+        FileInputStream f = this.openFileInput("week_schedule.dat");
+        Log.d("HTML_IN", "found");
+        BufferedReader in = new BufferedReader(new InputStreamReader(f));
+        Log.d("HTML_IN", "buffer on");
+        HashMap<Integer, Subject[]> schedule = new HashMap<>(0);
+        String line;
+        int dayInCycle = 1;
+        while((line = in.readLine())!=null){
+            StringTokenizer tizer = new StringTokenizer(line, "?");
+            Subject[] daySchedule = new Subject[8];
+            for(int period = 0; period < 8; period ++){
+                String name = tizer.nextToken();
+                String teacher = tizer.nextToken();
+                String room = tizer.nextToken();
+                Subject subject = new Subject(name, teacher, room);
+                Log.d("HTML_IN",subject.name() + "," + subject.teacher() + "," + subject.room() + ",");
+                daySchedule[period] = subject;
+            }
+            schedule.put(dayInCycle, daySchedule);
+            dayInCycle ++;
+        }
+        in.close();
+        return schedule;
+    }
+
 }
 

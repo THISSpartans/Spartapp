@@ -109,19 +109,14 @@ public class Schedule extends RefreshableFragment {
 
         Log.d("sche_time",browsingTime.toString());
 
-        int month = browsingTime.month;
+        int month = browsingTime.month + 1;
         int yr =  browsingTime.year;
         int day = browsingTime.date;
         String m = month<10?"0"+Integer.toString(month):Integer.toString(month);
         String d = day<10?"0"+Integer.toString(day):Integer.toString(day);
+        Log.d("TIME", Integer.toString(yr)+"-"+m+"-"+d);
         Subject[] subs = subjectTable.get(Integer.toString(yr)+"-"+m+"-"+d);
-        /*
-                {
-                new Subject ("Period 1", "Mr. 1", "Room 1"), null,
-                new Subject ("Period 2", "Mr. 2", "Room 2"), null,
-                new Subject ("Period 3", "Mr. 3", "Room 3"), null,
-                new Subject ("Period 4", "Mr. 4", "Room 4"), null,
-        };*/
+
 
         if(subs != null) {
             /*
