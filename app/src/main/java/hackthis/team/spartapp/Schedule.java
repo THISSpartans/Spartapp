@@ -45,7 +45,6 @@ public class Schedule extends RefreshableFragment {
     private CastratedDate browsingTime; //the date for the exhibited schedule
     private CastratedDate focusTime; //the date that contains the next period (will be enlarged)
                                         //this variable sets to the next school day
-    private CastratedDate realTime; //the current time
 
     private HashMap<String, Subject[]> subjectTable;
 
@@ -128,11 +127,11 @@ public class Schedule extends RefreshableFragment {
                         if (subs[j] != null)
                             periods.add(new ClassPeriod(subs[j], j));
                     }
-                    Log.d("spartapp_schedule", CastratedDate.getHourMinute() + " b:" + browsingTime + " f:" + focusTime + " r:" + realTime);
+                    Log.d("spartapp_schedule", CastratedDate.getHourMinute() + " b:" + browsingTime + " f:" + focusTime + " r:" + new CastratedDate().toString());
                     if (browsingTime.equals(focusTime)) {
                         //for today
-                        if (focusTime.equals(realTime)) {
-                            int[] beginning = realTime.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY ? wednesdayPeriodBeginning : regularPeriodBeginning;
+                        if (focusTime.equals(new CastratedDate())) {
+                            int[] beginning = (new CastratedDate()).get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY ? wednesdayPeriodBeginning : regularPeriodBeginning;
                             int temp = CastratedDate.getHourMinute();
                             for (ClassPeriod c : periods) {
                                 if (beginning[c.period] > temp) {
@@ -141,7 +140,7 @@ public class Schedule extends RefreshableFragment {
                                 }
                             }
                         } else {
-                            //set focus to next period of next school day
+                            //set focus to first period of next school day
                             periods.get(0).focus = true;
                         }
                     }
@@ -182,7 +181,7 @@ public class Schedule extends RefreshableFragment {
         mActivity = (Activity) context;
 
         browsingTime = new CastratedDate();
-        realTime = new CastratedDate();
+
 
         date_params = new RadioGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         date_params.setMargins(15,0,15,0);
@@ -194,6 +193,9 @@ public class Schedule extends RefreshableFragment {
         catch(Exception e){
             Log.d("ERR", "getSchedule failed");
         }
+
+        focusTime = getFocusedDate();
+        Log.d("focustime",focusTime.toString());
 
     }
 
@@ -279,12 +281,14 @@ public class Schedule extends RefreshableFragment {
             temp.change(Calendar.DATE, 1);
         }
 
-
-        Log.d("SCHE",temp.toString());
-
         int count = 0;
         //todo read schedule of date c and return if it is has classes, currently it only returns today or tomorrow
-        while(subjectTable.get(temp.toString()) == null && count < 365){temp.change(Calendar.DATE, 1);count++;}
+        while(subjectTable.get(temp.toString()) == null && count < 365){
+            temp.change(Calendar.DATE, 1);
+            count++;
+        }
+
+        Log.d("focus_time",temp.toString());
 
         return temp;
     }

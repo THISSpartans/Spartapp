@@ -124,6 +124,6 @@ public class CastratedDate {
     }
 
     public String toString(){
-        return year+"-"+(month<10?"0"+Integer.toString(month):Integer.toString(month))+"-"+(date<10?"0"+Integer.toString(date):Integer.toString(date));
+        return year+"-"+(month+1<10?"0"+Integer.toString(month+1):Integer.toString(month+1))+"-"+(date<10?"0"+Integer.toString(date):Integer.toString(date));
     }
 }

@@ -27,14 +27,15 @@ public class PeriodAdapter extends ArrayAdapter {
             TextView description = (TextView) view.findViewById(R.id.period_large_description);
             description.setText(cp.sub.teacher+"\n"+cp.sub.room);
             ImageView background = (ImageView) view.findViewById(R.id.period_large_background);
-            background.setImageResource(cp.backgroundID);
+            if(cp.backgroundID != 0)
+                background.setImageResource(cp.backgroundID);
         }
         else{
             view = LayoutInflater.from(getContext()).inflate(R.layout.period_small, null);
             TextView title = (TextView) view.findViewById(R.id.period_small_title);
             title.setText(cp.sub.name);
             ImageView background = (ImageView) view.findViewById(R.id.period_small_background);
-            background.setColorFilter(cp.colorID);
+            background.setColorFilter(getContext().getResources().getColor(cp.colorID));
         }
         return view;
     }
