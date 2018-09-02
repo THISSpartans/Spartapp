@@ -47,8 +47,6 @@ public class Schedule extends RefreshableFragment {
                                         //this variable sets to the next school day
     private CastratedDate realTime; //the current time
 
-    //private LoginActivity ls = null;
-
     private HashMap<String, Subject[]> subjectTable;
 
     ArrayAdapter<ClassPeriod> adapter;
@@ -119,13 +117,6 @@ public class Schedule extends RefreshableFragment {
 
 
         if(subs != null) {
-            /*
-            StringBuilder sb = new StringBuilder();
-            for(int i = 0; i < 8; i++){
-                if(subs[i]!=null)sb.append(i+subs[i].toString()+" ");
-            }
-            Log.d("SCHE",sb.toString());
-            */
             for (int i = 1; i < 8; i++){
                 if(subs[i-1]!=null && subs[i]!= null && subs[i].equals(subs[i-1]))
                     subs[i] = null;
@@ -217,7 +208,6 @@ public class Schedule extends RefreshableFragment {
 
     public void refresh(){
 
-
         //if(getUserVisibleHint()) {
         focusTime = getFocusedDate();
 
@@ -276,6 +266,8 @@ public class Schedule extends RefreshableFragment {
         date_scroll.smoothScrollTo(rg.getChildAt(browsingTime.date-1).getLeft()
                 + rg.getChildAt(browsingTime.date-1).getMeasuredWidth()/2
                 - date_scroll.getMeasuredWidth()/2, 0);
+        Log.d("SCROLL", "autoscrolled");
+        Log.d("SCROLL", browsingTime.toString());
     }
 
     private CastratedDate getFocusedDate(){
@@ -327,7 +319,7 @@ public class Schedule extends RefreshableFragment {
 
         //if(browsingTime.date == browsingTime.month_length())
             ((RadioButton)rg.getChildAt(browsingTime.date-1)).setChecked(true);
-
+        autoscroll();
         last_date_length = browsingTime.month_length();
         for(int i = 0; i < rg.getChildCount(); i++){
             if(((RadioButton)rg.getChildAt(i)).isChecked())

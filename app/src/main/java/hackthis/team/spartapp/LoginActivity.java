@@ -69,6 +69,9 @@ public class LoginActivity extends AppCompatActivity{
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
 
+    //school schedule settings
+    private int cycleLen;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,6 +100,9 @@ public class LoginActivity extends AppCompatActivity{
                 attemptLogin();
             }
         });
+
+        //TODO depending on THIS/ISB, set schedule params
+        cycleLen = 6;
     }
 
     /**
@@ -240,7 +246,7 @@ public class LoginActivity extends AppCompatActivity{
     public void openWebView(String account, String password) throws InterruptedException, AVException, ParseException {
 
         Log.d("Demo", "webview starting");
-        //fetch 6-day schedule
+        //fetch cycleLen-day schedule
         final String account_ = account;
         final String password_ = password;
         final WebView webView = new WebView(this.getApplicationContext());
@@ -291,9 +297,9 @@ public class LoginActivity extends AppCompatActivity{
                                         writeDateDayPairs(dateDay);
 
                                         String html = StringEscapeUtils.unescapeJava(html_);
-                                        //Log.d("HTML", html);
-                                        // if(!timedOut[0])
+
                                         writeWeeklySchedule(html);
+                                        triggerRebirth(getApplicationContext());
                                     }
                                     catch(Exception e){
                                         Log.d("HTML", "escape failed");
@@ -361,16 +367,14 @@ public class LoginActivity extends AppCompatActivity{
                 AVObject schoolday = new AVObject("Void");
                 schoolday.put("daysSince", days);
                 if (isDay){
-                    schoolday.put("dayInCycle", schoolDayCount % 6 + 1);
+                    schoolday.put("dayInCycle", schoolDayCount % cycleLen + 1);
                     schoolDayCount ++;
                 }
                 else {
                     schoolday.put("dayInCycle", -1);
                 }
                 days++;
-                //schoolday.saveInBackground();
                 dayCycle.add(schoolday);
-                //Log.d("WKD", new Boolean(isDay).toString() + " " + new Integer(schoolDayCount%6+1));
             }
         }
         return dayCycle;
@@ -419,8 +423,6 @@ public class LoginActivity extends AppCompatActivity{
 
         out.close();
         Log.d("HTML_OUT", "output success");
-
-        triggerRebirth(this.getApplicationContext());
     }
 
     public HashMap<Integer, Subject[]> fetchSchedule(String html) throws IOException, InterruptedException {
