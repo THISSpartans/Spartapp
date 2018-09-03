@@ -11,17 +11,17 @@
     <ImageView
         android:id="@+id/period_small_background"
         android:layout_width="10dp"
-        android:layout_height="50dp"
+        android:layout_height="40dp"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
         android:src="@drawable/period_head_shape" />
     <TextView
         android:id="@+id/period_small_title"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="40dp"
         android:text="Class"
         android:layout_weight="1"
-        android:padding="5dp"
+        android:padding="3dp"
         android:textColor="@color/black"
         android:gravity="center_vertical"
         android:background="@drawable/period_shape"/>

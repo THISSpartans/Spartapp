@@ -23,7 +23,7 @@
         android:id="@+id/period_large_title"
         android:textStyle="bold"
         android:textColor="@color/black"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:layout_margin="8dp"
         android:text="Class"/>
 

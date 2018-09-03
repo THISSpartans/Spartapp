@@ -13,13 +13,16 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.RadioButton;
 
@@ -69,7 +72,7 @@ public class MainActivity extends Activity {
         }
     };
 
-    View.OnClickListener save_grade_level = new View.OnClickListener() {
+    View.OnClickListener save_user_stats = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             NumberPicker np = (NumberPicker) findViewById(R.id.grade_picker);
@@ -77,13 +80,24 @@ public class MainActivity extends Activity {
             sp = getSharedPreferences("clubs",Context.MODE_PRIVATE);
             sp.edit().putInt("grade",grade).apply();
             RadioButton THIS = (RadioButton) findViewById(R.id.radio_this);
-            RadioButton ISB = (RadioButton) findViewById(R.id.radio_isb);
+            //RadioButton ISB = (RadioButton) findViewById(R.id.radio_isb);
             if(THIS.isChecked()){
                 sp.edit().putString("school","THIS").apply();
             }
             else{
                 sp.edit().putString("school","ISB").apply();
             }
+
+            RadioButton STU = (RadioButton) findViewById(R.id.radio_student);
+            //RadioButton TEA = (RadioButton) findViewById(R.id.radio_teacher);
+            if(STU.isChecked()){
+                sp.edit().putString("occupation","student").apply();
+            }
+            else{
+                sp.edit().putString("occupation","teacher").apply();
+            }
+            sp = getSharedPreferences("app", Context.MODE_PRIVATE);
+            sp.edit().putBoolean("first_launch",false).apply();
             init_main();
         }
     };
@@ -96,18 +110,29 @@ public class MainActivity extends Activity {
         sp = getSharedPreferences("app", Context.MODE_PRIVATE);
         boolean first = sp.getBoolean("first_launch",true);
 
-        sp.edit().putBoolean("first_launch",false).apply();
-
-
+        Log.d("thing",Boolean.toString(first));
 
         if(first){
             setContentView(R.layout.walkthrough);
             ImageView yes = (ImageView) findViewById(R.id.yes);
-            yes.setOnClickListener(save_grade_level);
+            yes.setOnClickListener(save_user_stats);
             NumberPicker np = (NumberPicker) findViewById(R.id.grade_picker);
             np.setMaxValue(12);
             np.setMinValue(1);
             np.setValue(9);
+
+            RadioButton TEA = (RadioButton) findViewById(R.id.radio_teacher);
+            final LinearLayout GL = (LinearLayout) findViewById(R.id.grade_level);
+            TEA.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked)
+                        GL.setVisibility(View.GONE);
+                    else
+                        GL.setVisibility(View.VISIBLE);
+                }
+            });
+
         }
 
         else {

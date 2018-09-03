@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center">
+    >
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
     <TextView
+        android:paddingTop="15dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="School"
@@ -35,36 +40,80 @@
             android:text="International School of Beijing"
             android:textColor="@color/walk_through_color"/>
     </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Occupation"
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp"/>
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <RadioButton
+            android:id="@+id/radio_student"
+            android:layout_width="wrap_content"
+            android:checked="true"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:background="@drawable/walk_through_picker"
+            android:padding="10dp"
+            android:text="Student"
+            android:textColor="@color/walk_through_color"
+            android:layout_marginBottom="6dp"/>
+        <RadioButton
+            android:id="@+id/radio_teacher"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:padding="10dp"
+            android:background="@drawable/walk_through_picker"
+            android:text="Teacher"
+            android:textColor="@color/walk_through_color"/>
+    </RadioGroup>
+
     <LinearLayout
         android:layout_width="10dp"
         android:layout_height="15dp"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Grade Level"
-        android:textSize="16sp"
-        android:textColor="@color/black"
-        android:textStyle="bold"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingStart="40dp"
-        android:paddingEnd="40dp"
-        android:layout_marginBottom="5dp"
-        android:textStyle="italic"
-        android:gravity="center_horizontal"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:id="@+id/grade_level">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Grade Level"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="40dp"
+                android:paddingEnd="40dp"
+                android:layout_marginBottom="5dp"
+                android:textStyle="italic"
+                android:gravity="center_horizontal"
 
-        android:text="you can change this later in the announcement page"/>
+                android:text="you can change this later in the announcement page"/>
 
-    <NumberPicker
-        android:id="@+id/grade_picker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+            <NumberPicker
+                android:id="@+id/grade_picker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:descendantFocusability="blocksDescendants"
+                android:layout_marginBottom="20dp" />
 
-        android:layout_marginBottom="20dp" />
-    <ImageView
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:id="@+id/yes"
-        android:src="@drawable/yes"/>
-</LinearLayout>
+        </LinearLayout>
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:id="@+id/yes"
+            android:src="@drawable/yes"/>
+    </LinearLayout>
+</ScrollView>

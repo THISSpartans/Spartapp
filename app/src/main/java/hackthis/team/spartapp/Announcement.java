@@ -67,6 +67,8 @@ public class Announcement extends RefreshableFragment {
     ListView list;
     ArrayList<Content> announcements;
 
+    boolean isStudent = true;
+
     /**
      * 取自https://blog.csdn.net/ljcitworld/article/details/77528585
      */
@@ -92,6 +94,7 @@ public class Announcement extends RefreshableFragment {
             grade = sp.getInt("grade", 9);
 
             search_root = sp.getString("school", "");
+            isStudent = sp.getString("occupation","student").equals("student");
             if (search_root.equals("THIS")) {
                 search_root = "";
             } else {
@@ -108,16 +111,22 @@ public class Announcement extends RefreshableFragment {
                 PushService.subscribe(mActivity, "HackTHIS", MainActivity.class);
                 AVInstallation.getCurrentInstallation().saveInBackground();
             }
+
+
             ArrayList<String> club_names = new ArrayList<>(subscribed_names);
 
             AVQuery<AVObject> query = new AVQuery<>("Announcements" + search_root);
 
             query.whereContainedIn("clubName", club_names);
-
-            AVQuery<AVObject> query2 = new AVQuery<>("Announcements" + search_root);
-            query2.whereEqualTo("gradeLevel", grade);
-            Log.d("announcement_adapter", "update called");
-            AVQuery<AVObject> combined_query = AVQuery.and(Arrays.asList(query, query2));
+            AVQuery<AVObject> combined_query;
+            if(isStudent) {
+                AVQuery<AVObject> query2 = new AVQuery<>("Announcements" + search_root);
+                query2.whereEqualTo("gradeLevel", grade);
+                Log.d("announcement_adapter", "update called");
+                combined_query = AVQuery.and(Arrays.asList(query, query2));
+            }
+            else
+                combined_query = query;
             combined_query.orderByDescending("updatedAt");
             combined_query.findInBackground(new FindCallback<AVObject>() {
                 @Override

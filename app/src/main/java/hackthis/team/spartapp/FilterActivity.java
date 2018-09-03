@@ -52,6 +52,7 @@ public class FilterActivity extends AppCompatActivity implements AdapterView.OnI
     ListView root;
 
     boolean failed;
+    boolean isStudent;
 
     int grade;
 
@@ -71,6 +72,7 @@ public class FilterActivity extends AppCompatActivity implements AdapterView.OnI
         else{
             search_root = "_"+search_root;
         }
+        isStudent = sp.getString("occupation","student").equals("student");
 
         query = new AVQuery<>("Clubs"+search_root);
         clubs = new ArrayList<>(50);
