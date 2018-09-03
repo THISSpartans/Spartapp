@@ -243,26 +243,23 @@ public class LoginActivity extends AppCompatActivity{
         }
     }
 
-    public void openWebView(String account, String password) throws InterruptedException, AVException, ParseException {
-
-        Log.d("Demo", "webview starting");
-        //fetch cycleLen-day schedule
-        final String account_ = account;
-        final String password_ = password;
+    public void openWebView(String account_, String password_) throws InterruptedException, AVException, ParseException {
         final WebView webView = new WebView(this.getApplicationContext());
+        Log.d("SCHEDULE", "webview starting");
 
-        final boolean[] spellCasted = {false};
+        final String account = account_;
+        final String password = password_;
+        final boolean[] pastLoginPage = {false};
         final boolean[] timeout = {false};
 
         final Timer timer = new Timer();
         TimerTask tt = new TimerTask(){
             public void run(){
-                Log.d("TIME_", "timeout");
+                Log.d("WVTIME", "time's up");
                 timeout[0] = true;
-                //ls.errorTextInternet();
                 timer.purge();
                 timer.cancel();
-                Log.d("TIME_", "timer purged and cancelled");
+                Log.d("WVTIME", "timer purged and cancelled");
             }
         };
         timer.schedule(tt, 10000, 1);
@@ -271,12 +268,12 @@ public class LoginActivity extends AppCompatActivity{
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
-                if(!spellCasted[0]){
-                    Log.d("HTML", url + " onpagefinished()");
-                    webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account_+"'", null);
-                    webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password_+"'", null);
+                if(!pastLoginPage[0]){
+                    Log.d("HTML", url + " page finished");
+                    webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account+"'", null);
+                    webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password+"'", null);
                     webView.evaluateJavascript("document.getElementById('btn-enter').click();", null);
-                    spellCasted[0] = true;
+                    pastLoginPage[0] = true;
                 }
                 else if(!timeout[0]){
                     webView.evaluateJavascript(
@@ -289,7 +286,6 @@ public class LoginActivity extends AppCompatActivity{
                                         AVQuery query = new AVQuery("UpdateCalendar");
                                         List<AVObject> qList = query.find();
                                         String startOfYear = qList.get(0).getString("startOfYear");
-                                        Log.d("HTML", startOfYear);
                                         HashMap<String, Integer> dateDay = fetchDateDayPairs(startOfYear);
                                         String html = StringEscapeUtils.unescapeJava(html_);
                                         HashMap<Integer, Subject[]> weeklySchedule = fetchSchedule(html);
@@ -306,78 +302,53 @@ public class LoginActivity extends AppCompatActivity{
                 }
             }
         });
-
         webView.loadUrl("https://power.this.edu.cn/public/home.html");
-        Log.d("HTML", "load url");
-
+        Log.d("HTML", "initiated webview operations");
     }
 
     public HashMap<String, Integer> fetchDateDayPairs(String startOfYear) throws ParseException, AVException {
-        HashMap<String, Integer> dateDay = new HashMap<>(0);
+        HashMap<String, Integer> pairs = new HashMap<>(0);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar c = Calendar.getInstance();
         c.setTime(sdf.parse(startOfYear));
-        List<AVObject> schoolDays = null;
-        schoolDays = getWkDayList();
-        for(AVObject schoolDay : schoolDays){
+        Log.d("CALENDAR", "pairing day cycle with calendar dates");
+        List<Integer> days = getCalendar();
+        for(Integer day : days){
             String time = sdf.format(c.getTime());
-            Integer day = -1;
-            day = schoolDay.getInt("dayInCycle");
-            dateDay.put(time, day);
+            pairs.put(time, day);
             c.add(Calendar.DATE, 1);
-            Log.d("WKD_", time  + " " + day);
         }
-        return dateDay;
+        Log.d("CALENDAR", "paired day cycle with calendar dates");
+        return pairs;
     }
 
-    public void writeDateDayPairs(HashMap<String, Integer> dateDay){
-        //File file = new File("DateDayPairs.dat");
-        //Log.d("WKD", new Boolean(file.canWrite()).toString());
-        try {
-            FileOutputStream f = this.openFileOutput("date_day.dat", this.MODE_PRIVATE);
-            ObjectOutputStream s = new ObjectOutputStream(f);
-            s.writeObject(dateDay);
-            s.close();
-            Log.d("WKD", "output success");
-        }
-        catch(FileNotFoundException e){Log.d("WKD", "witchcraft");}
-        catch(IOException e){Log.d("WKD", "unknown powers");}
+    public void writeDateDayPairs(HashMap<String, Integer> pairs) throws IOException{
+        FileOutputStream f = this.openFileOutput("date_day.dat", this.MODE_PRIVATE);
+        ObjectOutputStream s = new ObjectOutputStream(f);
+        Log.d("CALENDAR", "writing date-day pairs");
+        s.writeObject(pairs);
+        s.close();
+        Log.d("CALENDAR", "wrote date-day pairs");
     }
 
-    public List<AVObject> getWkDayList()throws AVException {
+    public List<Integer> getCalendar() throws AVException {
         AVQuery calendar = new AVQuery("Calendar");
-        List<AVObject> schoolDays = calendar.find();
-        List<AVObject> dayCycle = new ArrayList<AVObject>(0);
-        schoolDays = QSDateHelper(schoolDays);
-        Log.d("CALENDAR", "pairing day cycle with dates");
-        int schoolDayCount = -1;
-        int days = -1;
-        for(AVObject schoolDay : schoolDays){
-            for(Boolean isDay : (List<Boolean>)schoolDay.getList("weeklyCalendar")) {
-                AVObject schoolday = new AVObject("Void");
-                schoolday.put("daysSince", days);
-                if (isDay){
-                    schoolday.put("dayInCycle", schoolDayCount % cycleLen + 1);
-                    schoolDayCount ++;
+        List<AVObject> weeks = calendar.find();
+        List<Integer> days = new ArrayList<>(0);
+        weeks = QSDateHelper(weeks);
+        Log.d("CALENDAR", "downloaded weekly calendar");
+        int curDay = -1;
+        for(AVObject week : weeks){
+            for(Boolean isDay : (List<Boolean>)week.getList("weeklyCalendar")) {
+                if(isDay) {
+                    curDay = (curDay+1) % cycleLen;
+                    days.add(curDay);
                 }
-                else {
-                    schoolday.put("dayInCycle", -1);
-                }
-                days++;
-                dayCycle.add(schoolday);
+                else days.add(-1);
             }
         }
-        return dayCycle;
-    }
-
-    public static void triggerRebirth(Context context) {
-        Intent mStartActivity = new Intent(context, MainActivity.class);
-        int mPendingIntentId = 123456;
-        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmManager mgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-        Log.d("REBIRTH", "exiting");
-        System.exit(0);
+        Log.d("CALENDAR", "generated daily calendar");
+        return days;
     }
 
     public void writeWeeklySchedule(HashMap<Integer, Subject[]> schedule) throws Exception{
@@ -470,8 +441,6 @@ public class LoginActivity extends AppCompatActivity{
 
     public List<AVObject> QSDateHelper(List<AVObject> arr){
         QuickSortDate(arr, 0, arr.size()-1);
-        for(AVObject i : arr)
-            Log.d("SORT","sorted " +i.getInt("daysSince"));
         return arr;
     }
 
@@ -506,12 +475,14 @@ public class LoginActivity extends AppCompatActivity{
         QuickSortDate(arr, i+1, high);
     }
 
-    class AVObjectComparator implements Comparator<AVObject> {
-        @Override
-        public int compare(AVObject obj1, AVObject obj2){
-            return obj1.getInt("daysSince") - obj2.getInt("daysSince");
-        }
-
+    public static void triggerRebirth(Context context) {
+        Intent mStartActivity = new Intent(context, MainActivity.class);
+        int mPendingIntentId = 123456;
+        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager mgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+        Log.d("REBIRTH", "exiting");
+        System.exit(0);
     }
 }
 
