@@ -290,18 +290,15 @@ public class LoginActivity extends AppCompatActivity{
                                         List<AVObject> qList = query.find();
                                         String startOfYear = qList.get(0).getString("startOfYear");
                                         Log.d("HTML", startOfYear);
-                                        HashMap<String, Integer> dateDay;
-
-                                        //write day list
-                                        dateDay = fetchDateDayPairs(startOfYear);
-                                        writeDateDayPairs(dateDay);
-
+                                        HashMap<String, Integer> dateDay = fetchDateDayPairs(startOfYear);
                                         String html = StringEscapeUtils.unescapeJava(html_);
-
-                                        writeWeeklySchedule(html);
+                                        HashMap<Integer, Subject[]> weeklySchedule = fetchSchedule(html);
+                                        writeDateDayPairs(dateDay);
+                                        writeWeeklySchedule(weeklySchedule);
                                         triggerRebirth(getApplicationContext());
                                     }
                                     catch(Exception e){
+                                        //pun intended
                                         Log.d("HTML", "escape failed");
                                     }
                                 }
@@ -348,18 +345,11 @@ public class LoginActivity extends AppCompatActivity{
     }
 
     public List<AVObject> getWkDayList()throws AVException {
-      /*  AVQuery calendar = new AVQuery("DayCycle");
-        calendar.limit(1000);
-        List<AVObject> schoolDays = calendar.find();
-        schoolDays = QSDateHelper(schoolDays);
-        Log.d("WKD_", new Integer(schoolDays.size()).toString());
-        return schoolDays;
-*/
         AVQuery calendar = new AVQuery("Calendar");
         List<AVObject> schoolDays = calendar.find();
         List<AVObject> dayCycle = new ArrayList<AVObject>(0);
-
         schoolDays = QSDateHelper(schoolDays);
+        Log.d("CALENDAR", "pairing day cycle with dates");
         int schoolDayCount = -1;
         int days = -1;
         for(AVObject schoolDay : schoolDays){
@@ -382,69 +372,48 @@ public class LoginActivity extends AppCompatActivity{
 
     public static void triggerRebirth(Context context) {
         Intent mStartActivity = new Intent(context, MainActivity.class);
-        Log.d("EASTER", "how long will this go on...");
         int mPendingIntentId = 123456;
         PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager mgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-
-        Log.d("HTML", "triggering rebirth");
-
+        Log.d("REBIRTH", "exiting");
         System.exit(0);
     }
 
-    public void writeWeeklySchedule(String html) throws Exception{
-        HashMap<Integer, Subject[]> schedule = fetchSchedule(html);
-        Log.d("HTML", html);
-        Log.d("HTML_OUT", "called");
+    public void writeWeeklySchedule(HashMap<Integer, Subject[]> schedule) throws Exception{
         if(schedule.get(1)==null){
-            Log.d("HTML_OUT", "schedule.get(1) returned null" );
-            //ls.errorTextLogin();
+            Log.d("SCHEDULE", "schedule is empty" );
             return;
         }
-
         FileOutputStream f = this.openFileOutput("week_schedule.dat", Context.MODE_PRIVATE);
-        Log.d("HTML_OUT", "output found");
         PrintWriter out = new PrintWriter(f);
-        for(int i = 1; i < 7; i ++) {
+        Log.d("SCHEDULE", "preparing to write week_schedule.dat" );
+        for(int i = 1; i < cycleLen+1; i ++) {
             Subject[] day = schedule.get(i);
             for (Subject subject : day) {
-                if(subject != null) {
+                if(subject != null)
                     out.write(subject.name() + "?" + subject.teacher() + "?" + subject.room() + "?");
-                    Log.d("HTML_OUT", subject.name() + "?" + subject.teacher() + "?" + subject.room() + "?");
-                }
-                else{
+                else
                     out.write("Study Hall?None?Library?");
-                    Log.d("HTML_OUT", "Study Hall?None?Library?");
-                }
             }
             out.write("\n");
         }
-
         out.close();
-        Log.d("HTML_OUT", "output success");
+        Log.d("SCHEDULE", "wrote week_schedule.dat");
     }
 
     public HashMap<Integer, Subject[]> fetchSchedule(String html) throws IOException, InterruptedException {
-
         String pageSource = html;
-
         HashMap<Integer, Subject[]> schedule = new HashMap<Integer, Subject[]>(0);
-
+        Log.d("HTML", "parsing html source");
         int inx = 0;
         String afterLastCcid = pageSource;
-
-        Log.d("HTML", "parsing...\n");
-        Log.d("HTML", new Integer(pageSource.indexOf("ccid")).toString());
         while( (inx = afterLastCcid.indexOf("ccid")) != -1 ) {
-
             afterLastCcid = afterLastCcid.substring(inx+4);
-
             //extract period info
             int inxOfTd = afterLastCcid.indexOf("<td>");
             int inxOfEndTd = afterLastCcid.indexOf("</td>");
             String periodSeq = afterLastCcid.substring(inxOfTd+4, inxOfEndTd);
-
             //extract class info
             int inxStart = afterLastCcid.indexOf("<td");
             for(int i = 0; i < 15; i ++)
@@ -455,30 +424,19 @@ public class LoginActivity extends AppCompatActivity{
             int InxOfAnd;
             if((InxOfAnd = className.indexOf("&")) != -1)
                 className = className.substring(0, InxOfAnd) + className.substring(InxOfAnd+6);
-
             //extract teacher info
             int inxOfDetails = afterLastCcid.indexOf("Details about");
             int inxOfClsBtn = afterLastCcid.indexOf("class=\"button mini");
             String teacherName = afterLastCcid.substring(inxOfDetails + 14, inxOfClsBtn - 2);
-
             //extract room info
             int inxOfRm = afterLastCcid.indexOf("Rm:");
             String roomNum = afterLastCcid.substring(inxOfRm + 3, inxOfRm + 8);
-
-            //System.out.println(periodSeq + " " + className + " " + teacherName + " " + roomNum);
-
-            //parse period
-            //Log.d("HTML", "still parsing1");
-
             String periodInfo = periodSeq;
             while(true) {
-                //Log.d("HTML", "still parsing2");
                 String days = periodInfo.substring(periodInfo.indexOf("(")+1, periodInfo.indexOf(")"));
-                Log.w("HTML", days);
                 for(int i = 0; i * 2 < days.length(); i ++) {
                     int dayNum = days.charAt(i*2) - 48;
                     Subject period = new Subject(className, teacherName, roomNum);
-
                     int pN, pC, pNe, pCe;
                     try {
                         pN = Integer.parseInt(periodInfo.substring(0, 1));
@@ -498,7 +456,6 @@ public class LoginActivity extends AppCompatActivity{
                 }
 
                 int endInx = periodInfo.indexOf(")");
-                //Log.w("HTML", new Integer(endInx).toString());
                 try {
                     periodInfo = periodInfo.substring(endInx + 2);
                 }
@@ -506,9 +463,8 @@ public class LoginActivity extends AppCompatActivity{
                     break;
                 }
             }
-
         }
-        Log.d("HTML", "done parsing");
+        Log.d("HTML", "done parsing; schedule generated");
         return schedule;
     }
 
