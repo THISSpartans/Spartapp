@@ -353,97 +353,77 @@ public class Schedule extends RefreshableFragment {
     private String month_text(){return browsingTime.year+" "+browsingTime.month_name();}
 
     public HashMap<String, Subject[]> getSchedule() throws Exception{
-        Log.d("INIT", "getSchedule() called");
         HashMap<String, Subject[]> schedule = new HashMap<>(6);
-
-        HashMap<String, Integer> dateDay = getDateDayPairs();
-
+        HashMap<String, Integer> pairs             = getDateDayPairs();
         HashMap<Integer, Subject[]> weeklySchedule = readWeeklySchedule();
-
-        for(Map.Entry<String, Integer> keyValuePair : dateDay.entrySet()){
+        for(Map.Entry<String, Integer> keyValuePair : pairs.entrySet()){
             String date = keyValuePair.getKey();
             Integer day = keyValuePair.getValue();
-            Log.d("Demo",date+" is day "+day);
-            if(day != -1)
-                schedule.put(date, weeklySchedule.get(day));
-            else
-                schedule.put(date, null);
+            if(day != -1) schedule.put(date, weeklySchedule.get(day));
+            else schedule.put(date, null);
         }
-        Log.d("INIT", "getSchedule() returned");
+        Log.d("SCHEDULE", "got schedule");
         return schedule;
     }
 
-    public HashMap<String, Integer> getDateDayPairs()throws AVException, ParseException {
-        Log.d("INIT", "getDateDayPairs() called");
-
-        HashMap<String, Integer> dateDay;
+    public HashMap<String, Integer> getDateDayPairs()throws AVException, ParseException, ClassNotFoundException{
+        HashMap<String, Integer> pairs;
         try{
-            dateDay = readDateDayPairs();
-            Log.d("INIT_AVO", "DateDayPairs read");
-        }catch(IOException e){
-            dateDay = fetchDateDayPairs("2018-08-27", true);
-            Log.d("INIT_AVO", "DateDayPairs defaulted");
+            pairs = readDateDayPairs();
+            Log.d("CALENDAR", "date-day pairs read success");
+        }catch(IOException e) {
+            Log.d("CALENDAR", "read failed; using default");
+            pairs = defaultDateDayPairs("2018-08-27");
+            Log.d("CALENDAR", "date-day pairs defaulted");
         }
-        return dateDay;
+        return pairs;
     }
 
-    public HashMap<String, Integer> fetchDateDayPairs(String startOfYear, boolean def) throws ParseException, AVException {
-        HashMap<String, Integer> dateDay = new HashMap<>(0);
+    public HashMap<String, Integer> defaultDateDayPairs(String startOfYear) throws ParseException, AVException {
+        HashMap<String, Integer> pairs = new HashMap<>(0);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar c = Calendar.getInstance();
         c.setTime(sdf.parse(startOfYear));
-        List<AVObject> schoolDays = null;
-        for(AVObject schoolDay : schoolDays){
-            String time = sdf.format(c.getTime());
-            Integer day = -1;
-            if(!def) day = schoolDay.getInt("dayInCycle");
-            dateDay.put(time, day);
+        for(int i = 0; i < 365; i++){
+            String date = sdf.format(c.getTime());
+            pairs.put(date, -1);
             c.add(Calendar.DATE, 1);
-            Log.d("WKD_", time  + " " + day);
         }
+        return pairs;
+    }
+
+    public HashMap<String, Integer> readDateDayPairs() throws IOException, ClassNotFoundException{
+        FileInputStream f = mActivity.openFileInput("date_day.dat");
+        ObjectInputStream s = new ObjectInputStream(f);
+        Log.d("CALENDAR", "reading date-day pairs");
+        HashMap<String, Integer> dateDay = (HashMap<String, Integer>)s.readObject();
+        s.close();
         return dateDay;
     }
 
-
-    public HashMap<String, Integer> readDateDayPairs() throws IOException{
-        try {
-            FileInputStream f = mActivity.openFileInput("date_day.dat");
-            ObjectInputStream s = new ObjectInputStream(f);
-            HashMap<String, Integer> dateDay = (HashMap<String, Integer>)s.readObject();
-            s.close();
-            Log.d("WKD", "input success");
-            return dateDay;
-        }
-        catch(ClassNotFoundException e){Log.d("WKD", "classnotfound");}
-        return null;
-    }
-
-    public HashMap<Integer, Subject[]> readWeeklySchedule() throws Exception{
-        Log.d("HTML_IN", "called");
+    public HashMap<Integer, Subject[]> readWeeklySchedule() throws IOException{
         FileInputStream f = mActivity.openFileInput("week_schedule.dat");
-        Log.d("HTML_IN", "found");
         BufferedReader in = new BufferedReader(new InputStreamReader(f));
-        Log.d("HTML_IN", "buffer on");
         HashMap<Integer, Subject[]> schedule = new HashMap<>(0);
+        Log.d("SCHEDULE", "reading weekly schedule");
         String line;
         int dayInCycle = 1;
         while((line = in.readLine())!=null){
             StringTokenizer tizer = new StringTokenizer(line, "?");
-            Subject[] daySchedule = new Subject[8];
+            //todo change period number according to school
+            Subject[] dailySchedule = new Subject[8];
             for(int period = 0; period < 8; period ++){
                 String name = tizer.nextToken();
                 String teacher = tizer.nextToken();
                 String room = tizer.nextToken();
                 Subject subject = new Subject(name, teacher, room);
-                Log.d("HTML_IN",subject.name() + "," + subject.teacher() + "," + subject.room() + ",");
-                daySchedule[period] = subject;
+                dailySchedule[period] = subject;
             }
-            schedule.put(dayInCycle, daySchedule);
+            schedule.put(dayInCycle, dailySchedule);
             dayInCycle ++;
         }
         in.close();
+        Log.d("SCHEDULE", "successfully read weekly schedule");
         return schedule;
     }
-
-
 }

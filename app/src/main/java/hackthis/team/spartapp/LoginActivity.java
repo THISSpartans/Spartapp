@@ -175,7 +175,7 @@ public class LoginActivity extends AppCompatActivity{
 
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
-        return password.length() > 4;
+        return true;
     }
 
     private interface ProfileQuery {
@@ -262,7 +262,7 @@ public class LoginActivity extends AppCompatActivity{
                 Log.d("WVTIME", "timer purged and cancelled");
             }
         };
-        timer.schedule(tt, 10000, 1);
+        timer.schedule(tt, 5000, 1);
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
@@ -296,6 +296,7 @@ public class LoginActivity extends AppCompatActivity{
                                     catch(Exception e){
                                         //pun intended
                                         Log.d("HTML", "escape failed");
+                                        triggerRebirth(getApplicationContext());
                                     }
                                 }
                             });
@@ -314,8 +315,8 @@ public class LoginActivity extends AppCompatActivity{
         Log.d("CALENDAR", "pairing day cycle with calendar dates");
         List<Integer> days = getCalendar();
         for(Integer day : days){
-            String time = sdf.format(c.getTime());
-            pairs.put(time, day);
+            String date = sdf.format(c.getTime());
+            pairs.put(date, day);
             c.add(Calendar.DATE, 1);
         }
         Log.d("CALENDAR", "paired day cycle with calendar dates");
@@ -354,7 +355,7 @@ public class LoginActivity extends AppCompatActivity{
     public void writeWeeklySchedule(HashMap<Integer, Subject[]> schedule) throws Exception{
         if(schedule.get(1)==null){
             Log.d("SCHEDULE", "schedule is empty" );
-            return;
+            throw new Exception();
         }
         FileOutputStream f = this.openFileOutput("week_schedule.dat", Context.MODE_PRIVATE);
         PrintWriter out = new PrintWriter(f);
