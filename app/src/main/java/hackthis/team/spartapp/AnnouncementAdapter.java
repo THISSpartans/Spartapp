@@ -1,14 +1,24 @@
 package hackthis.team.spartapp;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.DatePicker;
 import android.widget.Filter;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class AnnouncementAdapter extends BaseAdapter {
     //必须存放两个String[]类型数据，一个保存原始数据，一个用来展示过滤后的数据
@@ -16,11 +26,44 @@ public class AnnouncementAdapter extends BaseAdapter {
     private ArrayList<Announcement.Content> displayItem;
     Context context;
 
+    String alarmName;
+
+    AlertDialog dateDialog;
+
+
+    DatePicker datePicker;
+    TimePicker timePicker;
+
+    View.OnClickListener selectDate = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            infoHolder ih = (infoHolder)v.getTag();
+            alarmName = ih.name;
+
+            CastratedDate cd = new CastratedDate();
+            datePicker.init(cd.year, cd.month, cd.date, null);
+            timePicker.setIs24HourView(true);
+            timePicker.setHour(cd.get(Calendar.HOUR_OF_DAY));
+            timePicker.setMinute(cd.get(Calendar.MINUTE));
+            dateDialog.show();
+
+            /*
+            Intent i = new Intent();
+            //i.setAction("hackthis.team.spartapp.TIMER_ACTION");
+            i.setAction(AlarmReceiver.TIMER_ACTION);
+            i.putExtra("title",ih.name);
+            Log.d("notification",i.getAction());
+            */
+
+        }
+    };
+
     public AnnouncementAdapter(Context context, ArrayList<Announcement.Content> item) {
         super();
         this.item = item;
         displayItem = item;
         this.context = context;
+
     }
 
     //因为要展示的是过滤后的数据，所以是displayItem的一些属性
@@ -62,6 +105,9 @@ public class AnnouncementAdapter extends BaseAdapter {
         String subtitle = ac.club + " - " + ac.date;
         holder.subtitle.setText(subtitle);
         holder.body.setText(ac.body);
+        holder.name = ac.name;
+
+        //itemView.setOnClickListener(selectDate);
 
         return itemView;
     }
@@ -70,6 +116,7 @@ public class AnnouncementAdapter extends BaseAdapter {
         TextView title;
         TextView subtitle;
         JustifyTextView body;
+        String name;
     }
 
     public void filter(String keyword){

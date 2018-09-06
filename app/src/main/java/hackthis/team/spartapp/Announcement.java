@@ -1,12 +1,15 @@
 package hackthis.team.spartapp;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.Fragment;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -15,12 +18,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
+import android.widget.AdapterView;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.avos.avoscloud.AVException;
@@ -32,6 +38,9 @@ import com.avos.avoscloud.PushService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,6 +68,9 @@ public class Announcement extends RefreshableFragment {
     };
 
     EditText search_text;
+    AlertDialog dateDialog;
+    TimePicker timePicker;
+    DatePicker datePicker;
 
     String search_root;
 
@@ -66,6 +78,8 @@ public class Announcement extends RefreshableFragment {
 
     ListView list;
     ArrayList<Content> announcements;
+
+    Intent noteIntent;
 
     boolean isStudent = true;
 
@@ -153,16 +167,66 @@ public class Announcement extends RefreshableFragment {
     }
 
     public void filter_keyword(String keyword){
-        AnnouncementAdapter adapter = new AnnouncementAdapter(mActivity, announcements);
+        AnnouncementAdapter adapter = new AnnouncementAdapter(getActivity(), announcements);
         list.setAdapter(adapter);
         if(keyword != null){
             adapter.filter(keyword);
         }
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position,
+                                    long id) {
+                CastratedDate cd = new CastratedDate();
+                datePicker.updateDate(cd.year, cd.month, cd.date);
+                timePicker.setHour(cd.get(Calendar.HOUR_OF_DAY));
+                timePicker.setMinute(cd.get(Calendar.MINUTE));
+                dateDialog.show();
+                AnnouncementAdapter.infoHolder ih = (AnnouncementAdapter.infoHolder)view.getTag();
+                noteIntent = new Intent(mActivity, AlarmReceiver.class);
+                noteIntent.putExtra("title", ih.name);
+                //mActivity.sendBroadcast(intent);
+            }
+        });
     }
 
     public void onAttach(Context context) {
         super.onAttach(context);
         mActivity = (Activity) context;
+
+        final View dialogView = View.inflate(context, R.layout.date_time_picker, null);
+        dateDialog = new AlertDialog.Builder(context).
+                setTitle("Set Alarm Time").create();
+
+        datePicker = dialogView.findViewById(R.id.date_picker);
+        timePicker = dialogView.findViewById(R.id.time_picker);
+
+        dialogView.findViewById(R.id.date_time_set).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Calendar calendar = new GregorianCalendar(datePicker.getYear(),
+                        datePicker.getMonth(),
+                        datePicker.getDayOfMonth(),
+                        timePicker.getCurrentHour(),
+                        timePicker.getCurrentMinute());
+                long time = calendar.getTimeInMillis();
+
+                AlarmManager alarmManager = (AlarmManager) mActivity.getSystemService(Context.ALARM_SERVICE);
+
+                PendingIntent pi = PendingIntent.getBroadcast(mActivity, 0, noteIntent, 0);
+                alarmManager.set(AlarmManager.RTC, time, pi);
+                dateDialog.hide();
+                Log.d("alarm","alarm set after"+Long.toString(time-(new Date()).getTime())+" "+noteIntent.getStringExtra("title"));
+            }});
+
+        dialogView.findViewById(R.id.date_time_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dateDialog.hide();
+            }
+        });
+        dateDialog.setView(dialogView);
+
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
