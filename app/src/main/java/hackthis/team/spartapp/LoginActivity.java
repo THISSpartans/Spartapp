@@ -32,6 +32,10 @@ import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -246,11 +250,13 @@ public class LoginActivity extends AppCompatActivity{
     public void openWebView(String account_, String password_) throws InterruptedException, AVException, ParseException {
         final WebView webView = new WebView(this.getApplicationContext());
         Log.d("SCHEDULE", "webview starting");
-
         final String account = account_;
         final String password = password_;
         final boolean[] pastLoginPage = {false};
         final boolean[] timeout = {false};
+        SharedPreferences sp = getSharedPreferences("clubs", Context.MODE_PRIVATE);
+        final String occ = sp.getString("occupation", "student");
+        final Context context = this;
 
         final Timer timer = new Timer();
         TimerTask tt = new TimerTask(){
@@ -259,10 +265,12 @@ public class LoginActivity extends AppCompatActivity{
                 timeout[0] = true;
                 timer.purge();
                 timer.cancel();
-                Log.d("WVTIME", "timer purged and cancelled");
+                Log.d("WVTIME", "timer purged and cancelled; re-login");
+                Intent login = new Intent(context, LoginActivity.class);
+                startActivity(login);
             }
         };
-        timer.schedule(tt, 5000, 1);
+        timer.schedule(tt, 10000, 1);
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
@@ -270,12 +278,16 @@ public class LoginActivity extends AppCompatActivity{
             public void onPageFinished(WebView view, String url) {
                 if(!pastLoginPage[0]){
                     Log.d("HTML", url + " page finished");
-                    webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account+"'", null);
+                    String usrField = (occ.equals("student"))?"fieldAccount":"fieldUsername";
+                    String btnName = (occ.equals("student"))?"btn-enter":"btnEnter";
+                    Log.d("HTML", usrField+btnName);
+                    webView.evaluateJavascript("document.getElementById('"+usrField+"').value='"+account+"'", null);
                     webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password+"'", null);
-                    webView.evaluateJavascript("document.getElementById('btn-enter').click();", null);
+                    webView.evaluateJavascript("document.getElementById('"+btnName+"').click();", null);
                     pastLoginPage[0] = true;
                 }
                 else if(!timeout[0]){
+                    Log.d("HTML", "logged in");
                     webView.evaluateJavascript(
                             "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
                             new ValueCallback<String>() {
@@ -288,7 +300,9 @@ public class LoginActivity extends AppCompatActivity{
                                         String startOfYear = qList.get(0).getString("startOfYear");
                                         HashMap<String, Integer> dateDay = fetchDateDayPairs(startOfYear);
                                         String html = StringEscapeUtils.unescapeJava(html_);
-                                        HashMap<Integer, Subject[]> weeklySchedule = fetchSchedule(html);
+                                        Log.d("HTML", html);
+                                        HashMap<Integer, Subject[]> weeklySchedule =
+                                                occ=="student"?fetchScheduleStudent(html):fetchScheduleTeacher(html);
                                         writeDateDayPairs(dateDay);
                                         writeWeeklySchedule(weeklySchedule);
                                         triggerRebirth(getApplicationContext());
@@ -303,7 +317,9 @@ public class LoginActivity extends AppCompatActivity{
                 }
             }
         });
-        webView.loadUrl("https://power.this.edu.cn/public/home.html");
+        Log.d("HTML", occ);
+        if(occ.equals("student")) webView.loadUrl("https://power.this.edu.cn/public/home.html");
+        else webView.loadUrl("https://power.this.edu.cn/teachers/pw.html");
         Log.d("HTML", "initiated webview operations");
     }
 
@@ -366,7 +382,7 @@ public class LoginActivity extends AppCompatActivity{
                 if(subject != null)
                     out.write(subject.name() + "?" + subject.teacher() + "?" + subject.room() + "?");
                 else
-                    out.write("Study Hall?None?Library?");
+                    out.write("Study Hall?--?--?");
             }
             out.write("\n");
         }
@@ -374,7 +390,7 @@ public class LoginActivity extends AppCompatActivity{
         Log.d("SCHEDULE", "wrote week_schedule.dat");
     }
 
-    public HashMap<Integer, Subject[]> fetchSchedule(String html) throws IOException, InterruptedException {
+    public HashMap<Integer, Subject[]> fetchScheduleStudent(String html) throws IOException, InterruptedException {
         String pageSource = html;
         HashMap<Integer, Subject[]> schedule = new HashMap<Integer, Subject[]>(0);
         Log.d("HTML", "parsing html source");
@@ -437,6 +453,55 @@ public class LoginActivity extends AppCompatActivity{
             }
         }
         Log.d("HTML", "done parsing; schedule generated");
+        return schedule;
+    }
+
+    public HashMap<Integer, Subject[]> fetchScheduleTeacher(String html){
+        HashMap<Integer, Subject[]> schedule = new HashMap<Integer, Subject[]>(0);
+        Log.d("HTML", "parsing html source");
+        Document doc = Jsoup.parse(html);
+        Element table = doc.select("table").get(0);
+        Elements rows = table.select("tr");
+        for(int dayNum = 1; dayNum <= cycleLen; dayNum++)
+            schedule.put(new Integer(dayNum), new Subject[8]);
+
+        for(int j=0; j<rows.size(); j++) {
+            Element row = rows.get(j);
+            Elements col = row.select("td");
+            String periodInfo = col.get(0).text();
+            String className = col.get(1).text();
+            className = className.substring(0, className.length()-16);
+
+            while(true) {
+                String days = periodInfo.substring(periodInfo.indexOf("(")+1, periodInfo.indexOf(")"));
+                for(int i = 0; i * 2 < days.length(); i ++) {
+                    int dayNum = days.charAt(i*2) - 48;
+                    Subject period = new Subject(className, " ", " ");
+                    int pN, pC, pNe, pCe;
+                    try {
+                        pN = Integer.parseInt(periodInfo.substring(0, 1));
+                        pC = periodInfo.substring(1, 2).equals("A") ? 0 : 1;
+                        pNe = Integer.parseInt(periodInfo.substring(3, 4));
+                        pCe = periodInfo.substring(4, 5).equals("A") ? 0 : 1;
+                    }
+                    catch(NumberFormatException e) {
+                        break;
+                    }
+
+                    schedule.get(new Integer(dayNum))[(pN-1)*2 + pC] = period;
+                    schedule.get(new Integer(dayNum))[(pNe-1)*2 + pCe] = period;
+                }
+
+                int endInx = periodInfo.indexOf(")");
+                try {
+                    periodInfo = periodInfo.substring(endInx + 2);
+                }
+                catch(StringIndexOutOfBoundsException e) {
+                    break;
+                }
+            }
+
+        }
         return schedule;
     }
 

@@ -28,7 +28,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
@@ -37,14 +37,10 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'org.apache.commons:commons-lang3:3.6'
-
-    implementation('com.android.support:support-v4:21.0.3')
-
+    implementation 'com.android.support:support-v4:21.0.3'
     // LeanCloud 基础包
-    implementation('cn.leancloud.android:avoscloud-sdk:v4.6.4')
-
+    implementation 'cn.leancloud.android:avoscloud-sdk:v4.6.4'
     // 推送与即时通讯需要的包
     implementation('cn.leancloud.android:avoscloud-push:v4.6.4@aar') { transitive = true }
-
-
+    implementation project(':jsoup-1.11.3')
 }
