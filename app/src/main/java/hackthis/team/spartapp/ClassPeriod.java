@@ -19,6 +19,7 @@ public class ClassPeriod {
     static
     {
         pd = new ArrayList<>(40);
+        pd.add(new periodData(R.drawable.course_none, R.color.none, Arrays.asList("-")));
         pd.add(new periodData(R.drawable.course_art, R.color.art, Arrays.asList(
                 "ceramics", "easternart6", "easternart7", "easternart8",
                 "easternarti", "easternartii", "foundationsofart", "foundationsofdigitalart",
@@ -132,11 +133,20 @@ public class ClassPeriod {
 
         String temp = s.name.toLowerCase().replace(" ","");
 
+        boolean found = false;
+
         for(periodData i : pd){
             if(i.courses.contains(temp)) {
                 colorID = i.colorID;
                 backgroundID = i.imageID;
+                found = true;
+                break;
             }
+        }
+
+        if(!found){
+            colorID = pd.get(0).colorID;
+            backgroundID = pd.get(0).imageID;
         }
     }
 

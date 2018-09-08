@@ -18,44 +18,44 @@
     <color name = "powerschool_shaded">#202030</color>
 
     <!--language related-->
-    <color name = "chinese">#ffaa00</color>
-    <color name = "french">#ffaa00</color>
-    <color name = "linguistics">#ffaa00</color>
-    <color name = "els">#ffaa00</color>
-    <color name = "spanish">#ffaa00</color>
-    <color name = "english">#ffaa00</color>
+    <color name = "chinese">#ff3700</color>
+    <color name = "french">#a1e2df</color>
+    <color name = "linguistics">#fd3f6b</color>
+    <color name = "els">#6f6cbc</color>
+    <color name = "spanish">#6f6cbc</color>
+    <color name = "english">#1242ba</color>
 
     <!--fine arts-->
     <color name = "art">#0e7b00</color>
     <color name = "filmstudies">#0e7b00</color>
 
     <!--performing arts-->
-    <color name = "music">#72a4af</color>
-    <color name = "choir">#72a4af</color>
-    <color name = "theater">#72a4af</color>
+    <color name = "music">#578e9b</color>
+    <color name = "choir">#2da922</color>
+    <color name = "theater">#0a2d35</color>
     <color name = "piano">#72a4af</color>
 
     <!--social study related-->
-    <color name = "history">#af0000</color>
-    <color name = "genderstudies">#af0000</color>
-    <color name = "socialstudy">#af0000</color>
+    <color name = "history">#a053ff</color>
+    <color name = "genderstudies">#0e615d</color>
+    <color name = "socialstudy">#aac1d7</color>
     <color name = "economics">#af0000</color>
 
     <!--sciency stuff-->
-    <color name = "biology">#023979</color>
-    <color name = "computer">#023979</color>
-    <color name = "math">#023979</color>
-    <color name = "steam">#023979</color>
-    <color name = "chemistry">#023979</color>
-    <color name = "physics">#023979</color>
+    <color name = "biology">#5c1ece</color>
+    <color name = "computer">#00d17d</color>
+    <color name = "math">#0b4486</color>
+    <color name = "steam">#ff8d1c</color>
+    <color name = "chemistry">#459bff</color>
+    <color name = "physics">#300279</color>
 
     <!--pe-->
-    <color name = "health">#ffaa99</color>
-    <color name = "fitness">#ffaa99</color>
+    <color name = "health">#006bed</color>
+    <color name = "fitness">#2b588f</color>
     <color name = "sport">#ffaa99</color>
 
     <!--other-->
-    <color name = "highschoolenrichment">#666</color>
-    <color name = "studyhall">#666</color>
-    <color name = "none">#70391c</color>
+    <color name = "highschoolenrichment">#ff1e34</color>
+    <color name = "studyhall">#2e814f</color>
+    <color name = "none">#96e114</color>
 </resources>
