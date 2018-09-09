@@ -120,7 +120,9 @@ public class ClassPeriod {
                 "outdooreducation", "pe6", "pe7", "pe8", "pe9", "sportsmanagement",
                 "strengthtraining", "ultimatesports"
         )));
-
+        pd.add(new periodData(R.drawable.course_empty, R.color.grey, Arrays.asList(
+                "--"
+        )));
     }
 
     public ClassPeriod(Subject s, int p){

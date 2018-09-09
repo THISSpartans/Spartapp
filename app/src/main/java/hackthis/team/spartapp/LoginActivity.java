@@ -381,8 +381,12 @@ public class LoginActivity extends AppCompatActivity{
             for (Subject subject : day) {
                 if(subject != null)
                     out.write(subject.name() + "?" + subject.teacher() + "?" + subject.room() + "?");
-                else
-                    out.write("Study Hall?--?--?");
+                else {
+                    SharedPreferences sp = getSharedPreferences("clubs", Context.MODE_PRIVATE);
+                    final String occ = sp.getString("occupation", "student");
+                    if(occ=="student") out.write("Study Hall?-?-?");
+                    else out.write("--?-?-?");
+                }
             }
             out.write("\n");
         }

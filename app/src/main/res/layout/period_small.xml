@@ -15,14 +15,17 @@
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
         android:src="@drawable/period_head_shape" />
+
     <TextView
         android:id="@+id/period_small_title"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:text="Class"
         android:layout_weight="1"
-        android:padding="3dp"
-        android:textColor="@color/black"
+        android:background="@drawable/period_shape"
         android:gravity="center_vertical"
-        android:background="@drawable/period_shape"/>
+        android:padding="3dp"
+        android:text="Class"
+        android:textAlignment="textStart"
+        android:textColor="@color/black"
+        android:textSize="18sp" />
 </LinearLayout>
