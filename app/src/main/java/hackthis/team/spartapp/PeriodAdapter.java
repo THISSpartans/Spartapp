@@ -1,6 +1,7 @@
 package hackthis.team.spartapp;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ public class PeriodAdapter extends ArrayAdapter {
             view = LayoutInflater.from(getContext()).inflate(R.layout.period_large, null);//实例化一个对象
             TextView title = (TextView) view.findViewById(R.id.period_large_title);
             title.setText(cp.sub.name);
+            title.setTypeface(null, Typeface.BOLD);
             TextView description = (TextView) view.findViewById(R.id.period_large_description);
             description.setText(cp.sub.teacher+"\n"+cp.sub.room);
             ImageView background = (ImageView) view.findViewById(R.id.period_large_background);
@@ -34,6 +36,7 @@ public class PeriodAdapter extends ArrayAdapter {
             view = LayoutInflater.from(getContext()).inflate(R.layout.period_small, null);
             TextView title = (TextView) view.findViewById(R.id.period_small_title);
             title.setText(cp.sub.name);
+            title.setTypeface(null, Typeface.BOLD);
             ImageView background = (ImageView) view.findViewById(R.id.period_small_background);
             background.setColorFilter(getContext().getResources().getColor(cp.colorID));
         }
