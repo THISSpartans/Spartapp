@@ -19,7 +19,6 @@ public class ClassPeriod {
     static
     {
         pd = new ArrayList<>(40);
-        pd.add(new periodData(R.drawable.course_none, R.color.none, Arrays.asList("-")));
         pd.add(new periodData(R.drawable.course_art, R.color.art, Arrays.asList(
                 "ceramics", "easternart6", "easternart7", "easternart8",
                 "easternarti", "easternartii", "foundationsofart", "foundationsofdigitalart",
@@ -78,9 +77,9 @@ public class ClassPeriod {
         pd.add(new periodData(R.drawable.course_economics, R.color.economics, Arrays.asList(
                 "apmacroeconomics", "economics"
         )));
-        pd.add(new periodData(R.drawable.course_english, R.color.english, Arrays.asList(
-                "langarts6", "langarts7", "langarts8", "englih9", "english10", "englih11", "englih12",
-                "apenglishlanguage&composition", "aplang"
+        pd.add(new periodData(R.drawable.course_english, R.color.english, Arrays.asList("english",
+                "langarts6", "langarts7", "langarts8", "english9", "english10", "englih11", "englih12",
+                "apenglishlanguage&composition", "aplang", "apenglishlanguage"
         )));
         pd.add(new periodData(R.drawable.course_history, R.color.history, Arrays.asList(
                 "ancientworldhistory7", "apushistory", "apworldhistory", "arthistorymethods",
@@ -120,7 +119,7 @@ public class ClassPeriod {
                 "outdooreducation", "pe6", "pe7", "pe8", "pe9", "sportsmanagement",
                 "strengthtraining", "ultimatesports"
         )));
-        pd.add(new periodData(R.drawable.course_empty, R.color.grey, Arrays.asList(
+        pd.add(new periodData(R.drawable.course_none, R.color.grey, Arrays.asList(
                 "--"
         )));
     }
