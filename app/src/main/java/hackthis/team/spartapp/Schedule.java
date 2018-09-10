@@ -6,9 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v4.view.MotionEventCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -96,7 +99,6 @@ public class Schedule extends RefreshableFragment {
 
     //the last length of the date radio group before its update, used in updateTitleBar()
     int last_date_length;
-
 
     //find schedule for browsingTime and display on screen, called when fragment is initialized and when date picker gets clicked
     public void load(){
@@ -261,7 +263,6 @@ public class Schedule extends RefreshableFragment {
 
         return root;
     }
-
     private void autoscroll(){
         HorizontalScrollView date_scroll = (HorizontalScrollView)getView().findViewById(R.id.date_scroll);
         RadioGroup rg = (RadioGroup) getView().findViewById(R.id.date_radio_group);
