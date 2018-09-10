@@ -19,7 +19,6 @@ public class ClassPeriod {
     static
     {
         pd = new ArrayList<>(40);
-        pd.add(new periodData(R.drawable.course_none, R.color.none, Arrays.asList("-")));
         pd.add(new periodData(R.drawable.course_art, R.color.art, Arrays.asList(
                 "ceramics", "easternart6", "easternart7", "easternart8",
                 "easternarti", "easternartii", "foundationsofart", "foundationsofdigitalart",
@@ -120,7 +119,7 @@ public class ClassPeriod {
                 "outdooreducation", "pe6", "pe7", "pe8", "pe9", "sportsmanagement",
                 "strengthtraining", "ultimatesports"
         )));
-        pd.add(new periodData(R.drawable.course_empty, R.color.grey, Arrays.asList(
+        pd.add(new periodData(R.drawable.course_none, R.color.grey, Arrays.asList(
                 "--"
         )));
     }
