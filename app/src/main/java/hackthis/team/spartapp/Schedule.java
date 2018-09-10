@@ -116,6 +116,7 @@ public class Schedule extends RefreshableFragment {
         Log.d("TIME", Integer.toString(yr)+"-"+m+"-"+d);
         Subject[] subs = subjectTable.get(Integer.toString(yr)+"-"+m+"-"+d);
 
+        //Log.d("SCHEDULE", subjectTable.get("2018-09-13")[0].name());
 
         if(subs != null) {
             for (int i = 1; i < 8; i++){

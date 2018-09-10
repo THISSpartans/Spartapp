@@ -263,6 +263,7 @@ public class LoginActivity extends AppCompatActivity{
         final boolean[] timeout = {false};
         SharedPreferences sp = getSharedPreferences("clubs", Context.MODE_PRIVATE);
         final String occ = sp.getString("occupation", "student");
+        Log.d("OCCUPATION", occ);
         final Context context = this;
 
         final Timer timer = new Timer();
@@ -279,7 +280,7 @@ public class LoginActivity extends AppCompatActivity{
                 startActivity(login);
             }
         };
-        timer.schedule(tt, 5000, 1);
+        timer.schedule(tt, 10000, 1);
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
@@ -308,9 +309,9 @@ public class LoginActivity extends AppCompatActivity{
                                         String startOfYear = qList.get(0).getString("startOfYear");
                                         HashMap<String, Integer> dateDay = fetchDateDayPairs(startOfYear);
                                         String html = StringEscapeUtils.unescapeJava(html_);
-                                        Log.d("HTML", html);
+                                        Log.d("HTML", occ);
                                         HashMap<Integer, Subject[]> weeklySchedule =
-                                                occ=="student"?fetchScheduleStudent(html):fetchScheduleTeacher(html);
+                                                (occ.equals("student"))?fetchScheduleStudent(html):fetchScheduleTeacher(html);
                                         writeDateDayPairs(dateDay);
                                         writeWeeklySchedule(weeklySchedule);
                                         triggerRebirth(getApplicationContext());
@@ -366,8 +367,8 @@ public class LoginActivity extends AppCompatActivity{
         for(AVObject week : weeks){
             for(Boolean isDay : (List<Boolean>)week.getList("weeklyCalendar")) {
                 if(isDay) {
+                    days.add(curDay+1);
                     curDay = (curDay+1) % cycleLen;
-                    days.add(curDay);
                 }
                 else days.add(-1);
             }
@@ -406,32 +407,24 @@ public class LoginActivity extends AppCompatActivity{
         String pageSource = html;
         HashMap<Integer, Subject[]> schedule = new HashMap<Integer, Subject[]>(0);
         Log.d("HTML", "parsing html source");
-        int inx = 0;
-        String afterLastCcid = pageSource;
-        while( (inx = afterLastCcid.indexOf("ccid")) != -1 ) {
-            afterLastCcid = afterLastCcid.substring(inx+4);
-            //extract period info
-            int inxOfTd = afterLastCcid.indexOf("<td>");
-            int inxOfEndTd = afterLastCcid.indexOf("</td>");
-            String periodSeq = afterLastCcid.substring(inxOfTd+4, inxOfEndTd);
-            //extract class info
-            int inxStart = afterLastCcid.indexOf("<td");
-            for(int i = 0; i < 15; i ++)
-                inxStart += afterLastCcid.substring(inxStart+1).indexOf("<td") + 1;
-            int inxOfQuote = afterLastCcid.substring(inxStart).indexOf(";")+inxStart;
-            String className = afterLastCcid.substring(inxStart + 17, inxOfQuote-5);
-            Log.d("BUH", className);
-            int InxOfAnd;
-            if((InxOfAnd = className.indexOf("&")) != -1)
-                className = className.substring(0, InxOfAnd) + className.substring(InxOfAnd+6);
-            //extract teacher info
-            int inxOfDetails = afterLastCcid.indexOf("Details about");
-            int inxOfClsBtn = afterLastCcid.indexOf("class=\"button mini");
-            String teacherName = afterLastCcid.substring(inxOfDetails + 14, inxOfClsBtn - 2);
-            //extract room info
-            int inxOfRm = afterLastCcid.indexOf("Rm:");
-            String roomNum = afterLastCcid.substring(inxOfRm + 3, inxOfRm + 8);
-            String periodInfo = periodSeq;
+        Document doc = Jsoup.parse(html);
+        Element table = doc.select("table").get(0);
+        Elements rows = table.select("tr");
+        for(int dayNum = 1; dayNum <= cycleLen; dayNum++)
+            schedule.put(new Integer(dayNum), new Subject[8]);
+        for(int j=3; j<rows.size()-1; j++) {
+            Element row = rows.get(j);
+            Elements col = row.select("td");
+            String periodInfo = col.get(0).text();
+            if(periodInfo.contains("HR")) continue;
+            String classInfo = col.get(15).text();
+            String className = classInfo.substring(0, classInfo.indexOf("Details about")-1);
+            String teacherName = classInfo.substring(classInfo.indexOf("Details about")+14,
+                    classInfo.indexOf("Email")-1);
+            int rmInx = classInfo.indexOf("Rm:");
+            String roomNum;
+            if(rmInx>0) roomNum = classInfo.substring(rmInx+4);
+            else roomNum = "-";
             while(true) {
                 String days = periodInfo.substring(periodInfo.indexOf("(")+1, periodInfo.indexOf(")"));
                 for(int i = 0; i * 2 < days.length(); i ++) {
@@ -448,9 +441,6 @@ public class LoginActivity extends AppCompatActivity{
                         break;
                     }
 
-                    if(!schedule.containsKey(new Integer(dayNum))){
-                        schedule.put(new Integer(dayNum), new Subject[8]);
-                    }
                     schedule.get(new Integer(dayNum))[(pN-1)*2 + pC] = period;
                     schedule.get(new Integer(dayNum))[(pNe-1)*2 + pCe] = period;
                 }
@@ -470,7 +460,7 @@ public class LoginActivity extends AppCompatActivity{
 
     public HashMap<Integer, Subject[]> fetchScheduleTeacher(String html){
         HashMap<Integer, Subject[]> schedule = new HashMap<Integer, Subject[]>(0);
-        Log.d("HTML", "parsing html source");
+        Log.d("HTML", "parsing html source teacher");
         Document doc = Jsoup.parse(html);
         Element table = doc.select("table").get(0);
         Elements rows = table.select("tr");
@@ -481,6 +471,7 @@ public class LoginActivity extends AppCompatActivity{
             Element row = rows.get(j);
             Elements col = row.select("td");
             String periodInfo = col.get(0).text();
+            if(periodInfo.contains("HR")) continue;
             String className = col.get(1).text();
             className = className.substring(0, className.length()-16);
 
@@ -565,7 +556,7 @@ public class LoginActivity extends AppCompatActivity{
         int mPendingIntentId = 123456;
         PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager mgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+        mgr.set(AlarmManager.RTC, System.currentTimeMillis(), mPendingIntent);
         Log.d("REBIRTH", "exiting");
         System.exit(0);
     }

@@ -95,6 +95,7 @@ public class MainActivity extends Activity {
             }
             else{
                 sp.edit().putString("occupation","teacher").apply();
+                Log.d("HTML", "rest");
             }
             sp = getSharedPreferences("app", Context.MODE_PRIVATE);
             sp.edit().putBoolean("first_launch",false).apply();
@@ -138,6 +139,7 @@ public class MainActivity extends Activity {
         else {
             init_main();
         }
+
 
         //get access to internet
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
