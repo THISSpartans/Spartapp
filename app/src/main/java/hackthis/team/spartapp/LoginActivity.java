@@ -107,6 +107,12 @@ public class LoginActivity extends AppCompatActivity{
 
         //TODO depending on THIS/ISB, set schedule params
         cycleLen = 6;
+
+        SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
+        Boolean loginFailed = sp.getBoolean("failed", false);
+        if(loginFailed){
+            mEmailView.setError("Failed to download schedule");
+        };
     }
 
     /**
@@ -171,6 +177,7 @@ public class LoginActivity extends AppCompatActivity{
             mAuthTask.execute((Void) null);
         }
     }
+
 
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
@@ -267,10 +274,12 @@ public class LoginActivity extends AppCompatActivity{
                 timer.cancel();
                 Log.d("WVTIME", "timer purged and cancelled; re-login");
                 Intent login = new Intent(context, LoginActivity.class);
+                SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
+                sp.edit().putBoolean("failed",true).apply();
                 startActivity(login);
             }
         };
-        timer.schedule(tt, 10000, 1);
+        timer.schedule(tt, 5000, 1);
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
@@ -280,7 +289,6 @@ public class LoginActivity extends AppCompatActivity{
                     Log.d("HTML", url + " page finished");
                     String usrField = (occ.equals("student"))?"fieldAccount":"fieldUsername";
                     String btnName = (occ.equals("student"))?"btn-enter":"btnEnter";
-                    Log.d("HTML", usrField+btnName);
                     webView.evaluateJavascript("document.getElementById('"+usrField+"').value='"+account+"'", null);
                     webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password+"'", null);
                     webView.evaluateJavascript("document.getElementById('"+btnName+"').click();", null);
@@ -310,7 +318,7 @@ public class LoginActivity extends AppCompatActivity{
                                     catch(Exception e){
                                         //pun intended
                                         Log.d("HTML", "escape failed");
-                                        triggerRebirth(getApplicationContext());
+                                        //triggerRebirth(getApplicationContext());
                                     }
                                 }
                             });
@@ -545,7 +553,14 @@ public class LoginActivity extends AppCompatActivity{
         QuickSortDate(arr, i+1, high);
     }
 
-    public static void triggerRebirth(Context context) {
+    public void triggerRebirth(Context context) {
+        SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putBoolean("failed", false);
+        //must use commit instead of apply here
+        editor.commit();
+        Log.d("REBIRTH", "error state cleared");
+
         Intent mStartActivity = new Intent(context, MainActivity.class);
         int mPendingIntentId = 123456;
         PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
