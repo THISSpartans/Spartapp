@@ -83,9 +83,6 @@ public class Announcement extends RefreshableFragment {
 
     boolean isStudent = true;
 
-    /**
-     * 取自https://blog.csdn.net/ljcitworld/article/details/77528585
-     */
     @Override
     public void onStart() {
         super.onStart();

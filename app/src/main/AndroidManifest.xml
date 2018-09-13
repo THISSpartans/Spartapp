@@ -32,9 +32,11 @@
             android:name=".LoginActivity"
             android:label="@string/title_activity_login" />
 
-        <receiver android:name=".AlarmReceiver" android:exported="false">
+        <receiver
+            android:name=".AlarmReceiver"
+            android:exported="false">
             <intent-filter>
-                <action android:name="AlarmReceiver_TimerAction"/>
+                <action android:name="AlarmReceiver_TimerAction" />
             </intent-filter>
         </receiver>
 
@@ -51,12 +53,14 @@
         </receiver>
         <!-- 即时通讯模块、推送 END -->
 
-        <activity android:name=".FilterActivity"
-            android:label="Announcement Filter"/>
-        <activity android:name=".PostLoginActivity"
-            android:label="Sign in"/>
-        <activity android:name=".PostGradeActivity"/>
-
+        <activity
+            android:name=".FilterActivity"
+            android:label="Announcement Filter" />
+        <activity
+            android:name=".PostLoginActivity"
+            android:label="Sign in" />
+        <activity android:name=".PostGradeActivity" />
+        <activity android:name=".ElectionPage"></activity>
     </application>
 
 </manifest>

@@ -15,5 +15,9 @@
         android:id="@+id/navigation_post"
         android:icon="@drawable/post"
         android:title="post" />
+    <item
+        android:id="@+id/navigation_services"
+        android:icon="@drawable/services"
+        android:title="services" />
 
 </menu>
