@@ -20,4 +20,7 @@
     
     <!-- Strings related to announcement -->
     <string name="title_activity_filter">Subscribed Groups</string>
+
+    <!-- String related to services -->
+    <string name="election">StuCo 2018\nElection</string>
 </resources>
