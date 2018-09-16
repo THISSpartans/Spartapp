@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVFile;
@@ -77,7 +78,7 @@ public class ElectionPage extends Activity {
         titles = new HashMap<>(10);
 
         // grade 0 means the title will not be filtered by grade
-        titles.put(new Title("bird",0), Arrays.asList(
+        /*titles.put(new Title("bird",0), Arrays.asList(
                 new Person("becky\nbeckyson",R.drawable.yes),
                 new Person("ron\nronson",R.drawable.no),
                 new Person("ben\nbenson",R.drawable.group_icon)
@@ -89,7 +90,7 @@ public class ElectionPage extends Activity {
                 new Person("yo mama\nbenson",R.drawable.group_icon),
                 new Person("thing\nronson",R.drawable.no),
                 new Person("thing2\nronson",R.drawable.no)
-        ));
+        ));*/
 
         //body.addView(new ElectionItem(ElectionPage.this, R.drawable.yes, "becky").content);
 
@@ -155,6 +156,8 @@ public class ElectionPage extends Activity {
 
     public void vote(ArrayList<String> people){
         //todo somehow put the selected list online
+        Toast.makeText(ElectionPage.this,"Election hasn't started",
+                Toast.LENGTH_SHORT).show();
     }
 
     public void handleError(String err){
