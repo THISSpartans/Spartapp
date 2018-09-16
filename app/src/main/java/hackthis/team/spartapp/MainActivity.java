@@ -250,8 +250,8 @@ public class MainActivity extends Activity {
         int dayInCycle = 1;
         while((line = in.readLine())!=null){
             StringTokenizer tizer = new StringTokenizer(line, "?");
-            Subject[] daySchedule = new Subject[8];
-            for(int period = 0; period < 8; period ++){
+            Subject[] daySchedule = new Subject[tizer.countTokens()/3];
+            for(int period = 0; period < daySchedule.length; period ++){
                 String name = tizer.nextToken();
                 String teacher = tizer.nextToken();
                 String room = tizer.nextToken();
@@ -263,6 +263,7 @@ public class MainActivity extends Activity {
             dayInCycle ++;
         }
         in.close();
+        Log.d("HTML_IN", "done reading schedule");
         return schedule;
     }
 

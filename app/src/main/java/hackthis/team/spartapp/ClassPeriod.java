@@ -78,7 +78,7 @@ public class ClassPeriod {
                 "apmacroeconomics", "economics"
         )));
         pd.add(new periodData(R.drawable.course_english, R.color.english, Arrays.asList("english",
-                "langarts6", "langarts7", "langarts8", "english9", "english10", "englih11", "englih12",
+                "langarts6", "langarts7", "langarts8", "english9", "english10", "english11", "english12",
                 "apenglishlanguage&composition", "aplang", "apenglishlanguage"
         )));
         pd.add(new periodData(R.drawable.course_history, R.color.history, Arrays.asList(

@@ -106,13 +106,22 @@ public class LoginActivity extends AppCompatActivity{
         });
 
         //TODO depending on THIS/ISB, set schedule params
-        cycleLen = 6;
+        SharedPreferences p = this.getSharedPreferences("clubs", Context.MODE_PRIVATE);
+        String schl = p.getString("school", "THIS");
+        if(schl.equals("THIS")) cycleLen = 6;
+        else cycleLen = 8;
 
         SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
         Boolean loginFailed = sp.getBoolean("failed", false);
         if(loginFailed){
-            mEmailView.setError("Failed to download schedule");
+            mEmailView.setError("Failed to download schedule; Please try again");
         };
+        SharedPreferences prefs = this.getSharedPreferences("hackthis.team.spartapp", Context.MODE_PRIVATE);
+        String username = prefs.getString("account", "");
+        String password = prefs.getString("password", "");
+        mEmailView.setText(username);
+        mPasswordView.setText(password);
+
     }
 
     /**
@@ -257,12 +266,14 @@ public class LoginActivity extends AppCompatActivity{
     public void openWebView(String account_, String password_) throws InterruptedException, AVException, ParseException {
         final WebView webView = new WebView(this.getApplicationContext());
         Log.d("SCHEDULE", "webview starting");
+        webView.getSettings().setUserAgentString("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0");
         final String account = account_;
         final String password = password_;
         final boolean[] pastLoginPage = {false};
         final boolean[] timeout = {false};
         SharedPreferences sp = getSharedPreferences("clubs", Context.MODE_PRIVATE);
         final String occ = sp.getString("occupation", "student");
+        final String schl = sp.getString("school", "THIS");
         Log.d("OCCUPATION", occ);
         final Context context = this;
 
@@ -282,6 +293,11 @@ public class LoginActivity extends AppCompatActivity{
         };
         timer.schedule(tt, 10000, 1);
 
+        final String url_ = occ.equals("student")?(
+                schl.equals("THIS")?"https://power.this.edu.cn/public/home.html":
+                    "https://sis.isb.bj.edu.cn/public/home.html")
+                :"https://power.this.edu.cn/teachers/pw.html";
+
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -289,7 +305,8 @@ public class LoginActivity extends AppCompatActivity{
                 if(!pastLoginPage[0]){
                     Log.d("HTML", url + " page finished");
                     String usrField = (occ.equals("student"))?"fieldAccount":"fieldUsername";
-                    String btnName = (occ.equals("student"))?"btn-enter":"btnEnter";
+                    String btnName = (occ.equals("student"))?(schl.equals("THIS")?"btn-enter":"btn-enter-sign-in"):"btnEnter";
+                    Log.d("HTML", usrField);
                     webView.evaluateJavascript("document.getElementById('"+usrField+"').value='"+account+"'", null);
                     webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password+"'", null);
                     webView.evaluateJavascript("document.getElementById('"+btnName+"').click();", null);
@@ -310,8 +327,11 @@ public class LoginActivity extends AppCompatActivity{
                                         HashMap<String, Integer> dateDay = fetchDateDayPairs(startOfYear);
                                         String html = StringEscapeUtils.unescapeJava(html_);
                                         Log.d("HTML", occ);
+                                        Log.d("HTML", html);
                                         HashMap<Integer, Subject[]> weeklySchedule =
-                                                (occ.equals("student"))?fetchScheduleStudent(html):fetchScheduleTeacher(html);
+                                                (occ.equals("student"))?(schl.equals("THIS")?fetchScheduleStudent(html):
+                                                    fetchScheduleISB(html))
+                                                        :fetchScheduleTeacher(html);
                                         writeDateDayPairs(dateDay);
                                         writeWeeklySchedule(weeklySchedule);
                                         triggerRebirth(getApplicationContext());
@@ -320,6 +340,7 @@ public class LoginActivity extends AppCompatActivity{
                                         //pun intended
                                         Log.d("HTML", "escape failed");
                                         //triggerRebirth(getApplicationContext());
+                                        webView.loadUrl(url_);
                                     }
                                 }
                             });
@@ -327,8 +348,7 @@ public class LoginActivity extends AppCompatActivity{
             }
         });
         Log.d("HTML", occ);
-        if(occ.equals("student")) webView.loadUrl("https://power.this.edu.cn/public/home.html");
-        else webView.loadUrl("https://power.this.edu.cn/teachers/pw.html");
+        webView.loadUrl(url_);
         Log.d("HTML", "initiated webview operations");
     }
 
@@ -342,6 +362,7 @@ public class LoginActivity extends AppCompatActivity{
         for(Integer day : days){
             String date = sdf.format(c.getTime());
             pairs.put(date, day);
+            //Log.d("CALENDAR", date.toString() + " " +day.toString());
             c.add(Calendar.DATE, 1);
         }
         Log.d("CALENDAR", "paired day cycle with calendar dates");
@@ -388,13 +409,16 @@ public class LoginActivity extends AppCompatActivity{
         for(int i = 1; i < cycleLen+1; i ++) {
             Subject[] day = schedule.get(i);
             for (Subject subject : day) {
-                if(subject != null)
+                if(subject != null) {
                     out.write(subject.name() + "?" + subject.teacher() + "?" + subject.room() + "?");
-                else {
+                    Log.d("SCHEDULE", subject.name() + "?" + subject.teacher() + "?" + subject.room() + "?");
+                }else {
                     SharedPreferences sp = getSharedPreferences("clubs", Context.MODE_PRIVATE);
                     final String occ = sp.getString("occupation", "student");
-                    if(occ=="student") out.write("Study Hall?-?-?");
+                    final String schl = sp.getString("school", "THIS");
+                    if(occ=="student"&&schl=="THIS") out.write("Study Hall?-?-?");
                     else out.write("--?-?-?");
+                    Log.d("SCHEDULE", "empty block");
                 }
             }
             out.write("\n");
@@ -404,7 +428,6 @@ public class LoginActivity extends AppCompatActivity{
     }
 
     public HashMap<Integer, Subject[]> fetchScheduleStudent(String html) throws IOException, InterruptedException {
-        String pageSource = html;
         HashMap<Integer, Subject[]> schedule = new HashMap<Integer, Subject[]>(0);
         Log.d("HTML", "parsing html source");
         Document doc = Jsoup.parse(html);
@@ -506,6 +529,112 @@ public class LoginActivity extends AppCompatActivity{
 
         }
         return schedule;
+    }
+
+    public HashMap<Integer, Subject[]> fetchScheduleISB(String html) {
+        Document doc = Jsoup.parse(html);
+
+        // get exp code of subject
+        Elements exp = doc.select("td:contains((A))");
+        exp.addAll(doc.select("td:contains((A-B))"));
+        exp.addAll(doc.select("td:contains((B))"));
+        ArrayList expList = new ArrayList<Integer>();
+        for (Element element : exp) {
+            int num = Integer.parseInt(element.text().substring(0, 1));
+            expList.add(num);
+        }
+
+        // get subject info
+        Elements classInfo = doc.select("[align='left']");
+        ArrayList<Subject> subList = new ArrayList<Subject>();
+
+        for (Element element : classInfo) {
+            String elname = between(element.text(), "", " Details");
+            String elteacher = between(element.text(), "about ", " Email");
+
+            String elroom;
+
+            if (element.text().substring((element.text().length() - 5)).equals("Admin")
+                    || element.text().substring((element.text().length() - 1)).equals("D")) {
+                elroom = element.text().substring((element.text().length() - 5));
+            } else {
+                elroom = element.text().substring((element.text().length() - 4));
+            }
+
+            Subject subject = new Subject(elname, elteacher, elroom);
+            subList.add(subject);
+        }
+
+        // stores list of subjects
+        HashMap<Integer, Subject> subjects = new HashMap<>();
+
+        for (int i = 0; i < expList.size(); i++) {
+
+            if (!subjects.containsKey(expList.get(i))) {
+                subjects.put((Integer) expList.get(i), subList.get(i));
+            } else {
+                String tempn = subjects.get(expList.get(i)).name;
+                String tempt = subjects.get(expList.get(i)).teacher;
+                String tempr = subjects.get(expList.get(i)).room;
+
+                subjects.put((Integer) expList.get(i),
+                        new Subject(tempn + " / " + subList.get(i).name,
+                                tempt + " / " + subList.get(i).teacher,
+                                tempr + " / " + subList.get(i).room));
+            }
+        }
+
+        // stores schedule rotation
+        HashMap<Integer, Subject[]> sch = new HashMap<>();
+
+        // 8-day schedule cycle
+        Subject[] even = new Subject[4];
+        Subject[] odd = new Subject[4];
+
+        for (int b = 0; b < 4; b++) {
+            even[b] = subjects.get(b + 1);
+            odd[b] = subjects.get(b + 5);
+        }
+
+        for (int i = 0; i < 8; i++) {
+            Subject[] subs = new Subject[5];
+
+            // 5 periods per day
+            if (i % 2 == 0) {
+                System.arraycopy(even, 0, subs, 0, 4);
+                even = cycle(even);
+            } else {
+                System.arraycopy(odd, 0, subs, 0, 4);
+                odd = cycle(odd);
+            }
+            subs[4] = subs[3];
+            subs[3] = subs[2];
+            subs[2] = subjects.get(9);
+
+            sch.put(i + 1, subs);
+        }
+
+        return sch;
+    }
+
+    // cycling through schedule cycle
+    private static Subject[] cycle(Subject[] arr) {
+        Subject temp;
+
+        for (int i = 0; i < arr.length - 1; i++) {
+            temp = arr[arr.length - 1 - i];
+            arr[arr.length - 1 - i] = arr[arr.length - 2 - i];
+            arr[arr.length - 2 - i] = temp;
+        }
+        return arr;
+    }
+
+    // for getting class info
+    private static String between(String text, String textFrom, String textTo) {
+        String result = "";
+        result = text.substring(text.indexOf(textFrom) + textFrom.length(), text.length());
+        result = result.substring(0, result.indexOf(textTo));
+        return result;
     }
 
     public List<AVObject> QSDateHelper(List<AVObject> arr){

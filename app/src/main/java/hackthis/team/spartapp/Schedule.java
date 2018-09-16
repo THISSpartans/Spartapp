@@ -413,8 +413,8 @@ public class Schedule extends RefreshableFragment {
         while((line = in.readLine())!=null){
             StringTokenizer tizer = new StringTokenizer(line, "?");
             //todo change period number according to school
-            Subject[] dailySchedule = new Subject[8];
-            for(int period = 0; period < 8; period ++){
+            Subject[] dailySchedule = new Subject[tizer.countTokens()/3];
+            for(int period = 0; period < dailySchedule.length; period ++){
                 String name = tizer.nextToken();
                 String teacher = tizer.nextToken();
                 String room = tizer.nextToken();
