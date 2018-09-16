@@ -186,8 +186,8 @@ public class Schedule extends RefreshableFragment {
         browsingTime = new CastratedDate();
 
 
-        date_params = new RadioGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        date_params.setMargins(15,0,15,0);
+        date_params = new RadioGroup.LayoutParams(120, 120);
+        date_params.setMargins(20,0,20,0);
 
         try {
             subjectTable = getSchedule();
