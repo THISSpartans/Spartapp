@@ -2,6 +2,7 @@ package hackthis.team.spartapp;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -41,7 +42,8 @@ import java.util.Map;
 
 public class ElectionPage extends Activity {
 
-    HashMap<Title, List<Person>> titles;
+    ArrayList<List<Person>> titles;
+    ArrayList<Title> keyList;
     List<RadioGroup> nominees;
     LinearLayout body;
     ImageView yes, no;
@@ -90,60 +92,82 @@ public class ElectionPage extends Activity {
 
     public void update(){
         nominees = new ArrayList<>(10);
-        titles = new HashMap<>(10);
+        titles = new ArrayList<>(10);
+        keyList = new ArrayList<>(10);
 
         // grade 0 means the title will not be filtered by grade
-        titles.put(new Title("President",0), Arrays.asList(
+        Title temp;
+        temp = new Title("President",0);
+        titles.add(Arrays.asList(
                 new Person("Charlie\nLiu",R.drawable.stuco_charlieliu),
                 new Person("Kimberly\nLiu",R.drawable.stuco_kimberlyliu),
                 new Person("Claudia\nSun",R.drawable.stuco_claudiasun),
                 new Person("Raymond\nZhang",R.drawable.stuco_raymondzhang)
         ));
-        titles.put(new Title("Vice President",0), Arrays.asList(
+        keyList.add(temp);
+        temp = new Title("Vice President",0);
+        titles.add(Arrays.asList(
                 new Person("Annelise\nGuo",R.drawable.stuco_anneliseguo),
                 new Person("Yifan\nRuan",R.drawable.stuco_yifanruan),
                 new Person("Keven\nZhou",R.drawable.stuco_kevenzhou)
         ));
-        titles.put(new Title("Secretary",0), Arrays.asList(
+        keyList.add(temp);
+        temp = new Title("Secretary",0);
+        titles.add(Arrays.asList(
                 new Person("Winnie\nXiao",R.drawable.stuco_winniexiao)
         ));
-        titles.put(new Title("Treasurer",0), Arrays.asList(
+        keyList.add(temp);
+        temp = new Title("Treasurer",0);
+        titles.add(Arrays.asList(
                 new Person("Joice\nChen",R.drawable.stuco_joicechen),
                 new Person("Thomas\nLi",R.drawable.stuco_thomasli),
                 new Person("Nicole\nZhang",R.drawable.stuco_nicolezhang)
         ));
-        titles.put(new Title("Activities Officer",0), Arrays.asList(
+        keyList.add(temp);
+        temp = new Title("Activities Officer",0);
+        titles.add(Arrays.asList(
                 new Person("Leni\nGao",R.drawable.stuco_lenigao),
                 new Person("Jack\nXu",R.drawable.stuco_jackxu),
                 new Person("Talia\nZhao",R.drawable.stuco_taliazhao)
         ));
-        titles.put(new Title("Publishing Officer",0), Arrays.asList(
+        keyList.add(temp);
+        temp = new Title("Publishing Officer",0);
+        titles.add(Arrays.asList(
                 new Person("Leon\nChang",R.drawable.stuco_leonchang)
         ));
-        titles.put(new Title("Grade 9 Rep",9), Arrays.asList(
+        keyList.add(temp);
+        temp = new Title("Grade 9 Rep",9);
+        titles.add(Arrays.asList(
                 new Person("Anna\nCui",R.drawable.stuco_annacui),
                 new Person("Harry\nZhang",R.drawable.stuco_harryzhang)
         ));
-        titles.put(new Title("Grade 10 Rep",10), Arrays.asList(
+        keyList.add(temp);
+        temp = new Title("Grade 10 Rep",10);
+        titles.add(Arrays.asList(
                 new Person("Stanley\nHu",R.drawable.stuco_stanleyhu),
                 new Person("Jeff\nNakanishi",R.drawable.stuco_jeffnakanishi)
         ));
-        titles.put(new Title("Grade 11 Rep",11), Arrays.asList(
+        keyList.add(temp);
+        temp = new Title("Grade 11 Rep",11);
+        titles.add(Arrays.asList(
                 new Person("Catherine\nTsai",R.drawable.stuco_catherinetsai),
                 new Person("Matthew\nTurner",R.drawable.group_icon)
         ));
-        titles.put(new Title("Grade 12 Rep",12), Arrays.asList(
+        keyList.add(temp);
+        temp = new Title("Grade 12 Rep",12);
+        titles.add(Arrays.asList(
                 new Person("Sherry\nTsui",R.drawable.stuco_sherrytsui),
                 new Person("Leo\nFu",R.drawable.group_icon)
         ));
+        keyList.add(temp);
 
         //body.addView(new ElectionItem(ElectionPage.this, R.drawable.yes, "becky").content);
 
-        SharedPreferences gradeReader = getSharedPreferences("clubs",MODE_PRIVATE);
-        for(Map.Entry<Title, List<Person>> i : titles.entrySet()) {
-            Title key = i.getKey();
-            List<Person> value = i.getValue();
-            Log.d("electionpage",key.name+value.toString());
+        SharedPreferences gradeReader = getSharedPreferences("clubs", Context.MODE_PRIVATE);
+        for(int i = 0; i < keyList.size(); i++) {
+            Title key = keyList.get(i);
+            List<Person> value = titles.get(i);
+            //Log.d("electionpage",key.name+value.toString());
             boolean shown = true;
             if(key.grade!=0 &&
                     key.grade != gradeReader.getInt("grade",0)){
@@ -157,7 +181,6 @@ public class ElectionPage extends Activity {
                 RadioGroup rg = (RadioGroup)root.findViewById(R.id.election_row_radio);
                 nominees.add(rg);
                 for(Person j : value){
-                    //todo inflate whatever
                     ElectionItem rb = new ElectionItem(ElectionPage.this, j.ImageID, j.name, rg);
                     rg.addView(rb.content);
                 }
@@ -217,6 +240,7 @@ public class ElectionPage extends Activity {
                 if(e==null){
                     Toast.makeText(act, "Votes confirmed",
                             Toast.LENGTH_SHORT).show();
+                    finish();
                 }
                 else{
                     Toast.makeText(act, "An error has occured while sending.\nDraft saved.",

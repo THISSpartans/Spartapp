@@ -13,7 +13,7 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "hackthis.spartapp"
-        minSdkVersion 23
+        minSdkVersion 19
         targetSdkVersion 27
         versionCode 12
         versionName "1.0"
@@ -41,7 +41,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'org.apache.commons:commons-lang3:3.6'
-    implementation 'com.android.support:support-v4:21.0.3'
+    implementation 'com.android.support:support-v4:27.1.1'
     // LeanCloud 基础包
     implementation 'cn.leancloud.android:avoscloud-sdk:v4.6.4'
     // 推送与即时通讯需要的包

@@ -192,6 +192,9 @@ public class Schedule extends RefreshableFragment {
 
         //todo make sure these are correct
 
+        regularPeriodBeginning = new HashMap<>(2);
+        wednesdayPeriodBeginning = new HashMap<>(2);
+
         regularPeriodBeginning.put("THIS", new int[] {815, 855, 950, 1035, 1115, 1300, 1355, 1435});
         wednesdayPeriodBeginning.put("THIS", new int[] {815, 835, 900, 920, 1045, 1150, 1300, 1320});
 
@@ -199,8 +202,12 @@ public class Schedule extends RefreshableFragment {
         wednesdayPeriodBeginning.put("ISB",new int[] {815, 945, 1110, 1305});
 
 
-        //date_params = new RadioGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        //date_params.setMargins(15,0,15,0);
+        SharedPreferences sp = getActivity().getSharedPreferences("clubs", Context.MODE_PRIVATE);
+        school = sp.getString("school", "");
+
+
+        date_params = new RadioGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        date_params.setMargins(20,0,20,0);
 
         try {
             subjectTable = getSchedule();
@@ -223,9 +230,9 @@ public class Schedule extends RefreshableFragment {
         super.onStart();
 
 
-        SharedPreferences sp = getActivity().getSharedPreferences("clubs", Context.MODE_PRIVATE);
+        //SharedPreferences sp = getActivity().getSharedPreferences("clubs", Context.MODE_PRIVATE);
 
-        school = sp.getString("school", "");
+        //school = sp.getString("school", "");
 
         refresh();
     }
@@ -266,7 +273,7 @@ public class Schedule extends RefreshableFragment {
             rb.setOnClickListener(DATE);
             rb.setText(Integer.toString(i+1));
             rb.setTag(i+1);
-            //rb.setLayoutParams(date_params);
+            rb.setLayoutParams(date_params);
             rg.addView(rb, i);
         }
 
@@ -329,7 +336,7 @@ public class Schedule extends RefreshableFragment {
                 rb.setOnClickListener(DATE);
                 rb.setText(Integer.toString(i+1));
                 rb.setTag(Integer.valueOf(i+1));
-                //rb.setLayoutParams(date_params);
+                rb.setLayoutParams(date_params);
                 rg.addView(rb, i);
             }
         }
