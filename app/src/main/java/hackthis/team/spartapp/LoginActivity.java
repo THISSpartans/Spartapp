@@ -335,8 +335,11 @@ public class LoginActivity extends AppCompatActivity{
                                         writeDateDayPairs(dateDay);
                                         writeWeeklySchedule(weeklySchedule);
                                         SharedPreferences prefs = getApplicationContext().getSharedPreferences("verified", Context.MODE_PRIVATE);
-                                        prefs.edit().putString("account", account).apply();
-                                        prefs.edit().putString("password", password).apply();
+                                        SharedPreferences.Editor editor = prefs.edit();
+                                        editor.putString("account", account);
+                                        editor.putString("password", password);
+                                        //must use commit instead of apply here
+                                        editor.commit();
                                         triggerRebirth(getApplicationContext());
                                     }
                                     catch(Exception e){

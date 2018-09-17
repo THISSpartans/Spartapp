@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.util.DisplayMetrics;
@@ -186,7 +187,7 @@ public class Schedule extends RefreshableFragment {
         browsingTime = new CastratedDate();
 
 
-        date_params = new RadioGroup.LayoutParams(120, 120);
+        date_params = new RadioGroup.LayoutParams(105, 105);
         date_params.setMargins(20,0,20,0);
 
         try {
@@ -247,6 +248,7 @@ public class Schedule extends RefreshableFragment {
             rb.setOnClickListener(DATE);
             rb.setText(Integer.toString(i+1));
             rb.setTag(Integer.valueOf(i+1));
+            rb.setTypeface(null, Typeface.BOLD);
             rb.setLayoutParams(date_params);
             rg.addView(rb, i);
         }

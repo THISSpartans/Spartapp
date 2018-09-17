@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -22,9 +23,15 @@ import android.widget.Toast;
 
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVFile;
+import com.avos.avoscloud.AVInstallation;
 import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVPush;
 import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.FindCallback;
+import com.avos.avoscloud.SaveCallback;
+import com.avos.avoscloud.SendCallback;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,9 +61,9 @@ public class ElectionPage extends Activity {
         String school = prefs.getString("school", "THIS");
         String occ = prefs.getString("occupation", "student");
         String id = ver.getString("account", "none");
-        if(!school.equals("THIS")){ handleError("only THIS students can vote"); return; }
-        else if(!occ.equals("student")) { handleError("only students can vote"); return; }
-        else if(id.equals("none")) { handleError("you must log in to vote"); return; }
+        if(!school.equals("THIS")){ handleError("Only THIS students can vote"); return; }
+        else if(!occ.equals("student")) { handleError("Only students can vote"); return; }
+        else if(id.equals("none")) { handleError("You must log in to vote"); return; }
         //it not a student -> handleError("only Students can vote")
         //if already voted -> handleError("you can only vote once")
 
@@ -86,18 +93,48 @@ public class ElectionPage extends Activity {
         titles = new HashMap<>(10);
 
         // grade 0 means the title will not be filtered by grade
-        titles.put(new Title("bird",0), Arrays.asList(
-                new Person("becky\nbeckyson",R.drawable.yes),
-                new Person("ron\nronson",R.drawable.no),
-                new Person("ben\nbenson",R.drawable.group_icon)
+        titles.put(new Title("President",0), Arrays.asList(
+                new Person("Charlie\nLiu",R.drawable.stuco_charlieliu),
+                new Person("Kimberly\nLiu",R.drawable.stuco_kimberlyliu),
+                new Person("Claudia\nSun",R.drawable.stuco_claudiasun),
+                new Person("Raymond\nZhang",R.drawable.stuco_raymondzhang)
         ));
-
-        titles.put(new Title("heavier",0), Arrays.asList(
-                new Person("feathers\nbeckyson",R.drawable.yes),
-                new Person("steel\nronson",R.drawable.no),
-                new Person("yo mama\nbenson",R.drawable.group_icon),
-                new Person("thing\nronson",R.drawable.no),
-                new Person("thing2\nronson",R.drawable.no)
+        titles.put(new Title("Vice President",0), Arrays.asList(
+                new Person("Annelise\nGuo",R.drawable.stuco_anneliseguo),
+                new Person("Yifan\nRuan",R.drawable.stuco_yifanruan),
+                new Person("Keven\nZhou",R.drawable.stuco_kevenzhou)
+        ));
+        titles.put(new Title("Secretary",0), Arrays.asList(
+                new Person("Winnie\nXiao",R.drawable.stuco_winniexiao)
+        ));
+        titles.put(new Title("Treasurer",0), Arrays.asList(
+                new Person("Joice\nChen",R.drawable.stuco_joicechen),
+                new Person("Thomas\nLi",R.drawable.stuco_thomasli),
+                new Person("Nicole\nZhang",R.drawable.stuco_nicolezhang)
+        ));
+        titles.put(new Title("Activities Officer",0), Arrays.asList(
+                new Person("Leni\nGao",R.drawable.stuco_lenigao),
+                new Person("Jack\nXu",R.drawable.stuco_jackxu),
+                new Person("Talia\nZhao",R.drawable.stuco_taliazhao)
+        ));
+        titles.put(new Title("Publishing Officer",0), Arrays.asList(
+                new Person("Leon\nChang",R.drawable.stuco_leonchang)
+        ));
+        titles.put(new Title("Grade 9 Rep",9), Arrays.asList(
+                new Person("Anna\nCui",R.drawable.stuco_annacui),
+                new Person("Harry\nZhang",R.drawable.stuco_harryzhang)
+        ));
+        titles.put(new Title("Grade 10 Rep",10), Arrays.asList(
+                new Person("Stanley\nHu",R.drawable.stuco_stanleyhu),
+                new Person("Jeff\nNakanishi",R.drawable.stuco_jeffnakanishi)
+        ));
+        titles.put(new Title("Grade 11 Rep",11), Arrays.asList(
+                new Person("Catherine\nTsai",R.drawable.stuco_catherinetsai),
+                new Person("Matthew\nTurner",R.drawable.group_icon)
+        ));
+        titles.put(new Title("Grade 12 Rep",12), Arrays.asList(
+                new Person("Sherry\nTsui",R.drawable.stuco_sherrytsui),
+                new Person("Leo\nFu",R.drawable.group_icon)
         ));
 
         //body.addView(new ElectionItem(ElectionPage.this, R.drawable.yes, "becky").content);
@@ -139,12 +176,13 @@ public class ElectionPage extends Activity {
             for(int j = 0; j < nominees.get(i).getChildCount(); j++){
                 if(((ElectionItem)nominees.get(i).getChildAt(j).getTag()).isChecked()){
                     nameList.append(((ElectionItem) nominees.get(i).getChildAt(j).getTag()).name
-                            .replace('\n',' ')+"\n");
+                            .replace('\n',' '));
                     ppl.add(((ElectionItem) nominees.get(i).getChildAt(j).getTag()).name
                             .replace('\n',' '));
                     break;
                 }
             }
+            nameList.append("\n");
         }
         AlertDialog print = new AlertDialog.Builder(ElectionPage.this)
                 .setPositiveButton("yes", new DialogInterface.OnClickListener() {
@@ -155,7 +193,7 @@ public class ElectionPage extends Activity {
             public void onClick(DialogInterface dialog, int id) {
 
             }})
-                .setMessage("WARNING: You can only vote once!\n" + nameList)
+                .setMessage("WARNING: This will overwrite your previous votes!\n" + nameList)
                 .setCancelable(true)
                 .setTitle("Confirmation")
                 .create();
@@ -168,13 +206,38 @@ public class ElectionPage extends Activity {
                 Toast.LENGTH_SHORT).show();
         SharedPreferences ver = this.getSharedPreferences("verified", this.MODE_PRIVATE);
         String id = ver.getString("account", "none");
+
+        final Activity act = this;
+        AVObject message = new AVObject("StucoVotes2018");
+        message.put("studentID", id);
+        message.put("votedCandidates", people);
+        message.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(AVException e) {
+                if(e==null){
+                    Toast.makeText(act, "Votes confirmed",
+                            Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(act, "An error has occured while sending.\nDraft saved.",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
     }
 
     public void handleError(String err){
         setContentView(R.layout.activity_election_page_after);
         TextView message = findViewById(R.id.election_page_error_message);
         message.setText(err);
-        finish();
+        Button ret = findViewById(R.id.returnbtn);
+        ret.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     public static class Title{
