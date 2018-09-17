@@ -146,8 +146,8 @@ public class ClassPeriod {
         }
 
         if(!found){
-            colorID = pd.get(0).colorID;
-            backgroundID = pd.get(0).imageID;
+            colorID = pd.get(pd.size()-1).colorID;
+            backgroundID = pd.get(pd.size()-1).imageID;
         }
     }
 

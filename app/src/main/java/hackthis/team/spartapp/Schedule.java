@@ -303,7 +303,8 @@ public class Schedule extends RefreshableFragment {
     private CastratedDate getFocusedDate(){
 
         int endTime = (browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY) ?
-                wednesdayPeriodBeginning.get(school)[7] : regularPeriodBeginning.get(school)[7];
+                wednesdayPeriodBeginning.get(school)[wednesdayPeriodBeginning.get(school).length-1]
+                : regularPeriodBeginning.get(school)[regularPeriodBeginning.get(school).length-1];
         CastratedDate temp = new CastratedDate();
         if(CastratedDate.getHourMinute() > endTime){
             temp.change(Calendar.DATE, 1);
