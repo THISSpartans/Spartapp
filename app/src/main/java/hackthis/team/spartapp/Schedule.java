@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.util.DisplayMetrics;
@@ -92,11 +92,12 @@ public class Schedule extends RefreshableFragment {
         }
     };
 
+    String school;
+
     RadioGroup.LayoutParams date_params;
 
-    //todo i forgot the actual time, change before release!
-    final int[] regularPeriodBeginning = {805, 845, 955, 1035, 1115, 1305, 1355, 1435};
-    final int[] wednesdayPeriodBeginning = {805, 845, 955, 1035, 1115, 1305, 1355, 1435};
+    HashMap<String, int[]> regularPeriodBeginning;
+    HashMap<String, int[]> wednesdayPeriodBeginning;
 
     //the last length of the date radio group before its update, used in updateTitleBar()
     int last_date_length;
@@ -104,8 +105,6 @@ public class Schedule extends RefreshableFragment {
     //find schedule for browsingTime and display on screen, called when fragment is initialized and when date picker gets clicked
     public void load(){
         Log.d("spartapp_log",browsingTime.date+" "+browsingTime.month_name());
-
-        //todo replace this with actual period reader
 
         Log.d("sche_time",browsingTime.toString());
 
@@ -120,45 +119,53 @@ public class Schedule extends RefreshableFragment {
         //Log.d("SCHEDULE", subjectTable.get("2018-09-13")[0].name());
 
         if(subs != null) {
-            for (int i = 1; i < 8; i++){
-                if(subs[i-1]!=null && subs[i]!= null && subs[i].equals(subs[i-1]))
-                    subs[i] = null;
-            }
-            for (int i = 0; i < 8; i++) {
-                if (subs[i] != null) {
-                    List<ClassPeriod> periods = new ArrayList<>(8);
-                    for (int j = 0; j < 8; j++) {
-                        if (subs[j] != null)
-                            periods.add(new ClassPeriod(subs[j], j));
+                if(school.equals("THIS")) {
+                    //for THIS
+                    for (int i = 1; i < subs.length; i+=2) {
+                        if (subs[i] != null && subs[i-1]!=null && subs[i].equals(subs[i-1]))
+                            subs[i] = null;
                     }
-                    Log.d("spartapp_schedule", CastratedDate.getHourMinute() + " b:" + browsingTime + " f:" + focusTime + " r:" + new CastratedDate().toString());
-                    if (browsingTime.equals(focusTime)) {
-                        //for today
-                        if (focusTime.equals(new CastratedDate())) {
-                            int[] beginning = (new CastratedDate()).get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY ? wednesdayPeriodBeginning : regularPeriodBeginning;
-                            int temp = CastratedDate.getHourMinute();
-                            for (ClassPeriod c : periods) {
-                                if (beginning[c.period] > temp) {
-                                    c.focus = true;
-                                    break;
-                                }
-                            }
-                        } else {
-                            //set focus to first period of next school day
-                            periods.get(0).focus = true;
+                }
+                else{
+                    //todo any modifications for isb?
+                }
+                for (Subject i : subs) {
+                    if (i != null) {
+                        List<ClassPeriod> periods = new ArrayList<>(8);
+                        for (int j = 0; j < subs.length; j++) {
+                            if (subs[j] != null)
+                                periods.add(new ClassPeriod(subs[j], j));
                         }
+                        Log.d("spartapp_schedule", CastratedDate.getHourMinute() + " b:" + browsingTime + " f:" + focusTime + " r:" + new CastratedDate().toString());
+                        if (browsingTime.equals(focusTime)) {
+                            //for today
+                            if (focusTime.equals(new CastratedDate())) {
+                                int[] beginning = (new CastratedDate()).get(Calendar.DAY_OF_WEEK) ==
+                                        Calendar.WEDNESDAY ? wednesdayPeriodBeginning.get(school) :
+                                        regularPeriodBeginning.get(school);
+                                int temp = CastratedDate.getHourMinute();
+                                for (ClassPeriod c : periods) {
+                                    if (beginning[c.period] > temp) {
+                                        c.focus = true;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                //set focus to first period of next school day
+                                periods.get(0).focus = true;
+                            }
+                        }
+
+                        //convert periods into listview items
+                        adapter = new PeriodAdapter(mActivity, R.layout.period_small, periods);
+                        ListView lv = (ListView) getView().findViewById(R.id.schedule_list);
+                        listBackground.setImageDrawable(null);
+                        lv.setAdapter(adapter);
+
+                        break;
                     }
-
-                    //convert periods into listview items
-                    adapter = new PeriodAdapter(mActivity, R.layout.period_small, periods);
-                    ListView lv = (ListView) getView().findViewById(R.id.schedule_list);
-                    listBackground.setImageDrawable(null);
-                    lv.setAdapter(adapter);
-
-                    return;
                 }
             }
-        }
         else{
             ListView lv = (ListView) getView().findViewById(R.id.schedule_list);
             ArrayList<ClassPeriod> empty = new ArrayList<>(0);
@@ -173,9 +180,6 @@ public class Schedule extends RefreshableFragment {
             }
             lv.setAdapter(adapter);
         }
-
-        //this part is reached when all subjects for browsingTime is null
-        //print screen for empty day
     }
 
 
@@ -186,9 +190,17 @@ public class Schedule extends RefreshableFragment {
 
         browsingTime = new CastratedDate();
 
+        //todo make sure these are correct
 
-        date_params = new RadioGroup.LayoutParams(105, 105);
-        date_params.setMargins(20,0,20,0);
+        regularPeriodBeginning.put("THIS", new int[] {815, 855, 950, 1035, 1115, 1300, 1355, 1435});
+        wednesdayPeriodBeginning.put("THIS", new int[] {815, 835, 900, 920, 1045, 1150, 1300, 1320});
+
+        regularPeriodBeginning.put("ISB", new int[] {815, 950, 1155, 1225, 1400});
+        wednesdayPeriodBeginning.put("ISB",new int[] {815, 945, 1110, 1305});
+
+
+        //date_params = new RadioGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        //date_params.setMargins(15,0,15,0);
 
         try {
             subjectTable = getSchedule();
@@ -209,6 +221,12 @@ public class Schedule extends RefreshableFragment {
     @Override
     public void onStart() {
         super.onStart();
+
+
+        SharedPreferences sp = getActivity().getSharedPreferences("clubs", Context.MODE_PRIVATE);
+
+        school = sp.getString("school", "");
+
         refresh();
     }
 
@@ -247,9 +265,8 @@ public class Schedule extends RefreshableFragment {
             RadioButton rb = (RadioButton) mActivity.getLayoutInflater().inflate(R.layout.date_button, null);
             rb.setOnClickListener(DATE);
             rb.setText(Integer.toString(i+1));
-            rb.setTag(Integer.valueOf(i+1));
-            rb.setTypeface(null, Typeface.BOLD);
-            rb.setLayoutParams(date_params);
+            rb.setTag(i+1);
+            //rb.setLayoutParams(date_params);
             rg.addView(rb, i);
         }
 
@@ -279,7 +296,7 @@ public class Schedule extends RefreshableFragment {
     private CastratedDate getFocusedDate(){
 
         int endTime = (browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY) ?
-                wednesdayPeriodBeginning[7] : regularPeriodBeginning[7];
+                wednesdayPeriodBeginning.get(school)[7] : regularPeriodBeginning.get(school)[7];
         CastratedDate temp = new CastratedDate();
         if(CastratedDate.getHourMinute() > endTime){
             temp.change(Calendar.DATE, 1);
@@ -308,11 +325,11 @@ public class Schedule extends RefreshableFragment {
 
         if(browsingTime.month_length() > last_date_length){
             for(int i = last_date_length; i < browsingTime.month_length(); i++){
-                RadioButton rb = (RadioButton) mActivity.getLayoutInflater().inflate(R.layout.date_button, null);
+                RadioButton rb = (RadioButton) mActivity.getLayoutInflater().inflate(R.layout.date_button, rg, false);
                 rb.setOnClickListener(DATE);
                 rb.setText(Integer.toString(i+1));
                 rb.setTag(Integer.valueOf(i+1));
-                rb.setLayoutParams(date_params);
+                //rb.setLayoutParams(date_params);
                 rg.addView(rb, i);
             }
         }
@@ -336,8 +353,7 @@ public class Schedule extends RefreshableFragment {
     }
 
     public void update(){
-        //todo update the times and refresh UI if needed
-        focusTime = getFocusedDate();
+        refresh();
     }
 
     /**
