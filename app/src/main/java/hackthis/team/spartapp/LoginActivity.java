@@ -537,7 +537,7 @@ public class LoginActivity extends AppCompatActivity{
         return schedule;
     }
 
-    public HashMap<Integer, Subject[]> fetchScheduleISB(String html) {
+    public HashMap<Integer, Subject[]> fetchScheduleISB(String html) throws Exception{
         Document doc = Jsoup.parse(html);
 
         // get exp code of subject
@@ -549,6 +549,7 @@ public class LoginActivity extends AppCompatActivity{
             int num = Integer.parseInt(element.text().substring(0, 1));
             expList.add(num);
         }
+        if(expList.size()==0) throw new Exception();
 
         // get subject info
         Elements classInfo = doc.select("[align='left']");
