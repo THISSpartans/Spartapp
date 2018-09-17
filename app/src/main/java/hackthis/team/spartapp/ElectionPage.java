@@ -49,6 +49,14 @@ public class ElectionPage extends Activity {
 
         //todo fill these
         //if not from THIS -> handleError("only THIS students can vote")
+        SharedPreferences prefs = this.getSharedPreferences("clubs", this.MODE_PRIVATE);
+        SharedPreferences ver = this.getSharedPreferences("verified", this.MODE_PRIVATE);
+        String school = prefs.getString("school", "THIS");
+        String occ = prefs.getString("occupation", "student");
+        String id = ver.getString("account", "none");
+        if(!school.equals("THIS")){ handleError("only THIS students can vote"); return; }
+        else if(!occ.equals("student")) { handleError("only students can vote"); return; }
+        else if(id.equals("none")) { handleError("you must log in to vote"); return; }
         //it not a student -> handleError("only Students can vote")
         //if already voted -> handleError("you can only vote once")
 
@@ -78,7 +86,7 @@ public class ElectionPage extends Activity {
         titles = new HashMap<>(10);
 
         // grade 0 means the title will not be filtered by grade
-        /*titles.put(new Title("bird",0), Arrays.asList(
+        titles.put(new Title("bird",0), Arrays.asList(
                 new Person("becky\nbeckyson",R.drawable.yes),
                 new Person("ron\nronson",R.drawable.no),
                 new Person("ben\nbenson",R.drawable.group_icon)
@@ -90,7 +98,7 @@ public class ElectionPage extends Activity {
                 new Person("yo mama\nbenson",R.drawable.group_icon),
                 new Person("thing\nronson",R.drawable.no),
                 new Person("thing2\nronson",R.drawable.no)
-        ));*/
+        ));
 
         //body.addView(new ElectionItem(ElectionPage.this, R.drawable.yes, "becky").content);
 
@@ -158,12 +166,15 @@ public class ElectionPage extends Activity {
         //todo somehow put the selected list online
         Toast.makeText(ElectionPage.this,"Election hasn't started",
                 Toast.LENGTH_SHORT).show();
+        SharedPreferences ver = this.getSharedPreferences("verified", this.MODE_PRIVATE);
+        String id = ver.getString("account", "none");
     }
 
     public void handleError(String err){
         setContentView(R.layout.activity_election_page_after);
         TextView message = findViewById(R.id.election_page_error_message);
         message.setText(err);
+        finish();
     }
 
     public static class Title{

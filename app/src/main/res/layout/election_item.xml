@@ -18,9 +18,9 @@
         android:id="@+id/election_item_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/election_item_profile"
-        android:textSize="20sp"
-        android:text="jiba"
         android:layout_alignParentBottom="true"
-        android:textColor="@color/black"/>
+        android:layout_toEndOf="@id/election_item_profile"
+        android:text="boi"
+        android:textColor="@color/black"
+        android:textSize="20sp" />
 </RelativeLayout>

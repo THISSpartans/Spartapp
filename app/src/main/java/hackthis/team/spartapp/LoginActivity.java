@@ -334,6 +334,9 @@ public class LoginActivity extends AppCompatActivity{
                                                         :fetchScheduleTeacher(html);
                                         writeDateDayPairs(dateDay);
                                         writeWeeklySchedule(weeklySchedule);
+                                        SharedPreferences prefs = getApplicationContext().getSharedPreferences("verified", Context.MODE_PRIVATE);
+                                        prefs.edit().putString("account", account).apply();
+                                        prefs.edit().putString("password", password).apply();
                                         triggerRebirth(getApplicationContext());
                                     }
                                     catch(Exception e){
