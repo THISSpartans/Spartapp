@@ -112,8 +112,8 @@ public class ClassPeriod {
         pd.add(new periodData(R.drawable.course_business,R.color.chemistry,Arrays.asList(
                 "business","entrepreneurship","investment","stockmarket","finance","enterprise"
         )));
-        pd.add(new periodData(R.drawable.course_korean,R.color.highschoolenrichment,Arrays.asList("korean")));
-        pd.add(new periodData(R.drawable.course_korean,R.color.highschoolenrichment,Arrays.asList("japanese")));
+        pd.add(new periodData(R.drawable.course_korean,R.color.sport,Arrays.asList("korean")));
+        pd.add(new periodData(R.drawable.course_japanese,R.color.highschoolenrichment,Arrays.asList("japanese")));
         pd.add(new periodData(R.drawable.course_latin,R.color.grey,Arrays.asList("latin")));
         pd.add(new periodData(R.drawable.course_arabic,R.color.fitness,Arrays.asList("arabic")));
         pd.add(new periodData(R.drawable.course_psychology,R.color.biology,Arrays.asList(
