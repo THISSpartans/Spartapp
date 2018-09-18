@@ -126,8 +126,10 @@ public class Schedule extends RefreshableFragment {
                             subs[i] = null;
                     }
                 }
-                else{
+                else if (school.equals("ISB")){
                     //todo any modifications for isb?
+                    if(browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY)
+                        subs[2] = null;
                 }
                 for (Subject i : subs) {
                     if (i != null) {
