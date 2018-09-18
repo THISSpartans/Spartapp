@@ -441,7 +441,7 @@ public class LoginActivity extends AppCompatActivity{
         Elements rows = table.select("tr");
         for(int dayNum = 1; dayNum <= cycleLen; dayNum++)
             schedule.put(new Integer(dayNum), new Subject[8]);
-        for(int j=3; j<rows.size()-1; j++) {
+        for(int j=2; j<rows.size()-1; j++) {
             Element row = rows.get(j);
             Elements col = row.select("td");
             String periodInfo = col.get(0).text();
