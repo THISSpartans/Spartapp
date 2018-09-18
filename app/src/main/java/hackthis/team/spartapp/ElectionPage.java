@@ -34,8 +34,11 @@ import com.avos.avoscloud.SendCallback;
 
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -225,8 +228,15 @@ public class ElectionPage extends Activity {
 
     public void vote(ArrayList<String> people){
         //todo somehow put the selected list online
-        Toast.makeText(ElectionPage.this,"Election hasn't started",
-                Toast.LENGTH_SHORT).show();
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            if (!c.after(sdf.parse("2018-09-20"))) {
+                Toast.makeText(ElectionPage.this, "Election hasn't started",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }catch(ParseException e){}
         SharedPreferences ver = this.getSharedPreferences("verified", this.MODE_PRIVATE);
         String id = ver.getString("account", "none");
 
