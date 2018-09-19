@@ -346,7 +346,7 @@ public class LoginActivity extends AppCompatActivity{
                                         //pun intended
                                         Log.d("HTML", "escape failed");
                                         //triggerRebirth(getApplicationContext());
-                                       // webView.loadUrl(url_);
+                                        webView.loadUrl(url_);
                                     }
                                 }
                             });
@@ -441,7 +441,7 @@ public class LoginActivity extends AppCompatActivity{
         Elements rows = table.select("tr");
         for(int dayNum = 1; dayNum <= cycleLen; dayNum++)
             schedule.put(new Integer(dayNum), new Subject[8]);
-        for(int j=3; j<rows.size()-1; j++) {
+        for(int j=2; j<rows.size()-1; j++) {
             Log.d("HTML", "parsing row");
             Element row = rows.get(j);
             Elements col = row.select("td");
@@ -524,15 +524,21 @@ public class LoginActivity extends AppCompatActivity{
                     try {
                         pN = Integer.parseInt(periodInfo.substring(0, 1));
                         pC = periodInfo.substring(1, 2).equals("A") ? 0 : 1;
-                        pNe = Integer.parseInt(periodInfo.substring(3, 4));
-                        pCe = periodInfo.substring(4, 5).equals("A") ? 0 : 1;
+                        if(periodInfo.indexOf("(")>2) {
+                            pNe = Integer.parseInt(periodInfo.substring(3, 4));
+                            pCe = periodInfo.substring(4, 5).equals("A") ? 0 : 1;
+                        }else{
+                            pNe = 0;
+                            pCe = 0;
+                        }
                     }
                     catch(NumberFormatException e) {
                         break;
                     }
 
                     schedule.get(new Integer(dayNum))[(pN-1)*2 + pC] = period;
-                    schedule.get(new Integer(dayNum))[(pNe-1)*2 + pCe] = period;
+                    if(periodInfo.indexOf("(")>2)
+                        schedule.get(new Integer(dayNum))[(pNe-1)*2 + pCe] = period;
                 }
 
                 int endInx = periodInfo.indexOf(")");
