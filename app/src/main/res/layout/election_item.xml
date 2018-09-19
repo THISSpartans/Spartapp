@@ -13,6 +13,7 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:padding="3dp"
+        android:layout_centerVertical="true"
         android:src="@drawable/group_icon" />
 
     <TextView
@@ -21,7 +22,6 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toEndOf="@+id/election_item_profile"
-        android:text="boi"
         android:textColor="@color/black"
         android:textSize="20sp" />
 </RelativeLayout>

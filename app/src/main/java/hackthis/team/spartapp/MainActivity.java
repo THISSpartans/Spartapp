@@ -101,7 +101,7 @@ public class MainActivity extends Activity {
             }
             else{
                 sp.edit().putString("occupation","teacher").apply();
-                Log.d("HTML", "rest");
+                LogUtil.d("HTML", "rest");
             }
             sp = getSharedPreferences("app", Context.MODE_PRIVATE);
             sp.edit().putBoolean("first_launch",false).apply();
@@ -117,7 +117,7 @@ public class MainActivity extends Activity {
         sp = getSharedPreferences("app", Context.MODE_PRIVATE);
         boolean first = sp.getBoolean("first_launch",true);
 
-        Log.d("thing",Boolean.toString(first));
+        LogUtil.d("thing",Boolean.toString(first));
 
         if(first){
             setContentView(R.layout.walkthrough);
@@ -155,7 +155,7 @@ public class MainActivity extends Activity {
                 .detectLeakedSqlLiteObjects().detectLeakedClosableObjects()
                 .penaltyLog().penaltyDeath().build());
 
-        Log.d("VER","test");
+        LogUtil.d("VER","test");
         AVQuery versionQuery = new AVQuery("AndroidVersionInfo");
         versionQuery.getInBackground("5adf2f749f545433342866ec", new GetCallback() {
                 @Override
@@ -168,22 +168,22 @@ public class MainActivity extends Activity {
                         try {
                             PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
                             int localVersionCode = pInfo.versionCode;
-                            Log.d("VER", "local version code is " + localVersionCode);
+                            LogUtil.d("VER", "local version code is " + localVersionCode);
 
                             if (localVersionCode < versionCode) {
                                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(MainActivity.this);
                                 alertBuilder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
+                                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/spartapp_android.apk"));
                                         startActivity(browserIntent);
                                     }
                                 }).setNegativeButton("no", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
 
                                     }
-                                }).setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
+                                }).setMessage("A new version (" + versionName + ") is available. Do you want to download it?")
                                         .setCancelable(true);
-                                Log.d("VER", "connected and obtained version " + versionName + " with code " + versionCode);
+                                LogUtil.d("VER", "connected and obtained version " + versionName + " with code " + versionCode);
                                 AlertDialog dialog = alertBuilder.create();
                                 dialog.show();
                             }
@@ -222,7 +222,7 @@ public class MainActivity extends Activity {
             navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         }
         else {
-            Log.d("ERR", "IOE");
+            LogUtil.d("ERR", "IOE");
             //todo if false, do follows
             Intent login = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(login);
@@ -246,11 +246,11 @@ public class MainActivity extends Activity {
     }
 
     public HashMap<Integer, Subject[]> readWeeklySchedule() throws Exception{
-        Log.d("HTML_IN", "called");
+        LogUtil.d("HTML_IN", "called");
         FileInputStream f = this.openFileInput("week_schedule.dat");
-        Log.d("HTML_IN", "found");
+        LogUtil.d("HTML_IN", "found");
         BufferedReader in = new BufferedReader(new InputStreamReader(f));
-        Log.d("HTML_IN", "buffer on");
+        LogUtil.d("HTML_IN", "buffer on");
         HashMap<Integer, Subject[]> schedule = new HashMap<>(0);
         String line;
         int dayInCycle = 1;
@@ -262,14 +262,14 @@ public class MainActivity extends Activity {
                 String teacher = tizer.nextToken();
                 String room = tizer.nextToken();
                 Subject subject = new Subject(name, teacher, room);
-                Log.d("HTML_IN",subject.name() + "," + subject.teacher() + "," + subject.room() + ",");
+                LogUtil.d("HTML_IN",subject.name() + "," + subject.teacher() + "," + subject.room() + ",");
                 daySchedule[period] = subject;
             }
             schedule.put(dayInCycle, daySchedule);
             dayInCycle ++;
         }
         in.close();
-        Log.d("HTML_IN", "done reading schedule");
+        LogUtil.d("HTML_IN", "done reading schedule");
         return schedule;
     }
 

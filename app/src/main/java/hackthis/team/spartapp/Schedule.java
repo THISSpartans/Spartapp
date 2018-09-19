@@ -104,19 +104,19 @@ public class Schedule extends RefreshableFragment {
 
     //find schedule for browsingTime and display on screen, called when fragment is initialized and when date picker gets clicked
     public void load(){
-        Log.d("spartapp_log",browsingTime.date+" "+browsingTime.month_name());
+        LogUtil.d("spartapp_log",browsingTime.date+" "+browsingTime.month_name());
 
-        Log.d("sche_time",browsingTime.toString());
+        LogUtil.d("sche_time",browsingTime.toString());
 
         int month = browsingTime.month + 1;
         int yr =  browsingTime.year;
         int day = browsingTime.date;
         String m = month<10?"0"+Integer.toString(month):Integer.toString(month);
         String d = day<10?"0"+Integer.toString(day):Integer.toString(day);
-        Log.d("TIME", Integer.toString(yr)+"-"+m+"-"+d);
+        LogUtil.d("TIME", Integer.toString(yr)+"-"+m+"-"+d);
         Subject[] subs = subjectTable.get(Integer.toString(yr)+"-"+m+"-"+d);
 
-        //Log.d("SCHEDULE", subjectTable.get("2018-09-13")[0].name());
+        //LogUtil.d("SCHEDULE", subjectTable.get("2018-09-13")[0].name());
 
         if(subs != null) {
                 if(school.equals("THIS")) {
@@ -138,7 +138,7 @@ public class Schedule extends RefreshableFragment {
                             if (subs[j] != null)
                                 periods.add(new ClassPeriod(subs[j], j));
                         }
-                        Log.d("spartapp_schedule", CastratedDate.getHourMinute() + " b:" + browsingTime + " f:" + focusTime + " r:" + new CastratedDate().toString());
+                        LogUtil.d("spartapp_schedule", CastratedDate.getHourMinute() + " b:" + browsingTime + " f:" + focusTime + " r:" + new CastratedDate().toString());
                         if (browsingTime.equals(focusTime)) {
                             //for today
                             if (focusTime.equals(new CastratedDate())) {
@@ -172,7 +172,7 @@ public class Schedule extends RefreshableFragment {
             ListView lv = (ListView) getView().findViewById(R.id.schedule_list);
             ArrayList<ClassPeriod> empty = new ArrayList<>(0);
             adapter = new PeriodAdapter(mActivity, R.layout.period_small, empty);
-            Log.d("SCHE",Integer.toString(browsingTime.get(Calendar.DAY_OF_WEEK)));
+            LogUtil.d("SCHE",Integer.toString(browsingTime.get(Calendar.DAY_OF_WEEK)));
             if(browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
                     || browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
                 listBackground.setImageResource(R.drawable.weekend);
@@ -187,7 +187,7 @@ public class Schedule extends RefreshableFragment {
 
     public void onAttach(Context context) {
         super.onAttach(context);
-        Log.d("SCHE", "onattach");
+        LogUtil.d("SCHE", "onattach");
         mActivity = (Activity) context;
 
         browsingTime = new CastratedDate();
@@ -213,14 +213,14 @@ public class Schedule extends RefreshableFragment {
 
         try {
             subjectTable = getSchedule();
-            Log.d("SCHE", "got");
+            LogUtil.d("SCHE", "got");
         }
         catch(Exception e){
-            Log.d("ERR", "getSchedule failed");
+            LogUtil.d("ERR", "getSchedule failed");
         }
 
         focusTime = getFocusedDate();
-        Log.d("focustime",focusTime.toString());
+        LogUtil.d("focustime",focusTime.toString());
 
     }
 
@@ -246,7 +246,7 @@ public class Schedule extends RefreshableFragment {
 
         browsingTime = new CastratedDate();
 
-        Log.d("sche_onstart","onstart called "+browsingTime.toString());
+        LogUtil.d("sche_onstart","onstart called "+browsingTime.toString());
 
         updateTitleBar();
 
@@ -298,8 +298,8 @@ public class Schedule extends RefreshableFragment {
         date_scroll.smoothScrollTo(rg.getChildAt(browsingTime.date-1).getLeft()
                 + rg.getChildAt(browsingTime.date-1).getMeasuredWidth()/2
                 - date_scroll.getMeasuredWidth()/2, 0);
-        Log.d("SCROLL", "autoscrolled");
-        Log.d("SCROLL", browsingTime.toString());
+        LogUtil.d("SCROLL", "autoscrolled");
+        LogUtil.d("SCROLL", browsingTime.toString());
     }
 
     private CastratedDate getFocusedDate(){
@@ -319,7 +319,7 @@ public class Schedule extends RefreshableFragment {
             count++;
         }
 
-        Log.d("focus_time",temp.toString());
+        LogUtil.d("focus_time",temp.toString());
 
         return temp;
     }
@@ -392,7 +392,7 @@ public class Schedule extends RefreshableFragment {
             if(day != -1) schedule.put(date, weeklySchedule.get(day));
             else schedule.put(date, null);
         }
-        Log.d("SCHEDULE", "got schedule");
+        LogUtil.d("SCHEDULE", "got schedule");
         return schedule;
     }
 
@@ -400,11 +400,11 @@ public class Schedule extends RefreshableFragment {
         HashMap<String, Integer> pairs;
         try{
             pairs = readDateDayPairs();
-            Log.d("CALENDAR", "date-day pairs read success");
+            LogUtil.d("CALENDAR", "date-day pairs read success");
         }catch(IOException e) {
-            Log.d("CALENDAR", "read failed; using default");
+            LogUtil.d("CALENDAR", "read failed; using default");
             pairs = defaultDateDayPairs("2018-08-27");
-            Log.d("CALENDAR", "date-day pairs defaulted");
+            LogUtil.d("CALENDAR", "date-day pairs defaulted");
         }
         return pairs;
     }
@@ -425,7 +425,7 @@ public class Schedule extends RefreshableFragment {
     public HashMap<String, Integer> readDateDayPairs() throws IOException, ClassNotFoundException{
         FileInputStream f = mActivity.openFileInput("date_day.dat");
         ObjectInputStream s = new ObjectInputStream(f);
-        Log.d("CALENDAR", "reading date-day pairs");
+        LogUtil.d("CALENDAR", "reading date-day pairs");
         HashMap<String, Integer> dateDay = (HashMap<String, Integer>)s.readObject();
         s.close();
         return dateDay;
@@ -435,7 +435,7 @@ public class Schedule extends RefreshableFragment {
         FileInputStream f = mActivity.openFileInput("week_schedule.dat");
         BufferedReader in = new BufferedReader(new InputStreamReader(f));
         HashMap<Integer, Subject[]> schedule = new HashMap<>(0);
-        Log.d("SCHEDULE", "reading weekly schedule");
+        LogUtil.d("SCHEDULE", "reading weekly schedule");
         String line;
         int dayInCycle = 1;
         while((line = in.readLine())!=null){
@@ -453,7 +453,7 @@ public class Schedule extends RefreshableFragment {
             dayInCycle ++;
         }
         in.close();
-        Log.d("SCHEDULE", "successfully read weekly schedule");
+        LogUtil.d("SCHEDULE", "successfully read weekly schedule");
         return schedule;
     }
 }

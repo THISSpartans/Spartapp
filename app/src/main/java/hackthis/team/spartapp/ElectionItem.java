@@ -43,12 +43,12 @@ public class ElectionItem implements Checkable {
         content.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!isChecked()) {
+                /*if(!isChecked()) {
                     for (int i = 0; i < parent.getChildCount(); i++) {
                         if(((ElectionItem)parent.getChildAt(i).getTag()).isChecked())
                             ((ElectionItem)parent.getChildAt(i).getTag()).toggle();
                     }
-                }
+                }*/
                 toggle();
             }
         });

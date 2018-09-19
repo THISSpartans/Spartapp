@@ -170,7 +170,7 @@ public class ElectionPage extends Activity {
         for(int i = 0; i < keyList.size(); i++) {
             Title key = keyList.get(i);
             List<Person> value = titles.get(i);
-            //Log.d("electionpage",key.name+value.toString());
+            //LogUtil.d("electionpage",key.name+value.toString());
             boolean shown = true;
             if(key.grade!=0 &&
                     key.grade != gradeReader.getInt("grade",0)){
@@ -202,10 +202,9 @@ public class ElectionPage extends Activity {
             for(int j = 0; j < nominees.get(i).getChildCount(); j++){
                 if(((ElectionItem)nominees.get(i).getChildAt(j).getTag()).isChecked()){
                     nameList.append(((ElectionItem) nominees.get(i).getChildAt(j).getTag()).name
-                            .replace('\n',' '));
+                            .replace('\n',' ')+" ");
                     ppl.add(((ElectionItem) nominees.get(i).getChildAt(j).getTag()).name
                             .replace('\n',' '));
-                    break;
                 }
             }
             nameList.append("\n");

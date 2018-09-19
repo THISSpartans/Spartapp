@@ -61,7 +61,7 @@ public class FilterActivity extends AppCompatActivity implements AdapterView.OnI
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter);
         grade_text = (TextView) findViewById(R.id.filter_grade);
-        Log.d("filter_activity_log","filter activity created");
+        LogUtil.d("filter_activity_log","filter activity created");
 
         sp = getSharedPreferences("clubs",Context.MODE_PRIVATE);
 
@@ -162,12 +162,12 @@ public class FilterActivity extends AppCompatActivity implements AdapterView.OnI
     }
 
     public void update(){
-        Log.d("filter_activity_log","update called");
+        LogUtil.d("filter_activity_log","update called");
         ListView root = (ListView) findViewById(R.id.filter_list);
         final ClubAdapter MyAdapter = new ClubAdapter(FilterActivity.this, root, clubs);
         root.setAdapter(MyAdapter);
 
-        Log.d("filter_activity", clubs.toString());
+        LogUtil.d("filter_activity", clubs.toString());
 
     }
 
@@ -184,7 +184,7 @@ public class FilterActivity extends AppCompatActivity implements AdapterView.OnI
             ListView root = (ListView) findViewById(R.id.filter_list);
             ArrayList<String> sub = new ArrayList<>(50);
 
-            Log.d("filter_activity", clubs.toString());
+            LogUtil.d("filter_activity", clubs.toString());
 
             for (int i = 0; i < clubs.size(); i++) {
                 if (clubs.get(i).checked) {

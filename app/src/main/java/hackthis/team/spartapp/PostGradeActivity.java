@@ -53,7 +53,7 @@ public class PostGradeActivity extends Activity {
                     Toast.makeText(PostGradeActivity.this, "please select some grades", Toast.LENGTH_SHORT).show();
                 }
                 else{
-                    Log.d("PostGradeActivity",""+sum);
+                    LogUtil.d("PostGradeActivity",""+sum);
                     finish(sum);
                 }
             }
