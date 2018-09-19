@@ -311,6 +311,45 @@ public class LoginActivity extends AppCompatActivity{
                     webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password+"'", null);
                     webView.evaluateJavascript("document.getElementById('"+btnName+"').click();", null);
                     pastLoginPage[0] = true;
+
+                    if(!schl.equals("THIS")){
+                        webView.evaluateJavascript(
+                                "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
+                                new ValueCallback<String>() {
+                                    @Override
+                                    public void onReceiveValue(String html_) {
+                                        try{
+                                            //internet works, fetch calendar on this thread
+                                            String html = StringEscapeUtils.unescapeJava(html_);
+                                            if(html.contains("Grades and Attendance")){
+                                                AVQuery query = new AVQuery("UpdateCalendar");
+                                                List<AVObject> qList = query.find();
+                                                String startOfYear = qList.get(0).getString("startOfYear");
+                                                HashMap<String, Integer> dateDay = fetchDateDayPairs(startOfYear);
+                                                Log.d("HTML", account);
+                                                Log.d("HTML", html);
+                                                HashMap<Integer, Subject[]> weeklySchedule =
+                                                        (occ.equals("student"))?(schl.equals("THIS")?fetchScheduleStudent(html):
+                                                                fetchScheduleISB(html))
+                                                                :fetchScheduleTeacher(html);
+                                                writeDateDayPairs(dateDay);
+                                                writeWeeklySchedule(weeklySchedule);
+                                                SharedPreferences prefs = getApplicationContext().getSharedPreferences("verified", Context.MODE_PRIVATE);
+                                                SharedPreferences.Editor editor = prefs.edit();
+                                                editor.putString("account", account);
+                                                editor.putString("password", password);
+                                                //must use commit instead of apply here
+                                                editor.commit();
+                                                triggerRebirth(getApplicationContext());
+                                            }
+                                        }
+                                        catch(Exception e){
+
+                                        }
+                                    }
+                                });
+                    }
+
                 }
                 else if(!timeout[0]){
                     Log.d("HTML", "logged in");
@@ -346,6 +385,7 @@ public class LoginActivity extends AppCompatActivity{
                                         //pun intended
                                         Log.d("HTML", "escape failed");
                                         //triggerRebirth(getApplicationContext());
+                                        //if(schl.equals("THIS"))
                                         pastLoginPage[0] = false;
                                         webView.loadUrl(url_);
                                     }
