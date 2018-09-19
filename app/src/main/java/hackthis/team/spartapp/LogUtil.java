@@ -5,7 +5,7 @@ import android.util.Log;
 public class LogUtil {
     public static void d(String tag, String thing){
         if(BuildConfig.DEBUG)
-            LogUtil.d(tag, thing);
+            Log.d(tag, thing);
     }
     public static void v(String tag, String thing){
         if(BuildConfig.DEBUG)
