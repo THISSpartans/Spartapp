@@ -28,7 +28,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         m_notificationMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         String title = intent.getStringExtra("title");
-        Log.d("notification","TRIGGEREDDDDDDDDDDDDD");
+        LogUtil.d("notification","TRIGGEREDDDDDDDDDDDDD");
             Intent intent1 = new Intent(context, MainActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent1, 0);
             Notification notify;

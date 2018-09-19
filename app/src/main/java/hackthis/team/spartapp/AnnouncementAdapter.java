@@ -52,7 +52,7 @@ public class AnnouncementAdapter extends BaseAdapter {
             //i.setAction("hackthis.team.spartapp.TIMER_ACTION");
             i.setAction(AlarmReceiver.TIMER_ACTION);
             i.putExtra("title",ih.name);
-            Log.d("notification",i.getAction());
+            LogUtil.d("notification",i.getAction());
             */
 
         }
@@ -130,7 +130,7 @@ public class AnnouncementAdapter extends BaseAdapter {
             }
         }
         displayItem = newValues;
-        Log.d("new_values_record",newValues.toString());
+        LogUtil.d("new_values_record",newValues.toString());
         notifyDataSetChanged();
     }
 }

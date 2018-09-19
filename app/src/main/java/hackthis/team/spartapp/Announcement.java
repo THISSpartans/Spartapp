@@ -96,7 +96,7 @@ public class Announcement extends RefreshableFragment {
 
     public void update_list(){
 
-        Log.d("filter_activity","update called");
+        LogUtil.d("filter_activity","update called");
 
         if(getActivity()!= null) {
 
@@ -133,7 +133,7 @@ public class Announcement extends RefreshableFragment {
             if(isStudent) {
                 AVQuery<AVObject> query2 = new AVQuery<>("Announcements" + search_root);
                 query2.whereEqualTo("gradeLevel", grade);
-                Log.d("announcement_adapter", "update called");
+                LogUtil.d("announcement_adapter", "update called");
                 combined_query = AVQuery.and(Arrays.asList(query, query2));
             }
             else
@@ -146,7 +146,7 @@ public class Announcement extends RefreshableFragment {
                         announcements = new ArrayList<>(50);
                         for (int i = 0; i < list.size(); i++)
                             announcements.add(new Content(list.get(i)));
-                        Log.d("announcement_adapter", announcements.toString());
+                        LogUtil.d("announcement_adapter", announcements.toString());
                         if (!search_text.getText().toString().equals("") || !search_text.getText().toString().equals(" ")) {
                             filter_keyword(search_text.getText().toString());
                         } else {
@@ -213,7 +213,7 @@ public class Announcement extends RefreshableFragment {
                 PendingIntent pi = PendingIntent.getBroadcast(mActivity, 0, noteIntent, 0);
                 alarmManager.set(AlarmManager.RTC, time, pi);
                 dateDialog.hide();
-                Log.d("alarm","alarm set after"+Long.toString(time-(new Date()).getTime())+" "+noteIntent.getStringExtra("title"));
+                LogUtil.d("alarm","alarm set after"+Long.toString(time-(new Date()).getTime())+" "+noteIntent.getStringExtra("title"));
             }});
 
         dialogView.findViewById(R.id.date_time_cancel).setOnClickListener(new View.OnClickListener() {

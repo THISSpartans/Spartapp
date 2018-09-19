@@ -13,7 +13,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -150,7 +149,7 @@ public class LoginActivity extends AppCompatActivity{
             openWebView(email, password);
         }
         catch(Exception e){
-            Log.d("ERR", "open webview failed");
+            LogUtil.d("ERR", "open webview failed");
         }
         boolean cancel = false;
         View focusView = null;
@@ -265,7 +264,7 @@ public class LoginActivity extends AppCompatActivity{
 
     public void openWebView(String account_, String password_) throws InterruptedException, AVException, ParseException {
         final WebView webView = new WebView(this.getApplicationContext());
-        Log.d("SCHEDULE", "webview starting");
+        LogUtil.d("SCHEDULE", "webview starting");
         webView.getSettings().setUserAgentString("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0");
         final String account = account_;
         final String password = password_;
@@ -274,17 +273,17 @@ public class LoginActivity extends AppCompatActivity{
         SharedPreferences sp = getSharedPreferences("clubs", Context.MODE_PRIVATE);
         final String occ = sp.getString("occupation", "student");
         final String schl = sp.getString("school", "THIS");
-        Log.d("OCCUPATION", occ);
+        LogUtil.d("OCCUPATION", occ);
         final Context context = this;
 
         final Timer timer = new Timer();
         TimerTask tt = new TimerTask(){
             public void run(){
-                Log.d("WVTIME", "time's up");
+                LogUtil.d("WVTIME", "time's up");
                 timeout[0] = true;
                 timer.purge();
                 timer.cancel();
-                Log.d("WVTIME", "timer purged and cancelled; re-login");
+                LogUtil.d("WVTIME", "timer purged and cancelled; re-login");
                 Intent login = new Intent(context, LoginActivity.class);
                 SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
                 sp.edit().putBoolean("failed",true).apply();
@@ -303,17 +302,17 @@ public class LoginActivity extends AppCompatActivity{
             @Override
             public void onPageFinished(WebView view, String url) {
                 if(!pastLoginPage[0]){
-                    Log.d("HTML", url + " page finished");
+                    LogUtil.d("HTML", url + " page finished");
                     String usrField = (occ.equals("student"))?"fieldAccount":"fieldUsername";
                     String btnName = (occ.equals("student"))?(schl.equals("THIS")?"btn-enter":"btn-enter-sign-in"):"btnEnter";
-                    Log.d("HTML", usrField);
+                    LogUtil.d("HTML", usrField);
                     webView.evaluateJavascript("document.getElementById('"+usrField+"').value='"+account+"'", null);
                     webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password+"'", null);
                     webView.evaluateJavascript("document.getElementById('"+btnName+"').click();", null);
                     pastLoginPage[0] = true;
                 }
                 else if(!timeout[0]){
-                    Log.d("HTML", "logged in");
+                    LogUtil.d("HTML", "logged in");
                     webView.evaluateJavascript(
                             "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
                             new ValueCallback<String>() {
@@ -326,8 +325,8 @@ public class LoginActivity extends AppCompatActivity{
                                         String startOfYear = qList.get(0).getString("startOfYear");
                                         HashMap<String, Integer> dateDay = fetchDateDayPairs(startOfYear);
                                         String html = StringEscapeUtils.unescapeJava(html_);
-                                        Log.d("HTML", occ);
-                                        Log.d("HTML", html);
+                                        LogUtil.d("HTML", occ);
+                                        LogUtil.d("HTML", html);
                                         HashMap<Integer, Subject[]> weeklySchedule =
                                                 (occ.equals("student"))?(schl.equals("THIS")?fetchScheduleStudent(html):
                                                     fetchScheduleISB(html))
@@ -344,7 +343,7 @@ public class LoginActivity extends AppCompatActivity{
                                     }
                                     catch(Exception e){
                                         //pun intended
-                                        Log.d("HTML", "escape failed");
+                                        LogUtil.d("HTML", "escape failed");
                                         //triggerRebirth(getApplicationContext());
                                         webView.loadUrl(url_);
                                     }
@@ -353,9 +352,9 @@ public class LoginActivity extends AppCompatActivity{
                 }
             }
         });
-        Log.d("HTML", occ);
+        LogUtil.d("HTML", occ);
         webView.loadUrl(url_);
-        Log.d("HTML", "initiated webview operations");
+        LogUtil.d("HTML", "initiated webview operations");
     }
 
     public HashMap<String, Integer> fetchDateDayPairs(String startOfYear) throws ParseException, AVException {
@@ -363,25 +362,25 @@ public class LoginActivity extends AppCompatActivity{
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar c = Calendar.getInstance();
         c.setTime(sdf.parse(startOfYear));
-        Log.d("CALENDAR", "pairing day cycle with calendar dates");
+        LogUtil.d("CALENDAR", "pairing day cycle with calendar dates");
         List<Integer> days = getCalendar();
         for(Integer day : days){
             String date = sdf.format(c.getTime());
             pairs.put(date, day);
-            //Log.d("CALENDAR", date.toString() + " " +day.toString());
+            //LogUtil.d("CALENDAR", date.toString() + " " +day.toString());
             c.add(Calendar.DATE, 1);
         }
-        Log.d("CALENDAR", "paired day cycle with calendar dates");
+        LogUtil.d("CALENDAR", "paired day cycle with calendar dates");
         return pairs;
     }
 
     public void writeDateDayPairs(HashMap<String, Integer> pairs) throws IOException{
         FileOutputStream f = this.openFileOutput("date_day.dat", this.MODE_PRIVATE);
         ObjectOutputStream s = new ObjectOutputStream(f);
-        Log.d("CALENDAR", "writing date-day pairs");
+        LogUtil.d("CALENDAR", "writing date-day pairs");
         s.writeObject(pairs);
         s.close();
-        Log.d("CALENDAR", "wrote date-day pairs");
+        LogUtil.d("CALENDAR", "wrote date-day pairs");
     }
 
     public List<Integer> getCalendar() throws AVException {
@@ -389,7 +388,7 @@ public class LoginActivity extends AppCompatActivity{
         List<AVObject> weeks = calendar.find();
         List<Integer> days = new ArrayList<>(0);
         weeks = QSDateHelper(weeks);
-        Log.d("CALENDAR", "downloaded weekly calendar");
+        LogUtil.d("CALENDAR", "downloaded weekly calendar");
         int curDay = -1;
         for(AVObject week : weeks){
             for(Boolean isDay : (List<Boolean>)week.getList("weeklyCalendar")) {
@@ -400,42 +399,42 @@ public class LoginActivity extends AppCompatActivity{
                 else days.add(-1);
             }
         }
-        Log.d("CALENDAR", "generated daily calendar");
+        LogUtil.d("CALENDAR", "generated daily calendar");
         return days;
     }
 
     public void writeWeeklySchedule(HashMap<Integer, Subject[]> schedule) throws Exception{
         if(schedule.get(1)==null){
-            Log.d("SCHEDULE", "schedule is empty" );
+            LogUtil.d("SCHEDULE", "schedule is empty" );
             throw new Exception();
         }
         FileOutputStream f = this.openFileOutput("week_schedule.dat", Context.MODE_PRIVATE);
         PrintWriter out = new PrintWriter(f);
-        Log.d("SCHEDULE", "preparing to write week_schedule.dat" );
+        LogUtil.d("SCHEDULE", "preparing to write week_schedule.dat" );
         for(int i = 1; i < cycleLen+1; i ++) {
             Subject[] day = schedule.get(i);
             for (Subject subject : day) {
                 if(subject != null) {
                     out.write(subject.name() + "?" + subject.teacher() + "?" + subject.room() + "?");
-                    Log.d("SCHEDULE", subject.name() + "?" + subject.teacher() + "?" + subject.room() + "?");
+                    LogUtil.d("SCHEDULE", subject.name() + "?" + subject.teacher() + "?" + subject.room() + "?");
                 }else {
                     SharedPreferences sp = getSharedPreferences("clubs", Context.MODE_PRIVATE);
                     final String occ = sp.getString("occupation", "student");
                     final String schl = sp.getString("school", "THIS");
                     if(occ=="student"&&schl=="THIS") out.write("Study Hall?-?-?");
                     else out.write("--?-?-?");
-                    Log.d("SCHEDULE", "empty block");
+                    LogUtil.d("SCHEDULE", "empty block");
                 }
             }
             out.write("\n");
         }
         out.close();
-        Log.d("SCHEDULE", "wrote week_schedule.dat");
+        LogUtil.d("SCHEDULE", "wrote week_schedule.dat");
     }
 
     public HashMap<Integer, Subject[]> fetchScheduleStudent(String html) throws IOException, InterruptedException {
         HashMap<Integer, Subject[]> schedule = new HashMap<Integer, Subject[]>(0);
-        Log.d("HTML", "parsing html source");
+        LogUtil.d("HTML", "parsing html source");
         Document doc = Jsoup.parse(html);
         Element table = doc.select("table").get(0);
         Elements rows = table.select("tr");
@@ -483,13 +482,13 @@ public class LoginActivity extends AppCompatActivity{
                 }
             }
         }
-        Log.d("HTML", "done parsing; schedule generated");
+        LogUtil.d("HTML", "done parsing; schedule generated");
         return schedule;
     }
 
     public HashMap<Integer, Subject[]> fetchScheduleTeacher(String html){
         HashMap<Integer, Subject[]> schedule = new HashMap<Integer, Subject[]>(0);
-        Log.d("HTML", "parsing html source teacher");
+        LogUtil.d("HTML", "parsing html source teacher");
         Document doc = Jsoup.parse(html);
         Element table = doc.select("table").get(0);
         Elements rows = table.select("tr");
@@ -686,14 +685,14 @@ public class LoginActivity extends AppCompatActivity{
         editor.putBoolean("failed", false);
         //must use commit instead of apply here
         editor.commit();
-        Log.d("REBIRTH", "error state cleared");
+        LogUtil.d("REBIRTH", "error state cleared");
 
         Intent mStartActivity = new Intent(context, MainActivity.class);
         int mPendingIntentId = 123456;
         PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager mgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         mgr.set(AlarmManager.RTC, System.currentTimeMillis(), mPendingIntent);
-        Log.d("REBIRTH", "exiting");
+        LogUtil.d("REBIRTH", "exiting");
         System.exit(0);
     }
 }

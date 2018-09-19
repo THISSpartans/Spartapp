@@ -170,7 +170,7 @@ public class ElectionPage extends Activity {
         for(int i = 0; i < keyList.size(); i++) {
             Title key = keyList.get(i);
             List<Person> value = titles.get(i);
-            //Log.d("electionpage",key.name+value.toString());
+            //LogUtil.d("electionpage",key.name+value.toString());
             boolean shown = true;
             if(key.grade!=0 &&
                     key.grade != gradeReader.getInt("grade",0)){

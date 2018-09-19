@@ -174,7 +174,7 @@ public class Post extends RefreshableFragment {
                         @Override
                         public void done(AVException e) {
                             if (e == null) {
-                                Log.d("push_log","push complete");
+                                LogUtil.d("push_log","push complete");
                             }   else {
                                 e.printStackTrace();
                             }
@@ -220,12 +220,12 @@ public class Post extends RefreshableFragment {
             TextView club_name = (TextView)getView().findViewById(R.id.post_club);
             to_grade = sp_post.getInt("grades",4095);
             to_grade_list = new ArrayList<>(12);
-            Log.d("post",Integer.toBinaryString(to_grade));
+            LogUtil.d("post",Integer.toBinaryString(to_grade));
             char[] temp = Integer.toBinaryString(to_grade).toCharArray();
             for(int i = temp.length-1; i >= 0; i--){
                 to_grade_list.add(temp[i] == '1');
             }
-            Log.d("post",to_grade_list.toString());
+            LogUtil.d("post",to_grade_list.toString());
             if(club == null){
                 Toast.makeText(mActivity, "Please sign in before sending!", Toast.LENGTH_SHORT).show();
                 club_name.setText("<--Sign in");
