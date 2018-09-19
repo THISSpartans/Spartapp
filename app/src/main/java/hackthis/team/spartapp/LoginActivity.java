@@ -312,7 +312,7 @@ public class LoginActivity extends AppCompatActivity{
                     webView.evaluateJavascript("document.getElementById('"+btnName+"').click();", null);
                     pastLoginPage[0] = true;
 
-                    if(!schl.equals("THIS")){
+                    if(true){
                         webView.evaluateJavascript(
                                 "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
                                 new ValueCallback<String>() {
