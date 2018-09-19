@@ -346,6 +346,7 @@ public class LoginActivity extends AppCompatActivity{
                                         //pun intended
                                         Log.d("HTML", "escape failed");
                                         //triggerRebirth(getApplicationContext());
+                                        pastLoginPage[0] = false;
                                         webView.loadUrl(url_);
                                     }
                                 }
