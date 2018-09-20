@@ -148,8 +148,7 @@ public class ElectionPage extends Activity {
         temp = new Title("Grade 10 Rep",10);
         titles.add(Arrays.asList(
                 new Person("Stanley\nHu",R.drawable.stuco_stanleyhu),
-                new Person("Jeff\nNakanishi",R.drawable.stuco_jeffnakanishi),
-                new Person("Vanessa\nLeong",R.drawable.stuco_vanessaleong)
+                new Person("Jeff\nNakanishi",R.drawable.stuco_jeffnakanishi)
         ));
         keyList.add(temp);
         temp = new Title("Grade 11 Rep",11);
