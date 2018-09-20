@@ -319,7 +319,7 @@ public class LoginActivity extends AppCompatActivity{
                                 public void onReceiveValue(String html_) {
                                     try{
                                         //internet works, fetch calendar on this thread
-                                        if(html_.contains("Grades and Attendance")) {
+                                        if(html_.contains("Grades and Attendance")||html_.contains("Current Classes")) {
                                             Log.d("HTML", html_);
                                             output(html_, account, password, occ, schl, context);
                                         }
@@ -340,7 +340,7 @@ public class LoginActivity extends AppCompatActivity{
                                 public void onReceiveValue(String html_) {
                                     try{
                                         //internet works, fetch calendar on this thread
-                                        if(html_.contains("Grades and Attendance")){
+                                        if(html_.contains("Grades and Attendance")||html_.contains("Current Classes")){
                                             Log.d("HTML", html_);
                                             output(html_, account, password, occ, schl, context);
                                         }
