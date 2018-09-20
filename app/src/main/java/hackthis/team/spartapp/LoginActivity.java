@@ -26,6 +26,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVObject;
@@ -133,7 +134,6 @@ public class LoginActivity extends AppCompatActivity{
         if (mAuthTask != null) {
             return;
         }
-
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
@@ -291,7 +291,7 @@ public class LoginActivity extends AppCompatActivity{
                 startActivity(login);
             }
         };
-        timer.schedule(tt, 10000, 1);
+        timer.schedule(tt, 15000, 1);
 
         final String url_ = occ.equals("student")?(
                 schl.equals("THIS")?"https://power.this.edu.cn/public/home.html":
@@ -299,6 +299,7 @@ public class LoginActivity extends AppCompatActivity{
                 :"https://power.this.edu.cn/teachers/pw.html";
 
         webView.getSettings().setJavaScriptEnabled(true);
+        //setContentView(webView);
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
@@ -311,44 +312,23 @@ public class LoginActivity extends AppCompatActivity{
                     webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password+"'", null);
                     webView.evaluateJavascript("document.getElementById('"+btnName+"').click();", null);
                     pastLoginPage[0] = true;
-
-                    if(true){
-                        webView.evaluateJavascript(
-                                "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
-                                new ValueCallback<String>() {
-                                    @Override
-                                    public void onReceiveValue(String html_) {
-                                        try{
-                                            //internet works, fetch calendar on this thread
-                                            String html = StringEscapeUtils.unescapeJava(html_);
-                                            if(html.contains("Grades and Attendance")){
-                                                AVQuery query = new AVQuery("UpdateCalendar");
-                                                List<AVObject> qList = query.find();
-                                                String startOfYear = qList.get(0).getString("startOfYear");
-                                                HashMap<String, Integer> dateDay = fetchDateDayPairs(startOfYear);
-                                                Log.d("HTML", account);
-                                                Log.d("HTML", html);
-                                                HashMap<Integer, Subject[]> weeklySchedule =
-                                                        (occ.equals("student"))?(schl.equals("THIS")?fetchScheduleStudent(html):
-                                                                fetchScheduleISB(html))
-                                                                :fetchScheduleTeacher(html);
-                                                writeDateDayPairs(dateDay);
-                                                writeWeeklySchedule(weeklySchedule);
-                                                SharedPreferences prefs = getApplicationContext().getSharedPreferences("verified", Context.MODE_PRIVATE);
-                                                SharedPreferences.Editor editor = prefs.edit();
-                                                editor.putString("account", account);
-                                                editor.putString("password", password);
-                                                //must use commit instead of apply here
-                                                editor.commit();
-                                                triggerRebirth(getApplicationContext());
-                                            }
-                                        }
-                                        catch(Exception e){
-
+                    webView.evaluateJavascript(
+                            "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
+                            new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String html_) {
+                                    try{
+                                        //internet works, fetch calendar on this thread
+                                        if(html_.contains("Grades and Attendance")) {
+                                            Log.d("HTML", html_);
+                                            output(html_, account, password, occ, schl, context);
                                         }
                                     }
-                                });
-                    }
+                                    catch(Exception e){
+                                        webView.loadUrl(url_);
+                                    }
+                                }
+                            });
 
                 }
                 else if(!timeout[0]){
@@ -360,32 +340,15 @@ public class LoginActivity extends AppCompatActivity{
                                 public void onReceiveValue(String html_) {
                                     try{
                                         //internet works, fetch calendar on this thread
-                                        AVQuery query = new AVQuery("UpdateCalendar");
-                                        List<AVObject> qList = query.find();
-                                        String startOfYear = qList.get(0).getString("startOfYear");
-                                        HashMap<String, Integer> dateDay = fetchDateDayPairs(startOfYear);
-                                        String html = StringEscapeUtils.unescapeJava(html_);
-                                        Log.d("HTML", account);
-                                        Log.d("HTML", html);
-                                        HashMap<Integer, Subject[]> weeklySchedule =
-                                                (occ.equals("student"))?(schl.equals("THIS")?fetchScheduleStudent(html):
-                                                    fetchScheduleISB(html))
-                                                        :fetchScheduleTeacher(html);
-                                        writeDateDayPairs(dateDay);
-                                        writeWeeklySchedule(weeklySchedule);
-                                        SharedPreferences prefs = getApplicationContext().getSharedPreferences("verified", Context.MODE_PRIVATE);
-                                        SharedPreferences.Editor editor = prefs.edit();
-                                        editor.putString("account", account);
-                                        editor.putString("password", password);
-                                        //must use commit instead of apply here
-                                        editor.commit();
-                                        triggerRebirth(getApplicationContext());
+                                        if(html_.contains("Grades and Attendance")){
+                                            Log.d("HTML", html_);
+                                            output(html_, account, password, occ, schl, context);
+                                        }
+                                        else{throw new Exception();}
                                     }
                                     catch(Exception e){
                                         //pun intended
                                         Log.d("HTML", "escape failed");
-                                        //triggerRebirth(getApplicationContext());
-                                        //if(schl.equals("THIS"))
                                         pastLoginPage[0] = false;
                                         webView.loadUrl(url_);
                                     }
@@ -397,6 +360,29 @@ public class LoginActivity extends AppCompatActivity{
         Log.d("HTML", occ);
         webView.loadUrl(url_);
         Log.d("HTML", "initiated webview operations");
+    }
+
+    public void output(String html_, String account, String password, String occ, String schl, Context context) throws Exception{
+        String html = StringEscapeUtils.unescapeJava(html_);
+        AVQuery query = new AVQuery("UpdateCalendar");
+        List<AVObject> qList = query.find();
+        String startOfYear = qList.get(0).getString("startOfYear");
+        HashMap<String, Integer> dateDay = fetchDateDayPairs(startOfYear);
+        Log.d("HTML", account);
+        Log.d("HTML", html);
+        HashMap<Integer, Subject[]> weeklySchedule =
+                (occ.equals("student"))?(schl.equals("THIS")?fetchScheduleStudent(html):
+                        fetchScheduleISB(html))
+                        :fetchScheduleTeacher(html);
+        writeDateDayPairs(dateDay);
+        writeWeeklySchedule(weeklySchedule);
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences("verified", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("account", account);
+        editor.putString("password", password);
+        //must use commit instead of apply here
+        editor.commit();
+        triggerRebirth(context);
     }
 
     public HashMap<String, Integer> fetchDateDayPairs(String startOfYear) throws ParseException, AVException {
