@@ -469,56 +469,58 @@ public class LoginActivity extends AppCompatActivity{
         for(int dayNum = 1; dayNum <= cycleLen; dayNum++)
             schedule.put(new Integer(dayNum), new Subject[8]);
         for(int j=2; j<rows.size()-1; j++) {
-            LogUtil.d("HTML", "parsing row");
-            Element row = rows.get(j);
-            Elements col = row.select("td");
-            String periodInfo = col.get(0).text();
-            if(periodInfo.contains("HR")) continue;
-            String classInfo = col.get(15).text();
-            String className = classInfo.substring(0, classInfo.indexOf("Details about")-1);
-            String teacherName = classInfo.substring(classInfo.indexOf("Details about")+14,
-                    classInfo.indexOf("Email")-1);
-            int rmInx = classInfo.indexOf("Rm:");
-            String roomNum;
-            if(rmInx>0) roomNum = classInfo.substring(rmInx+4);
-            else roomNum = "-";
-            while(true) {
-                String days = periodInfo.substring(periodInfo.indexOf("(")+1, periodInfo.indexOf(")"));
-                for(int i = 0; i * 2 < days.length(); i ++) {
-                    int dayNum = days.charAt(i*2) - 48;
-                    Subject period = new Subject(className, teacherName, roomNum);
-                    int pN, pC, pNe, pCe;
-                    try {
-                        pN = Integer.parseInt(periodInfo.substring(0, 1));
-                        pC = periodInfo.substring(1, 2).equals("A") ? 0 : 1;
+            try {
+                LogUtil.d("HTML", "parsing row");
+                Element row = rows.get(j);
+                Elements col = row.select("td");
+                String periodInfo = col.get(0).text();
+                if (periodInfo.contains("HR")) continue;
+                String classInfo = col.get(15).text();
+                String className = classInfo.substring(0, classInfo.indexOf("Details about") - 1);
+                String teacherName = classInfo.substring(classInfo.indexOf("Details about") + 14,
+                        classInfo.indexOf("Email") - 1);
+                int rmInx = classInfo.indexOf("Rm:");
+                String roomNum;
+                if (rmInx > 0) roomNum = classInfo.substring(rmInx + 4);
+                else roomNum = "-";
+                while (true) {
+                    String days = periodInfo.substring(periodInfo.indexOf("(") + 1, periodInfo.indexOf(")"));
+                    for (int i = 0; i * 2 < days.length(); i++) {
+                        int dayNum = days.charAt(i * 2) - 48;
+                        Subject period = new Subject(className, teacherName, roomNum);
+                        int pN, pC, pNe, pCe;
+                        try {
+                            pN = Integer.parseInt(periodInfo.substring(0, 1));
+                            pC = periodInfo.substring(1, 2).equals("A") ? 0 : 1;
 
-                        if(periodInfo.indexOf("(")>2) {
-                            pNe = Integer.parseInt(periodInfo.substring(3, 4));
-                            pCe = periodInfo.substring(4, 5).equals("A") ? 0 : 1;
+                            if (periodInfo.indexOf("(") > 2) {
+                                pNe = Integer.parseInt(periodInfo.substring(3, 4));
+                                pCe = periodInfo.substring(4, 5).equals("A") ? 0 : 1;
+                            } else {
+                                pNe = 0;
+                                pCe = 0;
+                            }
+                        } catch (NumberFormatException e) {
+                            break;
                         }
-                        else{
-                            pNe = 0;
-                            pCe = 0;
-                        }
+                        LogUtil.d("HTML", "adding row");
+                        LogUtil.d("HTML", period.name());
+                        schedule.get(new Integer(dayNum))[(pN - 1) * 2 + pC] = period;
+                        if (periodInfo.indexOf("(") > 2)
+                            schedule.get(new Integer(dayNum))[(pNe - 1) * 2 + pCe] = period;
+                        LogUtil.d("HTML", "added row");
                     }
-                    catch(NumberFormatException e) {
+
+                    int endInx = periodInfo.indexOf(")");
+                    try {
+                        periodInfo = periodInfo.substring(endInx + 2);
+                    } catch (StringIndexOutOfBoundsException e) {
                         break;
                     }
-                    LogUtil.d("HTML", "adding row");
-                    LogUtil.d("HTML", period.name());
-                    schedule.get(new Integer(dayNum))[(pN-1)*2 + pC] = period;
-                    if(periodInfo.indexOf("(")>2)
-                        schedule.get(new Integer(dayNum))[(pNe-1)*2 + pCe] = period;
-                    LogUtil.d("HTML", "added row");
                 }
-
-                int endInx = periodInfo.indexOf(")");
-                try {
-                    periodInfo = periodInfo.substring(endInx + 2);
-                }
-                catch(StringIndexOutOfBoundsException e) {
-                    break;
-                }
+            }
+            catch(Exception e){
+                if(j!=2) throw new IOException();
             }
         }
         LogUtil.d("HTML", "done parsing; schedule generated");
