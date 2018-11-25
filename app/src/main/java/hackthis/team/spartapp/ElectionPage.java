@@ -230,13 +230,7 @@ public class ElectionPage extends Activity {
         //todo somehow put the selected list online
         Calendar c = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        try {
-            if (!c.after(sdf.parse("2018-09-20"))) {
-                Toast.makeText(ElectionPage.this, "Election hasn't started",
-                        Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }catch(ParseException e){}
+
         SharedPreferences ver = this.getSharedPreferences("verified", this.MODE_PRIVATE);
         String id = ver.getString("account", "none");
 

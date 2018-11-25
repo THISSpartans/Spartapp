@@ -1,5 +1,6 @@
 package hackthis.team.spartapp;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -7,7 +8,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MotionEventCompat;
+import android.text.Layout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -17,16 +20,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CalendarView;
+import android.widget.DatePicker;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVObject;
+
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -35,6 +45,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -83,18 +94,45 @@ public class Schedule extends RefreshableFragment {
         }
     };
 
+    PopupWindow popup;
+    CalendarView expcal;
+    LinearLayout cal;
+    Boolean expanded = false;
+
+    View.OnClickListener EXPAND = new View.OnClickListener(){
+        @Override
+        public void onClick(View v){
+            if(expanded) {
+                popup.showAsDropDown(mActivity.findViewById(R.id.expand_calendar));
+                ((Button)(mActivity.findViewById(R.id.expand_calendar)))
+                        .setBackground(ContextCompat.getDrawable(mActivity, R.drawable.arrow_down));
+                popup.dismiss();
+                expanded = false;
+            }else {
+                popup.showAsDropDown(mActivity.findViewById(R.id.expand_calendar));
+                ((Button)(mActivity.findViewById(R.id.expand_calendar)))
+                        .setBackground(ContextCompat.getDrawable(mActivity, R.drawable.arrow_up));
+                expanded = true;
+            }
+        }
+    };
+
     View.OnClickListener DATE = new View.OnClickListener() {
         public void onClick(View v) {
             browsingTime.set(Calendar.DATE, (int)v.getTag());
             //RadioGroup rg = (RadioGroup)getView().findViewById(R.id.date_radio_group);
             autoscroll();
             load();
+
+            Calendar cal = Calendar.getInstance();
+            //expcal.setDate();
         }
     };
 
     String school;
 
     RadioGroup.LayoutParams date_params;
+    LinearLayout.LayoutParams wk_params;
 
     HashMap<String, int[]> regularPeriodBeginning;
     HashMap<String, int[]> wednesdayPeriodBeginning;
@@ -204,12 +242,17 @@ public class Schedule extends RefreshableFragment {
         wednesdayPeriodBeginning.put("ISB",new int[] {815, 945, 1110, 1305});
 
 
+
+
+
         SharedPreferences sp = getActivity().getSharedPreferences("clubs", Context.MODE_PRIVATE);
         school = sp.getString("school", "");
 
 
         date_params = new RadioGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        date_params.setMargins(20,0,20,0);
+        date_params.setMargins(25,0,25,0);
+        wk_params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        wk_params.setMargins(25, 0, 25, 0);
 
         try {
             subjectTable = getSchedule();
@@ -263,12 +306,23 @@ public class Schedule extends RefreshableFragment {
         l.setOnClickListener(LEFT);
         ImageButton r = (ImageButton) root.findViewById(R.id.schedule_right);
         r.setOnClickListener(RIGHT);
+        Button excal = (Button) root.findViewById(R.id.expand_calendar);
+        excal.setOnClickListener(EXPAND);
+
+        cal = (LinearLayout)inflater.inflate(R.layout.calendar_popup, null);
+        popup = new PopupWindow(cal, ViewGroup.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.WRAP_CONTENT);
+        popup.setContentView(cal);
+        //popup.setHeight(500);
+        popup.setOutsideTouchable(false);
+
+        setCalendarToMonth();
 
         TextView m = (TextView) root.findViewById(R.id.schedule_month);
         m.setText(month_text());
 
         listBackground = (ImageView) root.findViewById(R.id.schedule_list_background);
 
+        LinearLayout daywk = (LinearLayout) root.findViewById(R.id.days_wk);
         RadioGroup rg = (RadioGroup) root.findViewById(R.id.date_radio_group);
         for(int i = 0; i < browsingTime.month_length(); i++){
             RadioButton rb = (RadioButton) mActivity.getLayoutInflater().inflate(R.layout.date_button, null);
@@ -277,6 +331,11 @@ public class Schedule extends RefreshableFragment {
             rb.setTag(i+1);
             rb.setLayoutParams(date_params);
             rg.addView(rb, i);
+
+            TextView dwk = (TextView) mActivity.getLayoutInflater().inflate(R.layout.date_wk, null);
+            dwk.setText(CastratedDate.dayInWeek(browsingTime.year, browsingTime.month, i+1).substring(0,1));
+            dwk.setLayoutParams(wk_params);
+            daywk.addView(dwk);
         }
 
         ((RadioButton)rg.getChildAt(browsingTime.date-1)).setChecked(true);
@@ -290,6 +349,57 @@ public class Schedule extends RefreshableFragment {
         scroll.setSmoothScrollingEnabled(true);
         last_date_length = browsingTime.month_length();
 
+
+        //fix week day labels
+        final HorizontalScrollView wkday = (HorizontalScrollView)root.findViewById(R.id.day_scroll);
+        wkday.setOnTouchListener( new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event){
+                return true;
+            }
+        });
+
+        final HorizontalScrollView mday = (HorizontalScrollView)root.findViewById(R.id.date_scroll);
+        mday.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged() {
+                int scrollX = mday.getScrollX();
+                Log.d("RESCROL", Integer.toString(scrollX));
+                wkday.setScrollX(scrollX);
+            }
+        });
+
+        /*
+        CalendarView wkcal = (CalendarView)root.findViewById(R.id.weekdaylabel);
+        wkcal.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event){
+                return true;
+            }
+        });
+
+
+        ScrollView datepicker = (ScrollView)root.findViewById(R.id.datepickerscroll);
+        wkday.setOnTouchListener( new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event){
+                return true;
+            }
+        });
+
+
+        CalendarView cal = (CalendarView)root.findViewById(R.id.datepicker);
+        cal.setOnDateChangeListener( new CalendarView.OnDateChangeListener(){
+            public void onSelectedDayChange(CalendarView calendarView, int year, int month, int dayOfMonth){
+                browsingTime.set(Calendar.DATE, dayOfMonth);
+                //autoscroll?
+                load();
+            }
+        });
+        MyScrollView dpscroll = (MyScrollView)root.findViewById(R.id.datepickerscroll);
+*/
+
+
         return root;
     }
     private void autoscroll(){
@@ -297,6 +407,7 @@ public class Schedule extends RefreshableFragment {
         RadioGroup rg = (RadioGroup) getView().findViewById(R.id.date_radio_group);
         date_scroll.smoothScrollTo(rg.getChildAt(browsingTime.date-1).getLeft()
                 + rg.getChildAt(browsingTime.date-1).getMeasuredWidth()/2
+                + rg.getChildAt(browsingTime.date-1).getPaddingLeft()
                 - date_scroll.getMeasuredWidth()/2, 0);
         LogUtil.d("SCROLL", "autoscrolled");
         LogUtil.d("SCROLL", browsingTime.toString());
@@ -332,6 +443,7 @@ public class Schedule extends RefreshableFragment {
         m.setText(month_text());
 
         RadioGroup rg = (RadioGroup) root.findViewById(R.id.date_radio_group);
+        LinearLayout daywk = (LinearLayout) root.findViewById(R.id.days_wk);
 
         if(browsingTime.month_length() > last_date_length){
             for(int i = last_date_length; i < browsingTime.month_length(); i++){
@@ -341,6 +453,7 @@ public class Schedule extends RefreshableFragment {
                 rb.setTag(Integer.valueOf(i+1));
                 rb.setLayoutParams(date_params);
                 rg.addView(rb, i);
+
             }
         }
         else{
@@ -351,7 +464,13 @@ public class Schedule extends RefreshableFragment {
             }
 
         }
-
+        daywk.removeAllViews();
+        for(int i=0; i < browsingTime.month_length(); i++){
+            TextView dwk = (TextView) mActivity.getLayoutInflater().inflate(R.layout.date_wk, null);
+            dwk.setText(CastratedDate.dayInWeek(browsingTime.year, browsingTime.month, i+1).substring(0,1));
+            dwk.setLayoutParams(wk_params);
+            daywk.addView(dwk);
+        }
         //if(browsingTime.date == browsingTime.month_length())
             ((RadioButton)rg.getChildAt(browsingTime.date-1)).setChecked(true);
         autoscroll();
@@ -360,6 +479,8 @@ public class Schedule extends RefreshableFragment {
             if(((RadioButton)rg.getChildAt(i)).isChecked())
                 rg.getChildAt(i).callOnClick();
         }
+
+        setCalendarToMonth();
     }
 
     public void update(){
@@ -378,6 +499,50 @@ public class Schedule extends RefreshableFragment {
         DisplayMetrics metrics = resources.getDisplayMetrics();
         float px = dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
         return px;
+    }
+
+    public void setCalendarToMonth(){
+        int year = browsingTime.year;
+        int month = browsingTime.month;
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, 1);
+        calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
+        calendar.set(Calendar.HOUR_OF_DAY, 23);//not sure this is needed
+
+        long endOfMonth = calendar.getTimeInMillis();
+
+        //may need to reinitialize calendar, not sure
+        calendar = Calendar.getInstance();
+        calendar.set(year, month, 1);
+        calendar.set(Calendar.DATE, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        long startOfMonth = calendar.getTimeInMillis();
+
+        cal.removeAllViews();
+        expcal = (CalendarView)mActivity.getLayoutInflater().inflate(R.layout.mycalendar, null);
+        expcal.setOnDateChangeListener(new CalendarView.OnDateChangeListener(){
+            @Override
+            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth){
+                browsingTime.year = year;
+                browsingTime.month = month;
+                browsingTime.date = dayOfMonth;
+                load();
+                if(month!=browsingTime.month) updateTitleBar();
+                autoscroll();
+            }
+        });
+        cal.addView(expcal);
+        expcal.setMaxDate(endOfMonth);
+        expcal.setMinDate(startOfMonth);
+    }
+
+    public void setCalendarToDay(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, browsingTime.year);
+        calendar.set(Calendar.MONTH, browsingTime.month);
+        calendar.set(Calendar.DAY_OF_MONTH, browsingTime.date);
+        long date = calendar.getTimeInMillis();
+        expcal.setDate(date);
     }
 
     private String month_text(){return browsingTime.year+" "+browsingTime.month_name();}

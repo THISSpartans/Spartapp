@@ -1,5 +1,8 @@
 package hackthis.team.spartapp;
 
+import android.util.Log;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -126,4 +129,12 @@ public class CastratedDate {
     public String toString(){
         return year+"-"+(month+1<10?"0"+Integer.toString(month+1):Integer.toString(month+1))+"-"+(date<10?"0"+Integer.toString(date):Integer.toString(date));
     }
+
+    public static String dayInWeek(int yr, int m, int d){
+        Calendar cal = Calendar.getInstance();
+        cal.set(yr, m, d);
+        SimpleDateFormat formatter = new SimpleDateFormat("E");
+        return formatter.format(cal.getTime());
+    }
+
 }
