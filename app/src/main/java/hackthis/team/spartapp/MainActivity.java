@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
                 case R.id.navigation_schedule:
                     switchContent(current, schedule);
                     return true;
-                case R.id.navigation_announcement:
+                /*case R.id.navigation_announcement:
                     if(announcement == null){
                         announcement = new Announcement();
                     }
@@ -67,6 +67,7 @@ public class MainActivity extends Activity {
                     }
                     switchContent(current, post);
                     return true;
+                    */
                 case R.id.navigation_services:
                     if(services == null){
                         services = new Services();
@@ -81,10 +82,10 @@ public class MainActivity extends Activity {
     View.OnClickListener save_user_stats = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            NumberPicker np = (NumberPicker) findViewById(R.id.grade_picker);
-            int grade = np.getValue();
+            //NumberPicker np = (NumberPicker) findViewById(R.id.grade_picker);
+            //int grade = np.getValue();
             sp = getSharedPreferences("clubs",Context.MODE_PRIVATE);
-            sp.edit().putInt("grade",grade).apply();
+            //sp.edit().putInt("grade",grade).apply();
             RadioButton THIS = (RadioButton) findViewById(R.id.radio_this);
             //RadioButton ISB = (RadioButton) findViewById(R.id.radio_isb);
             if(THIS.isChecked()){
@@ -123,7 +124,7 @@ public class MainActivity extends Activity {
             setContentView(R.layout.walkthrough);
             ImageView yes = (ImageView) findViewById(R.id.yes);
             yes.setOnClickListener(save_user_stats);
-            NumberPicker np = (NumberPicker) findViewById(R.id.grade_picker);
+            /*NumberPicker np = (NumberPicker) findViewById(R.id.grade_picker);
             np.setMaxValue(12);
             np.setMinValue(1);
             np.setValue(9);
@@ -139,6 +140,7 @@ public class MainActivity extends Activity {
                         GL.setVisibility(View.VISIBLE);
                 }
             });
+            */
 
         }
 

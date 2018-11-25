@@ -5,7 +5,7 @@
         android:id="@+id/navigation_schedule"
         android:icon="@drawable/schedule_selected"
         android:title="schedule" />
-
+    <!--
     <item
         android:id="@+id/navigation_announcement"
         android:icon="@drawable/announcement"
@@ -15,6 +15,7 @@
         android:id="@+id/navigation_post"
         android:icon="@drawable/post"
         android:title="post" />
+    -->
     <item
         android:id="@+id/navigation_services"
         android:icon="@drawable/services"
