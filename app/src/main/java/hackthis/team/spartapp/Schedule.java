@@ -80,6 +80,9 @@ public class Schedule extends RefreshableFragment {
         @Override
         public void onClick(View v) {
             browsingTime.change(Calendar.MONTH, -1);
+            Calendar cal = Calendar.getInstance();
+            cal.set(browsingTime.year, browsingTime.month, 1);
+            browsingTime.set(Calendar.DATE, cal.getActualMaximum(Calendar.DATE));
             updateTitleBar();
             load();
         }
@@ -89,6 +92,7 @@ public class Schedule extends RefreshableFragment {
         @Override
         public void onClick(View v) {
             browsingTime.change(Calendar.MONTH, 1);
+            browsingTime.set(Calendar.DATE, 1);
             updateTitleBar();
             load();
         }
@@ -125,7 +129,8 @@ public class Schedule extends RefreshableFragment {
             load();
 
             Calendar cal = Calendar.getInstance();
-            //expcal.setDate();
+            cal.set(browsingTime.year, browsingTime.month, browsingTime.date);
+            expcal.setDate(cal.getTimeInMillis());
         }
     };
 
