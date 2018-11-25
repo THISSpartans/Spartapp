@@ -550,7 +550,7 @@ public class Schedule extends RefreshableFragment {
         expcal.setDate(date);
     }
 
-    private String month_text(){return browsingTime.year+" "+browsingTime.month_name();}
+    private String month_text(){return browsingTime.month_name();}
 
     public HashMap<String, Subject[]> getSchedule() throws Exception{
         HashMap<String, Subject[]> schedule = new HashMap<>(6);

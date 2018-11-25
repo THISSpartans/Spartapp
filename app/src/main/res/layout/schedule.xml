@@ -20,19 +20,6 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"/>
 
-        <TextView
-            android:id="@+id/schedule_month"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="YEAR, MONTH"
-            android:textSize="20sp"
-            android:textColor="@color/black"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            />
-
         <ImageButton
             android:id="@+id/schedule_left"
             android:layout_width="15dp"
@@ -57,6 +44,7 @@
             android:layout_height="10dp"
             android:layout_below="@+id/schedule_month"
             android:layout_centerHorizontal="true"
+            android:layout_marginTop="7dp"
             android:background="@drawable/arrow_down" />
     </RelativeLayout>
 
@@ -117,5 +105,17 @@
             android:scrollbars="none" />
 
     </FrameLayout>
+
+    <TextView
+        android:id="@+id/schedule_month"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:gravity="center"
+        android:text="MONTH"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
 </LinearLayout>
