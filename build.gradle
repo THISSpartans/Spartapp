@@ -21,6 +21,8 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenCentral()
+        mavenLocal()
         google()
         jcenter()
         //这里是 LeanCloud 的包仓库
