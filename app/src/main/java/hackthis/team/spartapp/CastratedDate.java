@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 public class CastratedDate {
     int year, month, date;
@@ -133,7 +134,7 @@ public class CastratedDate {
     public static String dayInWeek(int yr, int m, int d){
         Calendar cal = Calendar.getInstance();
         cal.set(yr, m, d);
-        SimpleDateFormat formatter = new SimpleDateFormat("E");
+        SimpleDateFormat formatter = new SimpleDateFormat("E",Locale.ENGLISH);
         return formatter.format(cal.getTime());
     }
 

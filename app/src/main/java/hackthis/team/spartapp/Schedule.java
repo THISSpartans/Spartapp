@@ -33,6 +33,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVObject;
@@ -307,11 +308,11 @@ public class Schedule extends RefreshableFragment {
 
         ImageButton f = (ImageButton) root.findViewById(R.id.schedule_fetch);
         f.setOnClickListener(FETCH);
-        ImageButton l = (ImageButton) root.findViewById(R.id.schedule_left);
+        final ImageButton l = (ImageButton) root.findViewById(R.id.schedule_left);
         l.setOnClickListener(LEFT);
-        ImageButton r = (ImageButton) root.findViewById(R.id.schedule_right);
+        final ImageButton r = (ImageButton) root.findViewById(R.id.schedule_right);
         r.setOnClickListener(RIGHT);
-        Button excal = (Button) root.findViewById(R.id.expand_calendar);
+        final Button excal = (Button) root.findViewById(R.id.expand_calendar);
         excal.setOnClickListener(EXPAND);
 
         cal = (LinearLayout)inflater.inflate(R.layout.calendar_popup, null);
@@ -404,6 +405,50 @@ public class Schedule extends RefreshableFragment {
         MyScrollView dpscroll = (MyScrollView)root.findViewById(R.id.datepickerscroll);
 */
 
+        ListView lv = (ListView) root.findViewById(R.id.schedule_list);
+        lv.setOnTouchListener(new OnSwipeTouchListener(mActivity) {
+
+            public void onSwipeTop(){
+                if(expanded) {
+                    excal.callOnClick();
+                }
+            }
+
+            public void onSwipeBottom(){
+                if(!expanded) {
+                    excal.callOnClick();
+                }
+            }
+
+
+            public void onSwipeRight() {
+                if(!expanded) {
+                    //decrease date
+                    int month = browsingTime.month;
+                    browsingTime.change(Calendar.DATE, -1);
+                    updateTitleBar();
+                    autoscroll();
+                    load();
+                }
+                else{
+                    l.callOnClick();
+                }
+            }
+
+            public void onSwipeLeft() {
+                //increase date
+                if(!expanded) {
+                    int month = browsingTime.month;
+                    browsingTime.change(Calendar.DATE, 1);
+                    updateTitleBar();
+                    autoscroll();
+                    load();
+                }
+                else{
+                    r.callOnClick();
+                }
+            }
+        });
 
         return root;
     }
