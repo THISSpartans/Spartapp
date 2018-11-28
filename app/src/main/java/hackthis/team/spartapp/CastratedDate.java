@@ -90,7 +90,7 @@ public class CastratedDate {
         //first month is 0
         month = cal.get(Calendar.MONTH);
         //first day is 1
-        date = cal.get(Calendar.DATE);
+        date = cal.get(Calendar.DAY_OF_MONTH);
     }
 
     public int month_length(){

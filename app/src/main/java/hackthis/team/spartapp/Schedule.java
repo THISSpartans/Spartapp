@@ -346,6 +346,7 @@ public class Schedule extends RefreshableFragment {
 
         ((RadioButton)rg.getChildAt(browsingTime.date-1)).setChecked(true);
         HorizontalScrollView scroll = (HorizontalScrollView) root.findViewById(R.id.date_scroll);
+
         scroll.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                                                                    @Override
                                                                    public void onGlobalLayout() {
@@ -426,8 +427,10 @@ public class Schedule extends RefreshableFragment {
                     //decrease date
                     int month = browsingTime.month;
                     browsingTime.change(Calendar.DATE, -1);
-                    updateTitleBar();
-                    autoscroll();
+                    if(browsingTime.month != month)
+                        updateTitleBar();
+                    else
+                        autoscroll();
                     load();
                 }
                 else{
@@ -440,8 +443,11 @@ public class Schedule extends RefreshableFragment {
                 if(!expanded) {
                     int month = browsingTime.month;
                     browsingTime.change(Calendar.DATE, 1);
-                    updateTitleBar();
-                    autoscroll();
+                    if(browsingTime.month != month)
+                        updateTitleBar();
+                    else
+                        autoscroll();
+                    load();
                     load();
                 }
                 else{
@@ -455,6 +461,11 @@ public class Schedule extends RefreshableFragment {
     private void autoscroll(){
         HorizontalScrollView date_scroll = (HorizontalScrollView)getView().findViewById(R.id.date_scroll);
         RadioGroup rg = (RadioGroup) getView().findViewById(R.id.date_radio_group);
+        RadioButton rb = (RadioButton) rg.getChildAt(browsingTime.date-1);
+        LogUtil.d("SCROLL",browsingTime.date + " "+ rb.isChecked());
+        if(!rb.isChecked())
+            rb.setChecked(true);
+
         date_scroll.smoothScrollTo(rg.getChildAt(browsingTime.date-1).getLeft()
                 + rg.getChildAt(browsingTime.date-1).getMeasuredWidth()/2
                 + rg.getChildAt(browsingTime.date-1).getPaddingLeft()
@@ -522,7 +533,7 @@ public class Schedule extends RefreshableFragment {
             daywk.addView(dwk);
         }
         //if(browsingTime.date == browsingTime.month_length())
-            ((RadioButton)rg.getChildAt(browsingTime.date-1)).setChecked(true);
+        ((RadioButton)rg.getChildAt(browsingTime.date-1)).setChecked(true);
         autoscroll();
         last_date_length = browsingTime.month_length();
         for(int i = 0; i < rg.getChildCount(); i++){
@@ -573,12 +584,19 @@ public class Schedule extends RefreshableFragment {
         expcal.setOnDateChangeListener(new CalendarView.OnDateChangeListener(){
             @Override
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth){
-                browsingTime.year = year;
-                browsingTime.month = month;
-                browsingTime.date = dayOfMonth;
+                if(month!=browsingTime.month){
+                    browsingTime.set(Calendar.YEAR, year);
+                    browsingTime.set(Calendar.MONTH, month);
+                    browsingTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                    updateTitleBar();
+                }
+                else{
+                    browsingTime.set(Calendar.YEAR, year);
+                    browsingTime.set(Calendar.MONTH, month);
+                    browsingTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                    autoscroll();
+                }
                 load();
-                if(month!=browsingTime.month) updateTitleBar();
-                autoscroll();
             }
         });
         cal.addView(expcal);
