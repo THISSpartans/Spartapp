@@ -40,7 +40,7 @@ import java.util.StringTokenizer;
 
 public class MainActivity extends Activity {
 
-    RefreshableFragment schedule = null, announcement = null, post = null, current, services;//schedule程序开始时初始化，其余第一次navigate时初始化
+    RefreshableFragment schedule = null, announcement = null, post = null, current, services, news = null;//schedule程序开始时初始化，其余第一次navigate时初始化
     FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
     SharedPreferences sp;
@@ -68,6 +68,14 @@ public class MainActivity extends Activity {
                     switchContent(current, post);
                     return true;
                     */
+
+                case R.id.navigation_news:
+                    if(news == null){
+                        news = new News();
+                    }
+                    switchContent(current, news);
+                    return true;
+
                 case R.id.navigation_services:
                     if(services == null){
                         services = new Services();

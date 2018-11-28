@@ -61,8 +61,6 @@ public class PeriodAdapter extends ArrayAdapter {
         }
         //itemView.setOnClickListener(selectDate);
 
-
-        //懒得用自定义属性了，adjustviewbounds用来标识圈儿有没有边框
         if(cp.focus) {
             holder.num.setTextColor(context.getResources().getColor(R.color.purple));
             holder.period.setTextColor(context.getResources().getColor(R.color.purple));

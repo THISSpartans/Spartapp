@@ -16,9 +16,15 @@
         android:icon="@drawable/post"
         android:title="post" />
     -->
+
     <item
-        android:id="@+id/navigation_services"
-        android:icon="@drawable/services"
-        android:title="services" />
+        android:id="@+id/navigation_news"
+        android:icon="@drawable/announcement"
+        android:title="news" />
+
+    <item
+    android:id="@+id/navigation_services"
+    android:icon="@drawable/services"
+    android:title="services" />
 
 </menu>
