@@ -74,6 +74,8 @@ public class PeriodAdapter extends ArrayAdapter {
             holder.image.setTag(context.getResources().getColor(R.color.shaded_background));
         }
 
+        holder.image.setImageDrawable(context.getResources().getDrawable(cp.backgroundID));
+
         String str = (cp.period/2+1) + (cp.period%2==0? "A":"B");
         holder.num.setText(str);
         holder.period.setText(

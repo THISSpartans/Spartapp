@@ -201,6 +201,9 @@ public class News extends RefreshableFragment {
             if(i.date != null) {
                 holder.d.setText(i.date);
             }
+            else{
+                holder.d.setText("");
+            }
             holder.b.setText(i.body);
 
             //itemView.setOnClickListener(selectDate);

@@ -19,7 +19,7 @@
 
     <item
         android:id="@+id/navigation_news"
-        android:icon="@drawable/announcement"
+        android:icon="@drawable/news"
         android:title="news" />
 
     <item
