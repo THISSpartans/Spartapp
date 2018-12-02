@@ -12,12 +12,23 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVLiveQuery;
+import com.avos.avoscloud.AVLiveQueryEventHandler;
+import com.avos.avoscloud.AVLiveQuerySubscribeCallback;
+import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.FindCallback;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -35,28 +46,74 @@ public class News extends RefreshableFragment {
      */
     private boolean getStuff(){
         //todo internet, remember to do time order (recent -> far)
+        AVQuery<AVObject> news = new AVQuery<>("News");
+        //news.orderByDescending("updatedAt");
+        news = news.orderByDescending("date");
+        news.findInBackground(new FindCallback<AVObject>() {
+            @Override
+            public void done(List<AVObject> list_, AVException e) {
+                if (e == null) {
+                    updateNews(list_);
+                    news_adapter NA = new news_adapter(mActivity, content);
+                    list.setAdapter(NA);
+                    NA.notifyDataSetChanged();
+                } else {
+                    Toast t = Toast.makeText(mActivity,
+                            "Error, please connect to the internet", Toast.LENGTH_LONG);
+                    t.setGravity(Gravity.CENTER, 0, 0);
+                    t.show();
+                }
+            }
+        });
 
-        content = new ArrayList<>(3);
-        content.add(new news_element(
-                new CastratedDate(), "Title","cyka blyat idinahui, p90 rush b, vodka"
-        ));
-        content.add(new news_element(
-                new CastratedDate(), "Title","cyka blyat idinahui, p90 rush b, vodka"
-        ));
-        content.add(new news_element(
-                new CastratedDate(), "Title","cyka blyat idinahui, p90 rush b, vodka"
-        ));
+        /*AVLiveQuery livenews = AVLiveQuery.initWithQuery(news);
+        livenews.setEventHandler(new AVLiveQueryEventHandler() {
+            public void done(AVLiveQuery.EventType eventType, AVObject avObject, List<String> updateKeyList) {
+                // 事件回调，有更新后会调用此回调函数
 
+            }
+            public void onObjectCreated(AVObject avObject){
+                //new item
+            }
+        });
+        livenews.subscribeInBackground(new AVLiveQuerySubscribeCallback() {
+            @Override
+            public void done(AVException e) {
+                if (null == e) {
+                    // 订阅成功
+                }
+            }
+        });
+*/
+
+        return true;
+    }
+
+    public void updateNews(List<AVObject> news){
+        content = new ArrayList<>(news.size());
+        ArrayList<String> datesIncluded = new ArrayList<>(0);
+        for(AVObject newsitem: news){
+            int dateInt = newsitem.getInt("date");
+            String date = Integer.toString(dateInt);
+            int year = Integer.parseInt(date.substring(0, 4));
+            int month = Integer.parseInt(date.substring(4,6));
+            int day = Integer.parseInt(date.substring(6, 8));
+            String body = newsitem.getString("body");
+            String title = newsitem.getString("title");
+            Log.d("TITLEAV", date);
+                content.add(new news_element(
+                        new CastratedDate(year, month - 1, day), title, body
+                ));
+        }
         //remove repeated dates
         for(int i = content.size()-1; i > 0; i--){
             if(content.get(i).date.toString().equals(
                     content.get(i-1).date.toString()
             )){
                 content.get(i).date = null;
+                Log.d("nullified", content.get(i).title);
             }
         }
-
-        return true;
     }
 
     public void onAttach(Context context) {
@@ -67,7 +124,8 @@ public class News extends RefreshableFragment {
 
     public void onStart(){
         super.onStart();
-        display();
+        //display();
+        getStuff();
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -154,6 +212,7 @@ public class News extends RefreshableFragment {
     private static class news_element{
         SpannableStringBuilder date;
         SpannableStringBuilder body;
+        String title;
 
         String week_day_name[] =
                 {
@@ -161,13 +220,14 @@ public class News extends RefreshableFragment {
                 };
 
         public news_element(@Nullable CastratedDate d, String title, String content){
+            this.title = title;
             if(d == null){
                 //no date text
+               
             }
             else{
-
                 //concatenate date string
-                String str = d.date + "\n" + week_day_name[d.get(Calendar.DAY_OF_WEEK)-1];
+                String str = d.get(Calendar.DATE) + "\n" + week_day_name[d.get(Calendar.DAY_OF_WEEK)-1];
 
                 if(d.equals(new CastratedDate())){
                     //purple date text

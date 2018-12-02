@@ -90,7 +90,7 @@ public class CastratedDate {
         //first month is 0
         month = cal.get(Calendar.MONTH);
         //first day is 1
-        date = cal.get(Calendar.DAY_OF_MONTH);
+        date = cal.get(Calendar.DATE);
     }
 
     public int month_length(){
@@ -134,7 +134,7 @@ public class CastratedDate {
     public static String dayInWeek(int yr, int m, int d){
         Calendar cal = Calendar.getInstance();
         cal.set(yr, m, d);
-        SimpleDateFormat formatter = new SimpleDateFormat("E",Locale.ENGLISH);
+        SimpleDateFormat formatter = new SimpleDateFormat("E", Locale.ENGLISH);
         return formatter.format(cal.getTime());
     }
 
