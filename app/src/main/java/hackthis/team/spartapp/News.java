@@ -48,7 +48,7 @@ public class News extends RefreshableFragment {
         //todo internet, remember to do time order (recent -> far)
         AVQuery<AVObject> news = new AVQuery<>("News");
         //news.orderByDescending("updatedAt");
-        news = news.orderByDescending("date");
+        news = news.orderByDescending("date"); //
         news.findInBackground(new FindCallback<AVObject>() {
             @Override
             public void done(List<AVObject> list_, AVException e) {
@@ -223,7 +223,7 @@ public class News extends RefreshableFragment {
             this.title = title;
             if(d == null){
                 //no date text
-               
+
             }
             else{
                 //concatenate date string
