@@ -67,6 +67,8 @@ public class Schedule extends RefreshableFragment {
     ArrayAdapter<ClassPeriod> adapter;
 
     ImageView listBackground;
+    ListView lv;
+    View root;
 
     View.OnClickListener FETCH = new View.OnClickListener() {
         @Override
@@ -98,7 +100,6 @@ public class Schedule extends RefreshableFragment {
             load();
         }
     };
-
     PopupWindow popup;
     CalendarView expcal;
     LinearLayout cal;
@@ -204,7 +205,6 @@ public class Schedule extends RefreshableFragment {
 
                         //convert periods into listview items
                         adapter = new PeriodAdapter(mActivity, R.layout.period_small, periods);
-                        ListView lv = (ListView) getView().findViewById(R.id.schedule_list);
                         listBackground.setImageDrawable(null);
                         lv.setAdapter(adapter);
 
@@ -213,7 +213,6 @@ public class Schedule extends RefreshableFragment {
                 }
             }
         else{
-            ListView lv = (ListView) getView().findViewById(R.id.schedule_list);
             ArrayList<ClassPeriod> empty = new ArrayList<>(0);
             adapter = new PeriodAdapter(mActivity, R.layout.period_small, empty);
             LogUtil.d("SCHE",Integer.toString(browsingTime.get(Calendar.DAY_OF_WEEK)));
@@ -406,7 +405,7 @@ public class Schedule extends RefreshableFragment {
         MyScrollView dpscroll = (MyScrollView)root.findViewById(R.id.datepickerscroll);
 */
 
-        ListView lv = (ListView) root.findViewById(R.id.schedule_list);
+        lv = (ListView) root.findViewById(R.id.schedule_list);
         lv.setOnTouchListener(new OnSwipeTouchListener(mActivity) {
 
             public void onSwipeTop(){
@@ -448,13 +447,14 @@ public class Schedule extends RefreshableFragment {
                     else
                         autoscroll();
                     load();
-                    load();
                 }
                 else{
                     r.callOnClick();
                 }
             }
         });
+
+        this.root = root;
 
         return root;
     }
@@ -498,8 +498,6 @@ public class Schedule extends RefreshableFragment {
 
     //append or remove number buttons to fit the new month length
     public void updateTitleBar(){
-        View root = this.getView();
-
         TextView m = (TextView) root.findViewById(R.id.schedule_month);
         m.setText(month_text());
 
