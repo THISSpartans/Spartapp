@@ -11,9 +11,11 @@ import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.List;
@@ -81,6 +83,24 @@ public class PeriodAdapter extends ArrayAdapter {
         holder.period.setText(
                 TextSize(cp.sub.name+"\n"+cp.sub.teacher+"\n"+cp.sub.room)
         );
+
+        itemView.setMinimumHeight(((Schedule)(((MainActivity) context).schedule)).unitHeight);
+
+        /*
+        itemView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                int h = v.getHeight();
+                int H = ((Schedule)(((MainActivity) context).schedule)).unitHeight;
+                //LogUtil.d("itemview",Integer.toString(H)+"_"+Integer.toString(h));
+                //v.setLayoutParams(new LinearLayout.LayoutParams((int)Schedule.convertDpToPixel(10f,context),H>h?H:h));
+                h = v.getHeight();
+                H = ((Schedule)(((MainActivity) context).schedule)).unitHeight;
+                LogUtil.d("itemview",Integer.toString(H)+"_"+Integer.toString(h));
+                v.removeOnLayoutChangeListener(this);
+            }
+        });
+        */
 
         return itemView;
     }

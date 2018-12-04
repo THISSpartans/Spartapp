@@ -13,6 +13,7 @@ import android.support.v4.view.MotionEventCompat;
 import android.text.Layout;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -68,6 +69,8 @@ public class Schedule extends RefreshableFragment {
 
     ImageView listBackground;
     ListView lv;
+
+    public int unitHeight;
 
     View.OnClickListener FETCH = new View.OnClickListener() {
         @Override
@@ -405,8 +408,16 @@ public class Schedule extends RefreshableFragment {
 */
 
         lv = (ListView) root.findViewById(R.id.schedule_list);
+        lv.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                unitHeight = (int)(lv.getHeight()*0.25);
+                lv.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                refresh();
+            }
+        });
         lv.setOnTouchListener(new OnSwipeTouchListener(mActivity) {
-
+            /*
             public void onSwipeTop(){
                 if(expanded) {
                     excal.callOnClick();
@@ -418,7 +429,7 @@ public class Schedule extends RefreshableFragment {
                     excal.callOnClick();
                 }
             }
-
+            */
 
             public void onSwipeRight() {
                 if(!expanded) {
@@ -538,10 +549,6 @@ public class Schedule extends RefreshableFragment {
         }
 
         setCalendarToMonth();
-    }
-
-    public void update(){
-        refresh();
     }
 
     /**
