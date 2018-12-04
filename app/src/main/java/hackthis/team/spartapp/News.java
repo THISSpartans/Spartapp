@@ -231,15 +231,15 @@ public class News extends RefreshableFragment {
             else{
                 //concatenate date string
                 String str = d.get(Calendar.DATE) + "\n" + week_day_name[d.get(Calendar.DAY_OF_WEEK)-1];
-
-                if(d.equals(new CastratedDate())){
+                String str1 = new CastratedDate().get(Calendar.DATE) + "\n" + week_day_name[new CastratedDate().get(Calendar.DAY_OF_WEEK)-1];
+                date = new SpannableStringBuilder(str);
+                if(d.get(Calendar.DATE) == new CastratedDate().get(Calendar.DATE)
+                        && d.get(Calendar.MONTH) == new CastratedDate().get(Calendar.MONTH)){
                     //purple date text
-                    date = new SpannableStringBuilder(str);
                     date.setSpan(new ForegroundColorSpan(mActivity.getResources().getColor(R.color.purple)),
                             0,str.length(),Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                 }
                 else{
-                    date = new SpannableStringBuilder(str);
                     date.setSpan(new ForegroundColorSpan(mActivity.getResources().getColor(R.color.grey)),
                             0,str.length(),Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                     //grey date text

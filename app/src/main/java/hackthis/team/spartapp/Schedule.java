@@ -68,7 +68,6 @@ public class Schedule extends RefreshableFragment {
 
     ImageView listBackground;
     ListView lv;
-    View root;
 
     View.OnClickListener FETCH = new View.OnClickListener() {
         @Override
@@ -454,8 +453,6 @@ public class Schedule extends RefreshableFragment {
             }
         });
 
-        this.root = root;
-
         return root;
     }
     private void autoscroll(){
@@ -498,6 +495,7 @@ public class Schedule extends RefreshableFragment {
 
     //append or remove number buttons to fit the new month length
     public void updateTitleBar(){
+        View root = getView();
         TextView m = (TextView) root.findViewById(R.id.schedule_month);
         m.setText(month_text());
 
