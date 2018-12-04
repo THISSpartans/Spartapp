@@ -73,6 +73,7 @@ public class MainActivity extends Activity {
                     if(news == null){
                         news = new News();
                     }
+                    updateClickNum();
                     switchContent(current, news);
                     return true;
 
@@ -281,6 +282,26 @@ public class MainActivity extends Activity {
         in.close();
         LogUtil.d("HTML_IN", "done reading schedule");
         return schedule;
+    }
+
+    private void updateClickNum(){
+        LogUtil.d("newscontent","clicked");
+        AVQuery<AVObject> q = new AVQuery<>("NewsViews");
+        q.getInBackground("5c053423808ca40072d3a1e0", new GetCallback<AVObject>() {
+            @Override
+            public void done(AVObject avObject, AVException e) {
+                if(e == null){
+                    LogUtil.d("newscontent","got");
+                    int i = avObject.getInt("numOfViews");
+                    AVObject n = AVObject.createWithoutData("NewsViews","5c053423808ca40072d3a1e0");
+                    n.put("numOfViews",i+1);
+                    n.saveInBackground();
+                }
+                else{
+                    LogUtil.d("newscontent",e.getMessage());
+                }
+            }
+        });
     }
 
 }
