@@ -167,43 +167,43 @@ public class MainActivity extends Activity {
                 .penaltyLog().penaltyDeath().build());
 
         LogUtil.d("VER","test");
-        AVQuery versionQuery = new AVQuery("AndroidVersionInfo");
-        versionQuery.getInBackground("5adf2f749f545433342866ec", new GetCallback() {
-                @Override
-                public void done(AVObject avObject, AVException e) {
-                    if(e==null) {
-                        String versionName = avObject.getString("version_name");
-                        int versionCode = avObject.getInt("version_code");
+        AVQuery<AVObject> versionQuery = new AVQuery<AVObject>("AndroidVersionInfo");
+        versionQuery.getInBackground("5adf2f749f545433342866ec", new GetCallback<AVObject>() {
+            @Override
+            public void done(final AVObject avObject, AVException e) {
+                if(e==null) {
+                    String versionName = avObject.getString("version_name");
+                    int versionCode = avObject.getInt("version_code");
 
-                        //dialogue for version name
-                        try {
-                            PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
-                            int localVersionCode = pInfo.versionCode;
-                            LogUtil.d("VER", "local version code is " + localVersionCode);
+                    //dialogue for version name
+                    try {
+                        PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
+                        int localVersionCode = pInfo.versionCode;
+                        LogUtil.d("VER", "local version code is " + localVersionCode);
 
-                            if (localVersionCode < versionCode) {
-                                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(MainActivity.this);
-                                alertBuilder.setPositiveButton("update", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/spartapp_android.apk"));
-                                        startActivity(browserIntent);
-                                    }
-                                }).setNegativeButton("ignore", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
+                        if (localVersionCode < versionCode) {
+                            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(MainActivity.this);
+                            alertBuilder.setPositiveButton("update", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(avObject.getString("URL")));
+                                    startActivity(browserIntent);
+                                }
+                            }).setNegativeButton("ignore", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
 
-                                    }
-                                }).setMessage("A new version " + versionName + " is available.")
-                                        .setCancelable(true);
-                                LogUtil.d("VER", "connected and obtained version " + versionName + " with code " + versionCode);
-                                AlertDialog dialog = alertBuilder.create();
-                                dialog.show();
-                            }
-
-                        } catch (PackageManager.NameNotFoundException E) {
-                            E.printStackTrace();
+                                }
+                            }).setMessage("A new version " + versionName + " is available.")
+                                    .setCancelable(true);
+                            LogUtil.d("VER", "connected and obtained version " + versionName + " with code " + versionCode);
+                            AlertDialog dialog = alertBuilder.create();
+                            dialog.show();
                         }
+
+                    } catch (PackageManager.NameNotFoundException E) {
+                        E.printStackTrace();
                     }
                 }
+            }
         });
     }
 
