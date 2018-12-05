@@ -92,18 +92,28 @@ public class News extends RefreshableFragment {
     public void updateNews(List<AVObject> news){
         content = new ArrayList<>(news.size());
         ArrayList<String> datesIncluded = new ArrayList<>(0);
+        CastratedDate c = new CastratedDate();
         for(AVObject newsitem: news){
-            int dateInt = newsitem.getInt("date");
-            String date = Integer.toString(dateInt);
-            int year = Integer.parseInt(date.substring(0, 4));
-            int month = Integer.parseInt(date.substring(4,6));
-            int day = Integer.parseInt(date.substring(6, 8));
-            String body = newsitem.getString("body");
-            String title = newsitem.getString("title");
-            Log.d("TITLEAV", date);
-                content.add(new news_element(
-                        new CastratedDate(year, month - 1, day), title, body
-                ));
+            try {
+                int dateInt = newsitem.getInt("date");
+                String date = Integer.toString(dateInt);
+                int year = Integer.parseInt(date.substring(0, 4));
+                int month = Integer.parseInt(date.substring(4, 6));
+                int day = Integer.parseInt(date.substring(6, 8));
+                String body = newsitem.getString("body");
+                String title = newsitem.getString("title");
+                Log.d("TITLEAV", date);
+
+                LogUtil.d("news",Integer.toString(c.year * 10000+c.month*100+100+ c.date)+" "+dateInt);
+                if(dateInt <= c.year * 10000+c.month*100+100+ c.date) {
+                    content.add(new news_element(
+                            new CastratedDate(year, month - 1, day), title, body
+                    ));
+                }
+            }
+            catch(Exception e1){
+
+            }
         }
         //remove repeated dates
         for(int i = content.size()-1; i > 0; i--){
@@ -134,20 +144,14 @@ public class News extends RefreshableFragment {
         return root;
     }
 
-    public void refresh(){}
+    public void refresh(){getStuff();}
 
     public void display(){
         //re-download news and call ondatachange
-        if(getStuff()){
             news_adapter NA = new news_adapter(mActivity, content);
             list.setAdapter(NA);
             NA.notifyDataSetChanged();
-        }
-        else{
-            if(content.isEmpty()){
-                //todo check internet warning
-            }
-        }
+
     }
 
     private static class news_adapter extends BaseAdapter{
