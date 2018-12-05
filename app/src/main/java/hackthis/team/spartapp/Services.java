@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 public class Services extends RefreshableFragment {
 
@@ -18,7 +20,8 @@ public class Services extends RefreshableFragment {
     View.OnClickListener toElection = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            startActivity(new Intent(mActivity, ElectionPage.class));
+            Toast.makeText(mActivity,"Election is over!",Toast.LENGTH_SHORT).show();
+                //startActivity(new Intent(mActivity, ElectionPage.class));
         }
     };
 

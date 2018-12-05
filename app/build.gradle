@@ -15,7 +15,7 @@ android {
         applicationId "hackthis.spartapp"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 15
+        versionCode 16
         versionName "3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

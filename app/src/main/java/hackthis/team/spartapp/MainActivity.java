@@ -183,16 +183,16 @@ public class MainActivity extends Activity {
 
                             if (localVersionCode < versionCode) {
                                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(MainActivity.this);
-                                alertBuilder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                                alertBuilder.setPositiveButton("update", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
                                         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/spartapp_android.apk"));
                                         startActivity(browserIntent);
                                     }
-                                }).setNegativeButton("no", new DialogInterface.OnClickListener() {
+                                }).setNegativeButton("ignore", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
 
                                     }
-                                }).setMessage("A new version (" + versionName + ") is available. Do you want to download it?")
+                                }).setMessage("A new version " + versionName + " is available.")
                                         .setCancelable(true);
                                 LogUtil.d("VER", "connected and obtained version " + versionName + " with code " + versionCode);
                                 AlertDialog dialog = alertBuilder.create();
