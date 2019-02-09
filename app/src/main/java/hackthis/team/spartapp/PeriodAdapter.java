@@ -48,6 +48,13 @@ public class PeriodAdapter extends ArrayAdapter {
         Hol holder;
         if (convertView == null) {
             itemView = View.inflate(context, R.layout.period, null);
+
+            //expand margin between periods to fit screen
+            LinearLayout.LayoutParams periodparams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT);
+            periodparams.setMargins(0,0,0,50);
+            itemView.setLayoutParams(periodparams);
+            //
             holder = new Hol(
                     (TextView)itemView.findViewById(R.id.period_num),
                     (TextView)itemView.findViewById(R.id.period_period),

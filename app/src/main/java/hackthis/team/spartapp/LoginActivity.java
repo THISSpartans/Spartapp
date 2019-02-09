@@ -299,14 +299,14 @@ public class LoginActivity extends AppCompatActivity{
                 :"https://power.this.edu.cn/teachers/pw.html";
 
         webView.getSettings().setJavaScriptEnabled(true);
-        //setContentView(webView);
+        setContentView(webView);
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 if(!pastLoginPage[0]){
                     LogUtil.d("HTML", url + " page finished");
                     String usrField = (occ.equals("student"))?"fieldAccount":"fieldUsername";
-                    String btnName = (occ.equals("student"))?(schl.equals("THIS")?"btn-enter":"btn-enter-sign-in"):"btnEnter";
+                    String btnName = (occ.equals("student"))?("btn-enter-sign-in"):"btnEnter";
                     LogUtil.d("HTML", usrField);
                     webView.evaluateJavascript("document.getElementById('"+usrField+"').value='"+account+"'", null);
                     webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password+"'", null);
@@ -318,6 +318,7 @@ public class LoginActivity extends AppCompatActivity{
                                 @Override
                                 public void onReceiveValue(String html_) {
                                     try{
+                                        //Log.d("HTML", html_);
                                         //internet works, fetch calendar on this thread
                                         if(html_.contains("Grades and Attendance")||html_.contains("Current Classes")) {
                                             LogUtil.d("HTML", html_);
@@ -332,6 +333,7 @@ public class LoginActivity extends AppCompatActivity{
 
                 }
                 else if(!timeout[0]){
+                    Log.d("HTML", "ligma");
                     LogUtil.d("HTML", "logged in");
                     webView.evaluateJavascript(
                             "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
@@ -340,6 +342,7 @@ public class LoginActivity extends AppCompatActivity{
                                 public void onReceiveValue(String html_) {
                                     try{
                                         //internet works, fetch calendar on this thread
+                                        Log.d("HTML", "ligma");
                                         if(html_.contains("Grades and Attendance")||html_.contains("Current Classes")){
                                             LogUtil.d("HTML", html_);
                                             output(html_, account, password, occ, schl, context);
@@ -476,6 +479,7 @@ public class LoginActivity extends AppCompatActivity{
                 String periodInfo = col.get(0).text();
                 if (periodInfo.contains("HR")) continue;
                 String classInfo = col.get(15).text();
+                //Log.d("BALLS", classInfo);
                 String className = classInfo.substring(0, classInfo.indexOf("Details about") - 1);
                 String teacherName = classInfo.substring(classInfo.indexOf("Details about") + 14,
                         classInfo.indexOf("Email") - 1);
