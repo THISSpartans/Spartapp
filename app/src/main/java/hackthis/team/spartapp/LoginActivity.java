@@ -299,7 +299,7 @@ public class LoginActivity extends AppCompatActivity{
                 :"https://power.this.edu.cn/teachers/pw.html";
 
         webView.getSettings().setJavaScriptEnabled(true);
-        setContentView(webView);
+        //setContentView(webView);
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
