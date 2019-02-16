@@ -31,6 +31,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
@@ -387,6 +388,9 @@ public class MainActivity extends Activity {
                 schedule = new Schedule();
             }
             current = schedule;
+
+            FrameLayout container_dummy = (FrameLayout)findViewById(R.id.fragment_container);
+            container_dummy.removeAllViews();
 
             //加到主界面
             transaction.add(R.id.fragment_container, current).commit();
