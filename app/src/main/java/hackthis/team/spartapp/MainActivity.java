@@ -290,7 +290,13 @@ public class MainActivity extends Activity {
     //https://stackoverflow.com/questions/21477493/android-download-manager-completed
     @Override
     public void onStop() {
-        unregisterReceiver(ApkInstallReceiver);
+        //not sure what this does
+        //gave me receiver not registered error
+        try {
+            unregisterReceiver(ApkInstallReceiver);
+        }catch(Exception e){
+
+        }
         super.onStop();
     }
 

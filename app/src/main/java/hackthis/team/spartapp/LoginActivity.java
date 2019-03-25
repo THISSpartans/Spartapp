@@ -92,6 +92,7 @@ public class LoginActivity extends AppCompatActivity{
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
                     attemptLogin();
+                    LogUtil.d("HTML", "end then clicked");
                     return true;
                 }
                 return false;
@@ -103,6 +104,7 @@ public class LoginActivity extends AppCompatActivity{
             @Override
             public void onClick(View view) {
                 attemptLogin();
+                LogUtil.d("HTML", "end then clicked");
             }
         });
 
@@ -146,12 +148,7 @@ public class LoginActivity extends AppCompatActivity{
         prefs.edit().putString("account", email).apply();
         prefs.edit().putString("password", password).apply();
 
-        try {
-            openWebView(email, password);
-        }
-        catch(Exception e){
-            LogUtil.d("ERR", "open webview failed");
-        }
+
         boolean cancel = false;
         View focusView = null;
 
@@ -182,9 +179,19 @@ public class LoginActivity extends AppCompatActivity{
             // perform the user login attempt.
 
             //(deleted progress spinner 2018.8.8)
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+            //The following code doesnt do anything and causes a crash in some cases,
+            //much like myself.
+                //mAuthTask = new UserLoginTask(email, password);
+                //mAuthTask.execute((Void) null);
         }
+        try {
+            openWebView(email, password);
+            LogUtil.d("HTML", "out of openweb");
+        }
+        catch(Exception e){
+            LogUtil.d("ERR", "open webview failed");
+        }
+        LogUtil.d("HTML", "reached the end");
     }
 
 
@@ -291,7 +298,7 @@ public class LoginActivity extends AppCompatActivity{
                 startActivity(login);
             }
         };
-        timer.schedule(tt, 15000, 1);
+        timer.schedule(tt, 10000, 1);
 
         final String url_ = occ.equals("student")?(
                 schl.equals("THIS")?"https://power.this.edu.cn/public/home.html":
@@ -299,7 +306,10 @@ public class LoginActivity extends AppCompatActivity{
                 :"https://power.this.edu.cn/teachers/pw.html";
 
         webView.getSettings().setJavaScriptEnabled(true);
-        //setContentView(webView);
+        //2019.03.25, decided to show webview so it looks like something is happening
+        webView.setEnabled(false);
+        webView.setClickable(false);
+        setContentView(webView);
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
@@ -467,8 +477,11 @@ public class LoginActivity extends AppCompatActivity{
         HashMap<Integer, Subject[]> schedule = new HashMap<Integer, Subject[]>(0);
         LogUtil.d("HTML", "parsing html source");
         Document doc = Jsoup.parse(html);
+        LogUtil.d("HTML", "jsoup parsed");
         Element table = doc.select("table").get(0);
+        LogUtil.d("HTML", "table get0ed");
         Elements rows = table.select("tr");
+        LogUtil.d("HTML", "table tr selected");
         for(int dayNum = 1; dayNum <= cycleLen; dayNum++)
             schedule.put(new Integer(dayNum), new Subject[8]);
         for(int j=2; j<rows.size()-1; j++) {
