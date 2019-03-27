@@ -23,4 +23,5 @@
 
     <!-- String related to services -->
     <string name="election">StuCo 2018\nElection</string>
+    <string name = "langelection">US Presidential\n Election 2019</string>
 </resources>

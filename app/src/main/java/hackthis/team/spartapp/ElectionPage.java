@@ -99,6 +99,7 @@ public class ElectionPage extends Activity {
         keyList = new ArrayList<>(10);
 
         // grade 0 means the title will not be filtered by grade
+
         Title temp;
         temp = new Title("President",0);
         titles.add(Arrays.asList(

@@ -15,8 +15,6 @@ public class Services extends RefreshableFragment {
 
     Context mActivity;
 
-    FrameLayout election;
-
     View.OnClickListener toElection = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -41,8 +39,15 @@ public class Services extends RefreshableFragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.services, container, false);
-        election = root.findViewById(R.id.services_election);
-        election.setOnClickListener(toElection);
+        root.findViewById(R.id.services_election).setOnClickListener(toElection);
+        root.findViewById(R.id.services_langelection).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(mActivity, Lang2019.class));
+            }
+        });
+
+
         return root;
     }
 }

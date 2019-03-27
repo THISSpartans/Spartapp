@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -10,7 +11,13 @@
         android:text="Services"
         android:textColor="@color/black"
         android:padding="20dp"/>
-
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
     <FrameLayout
         android:id="@+id/services_election"
         android:layout_width="wrap_content"
@@ -34,5 +41,29 @@
             android:textColor="@color/white"
             android:padding="20dp"/>
     </FrameLayout>
+    <FrameLayout
+        android:id="@+id/services_langelection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
+        <hackthis.team.spartapp.RoundCornerLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/election"
+            android:adjustViewBounds="true"
+            android:focusable="true"
+            android:scaleType="fitXY" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:maxLines="5"
+            android:text="@string/langelection"
+            android:textColor="@color/white"
+            android:padding="20dp"/>
+    </FrameLayout>
+    </LinearLayout>
+    </ScrollView>
 </LinearLayout>

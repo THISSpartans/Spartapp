@@ -64,6 +64,7 @@
             android:label="Sign in" />
         <activity android:name=".PostGradeActivity" />
         <activity android:name=".ElectionPage"></activity>
+        <activity android:name=".Lang2019"></activity>
     </application>
 
 </manifest>
