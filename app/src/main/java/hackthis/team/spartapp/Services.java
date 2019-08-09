@@ -19,7 +19,6 @@ public class Services extends RefreshableFragment {
         @Override
         public void onClick(View v) {
             Toast.makeText(mActivity,"Election is over!",Toast.LENGTH_SHORT).show();
-                //startActivity(new Intent(mActivity, ElectionPage.class));
         }
     };
 
@@ -40,13 +39,6 @@ public class Services extends RefreshableFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.services, container, false);
         root.findViewById(R.id.services_election).setOnClickListener(toElection);
-        root.findViewById(R.id.services_langelection).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(mActivity, Lang2019.class));
-            }
-        });
-
 
         return root;
     }

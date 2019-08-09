@@ -27,6 +27,21 @@ public class CastratedDate {
             "December"
     };
 
+    final static String[] monthNameShort = {
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sept",
+            "Oct",
+            "Nov",
+            "Dec"
+    };
+
     private GregorianCalendar cal;
 
     CastratedDate () {
@@ -35,19 +50,19 @@ public class CastratedDate {
         //returns actual value
         year = cal.get(Calendar.YEAR);
         //first month is 0
-        month = cal.get(Calendar.MONTH);
+        month = cal.get(Calendar.MONTH)+1;
         //first day is 1
         date = cal.get(Calendar.DATE);
     }
 
     CastratedDate (int year, int month, int date) {
-        cal = new GregorianCalendar(year, month, date);
+        cal = new GregorianCalendar(year, month-1, date);
         //returns actual value
-        year = cal.get(Calendar.YEAR);
+        this.year = year;
         //first month is 0
-        month = cal.get(Calendar.MONTH);
+        this.month = month;
         //first day is 1
-        date = cal.get(Calendar.DATE);
+        this.date = date;
     }
 
     CastratedDate (Date date_source){
@@ -55,7 +70,7 @@ public class CastratedDate {
         cal.setTime(date_source);
         year = cal.get(Calendar.YEAR);
         //first month is 0
-        month = cal.get(Calendar.MONTH);
+        month = cal.get(Calendar.MONTH)+1;
         //first day is 1
         date = cal.get(Calendar.DATE);
     }
@@ -100,6 +115,8 @@ public class CastratedDate {
     public String month_name(){
         return monthName[month];
     }
+
+    public String month_name_short() {return monthNameShort[month];}
 
     public boolean is365(){
         if(month % 4 == 0){

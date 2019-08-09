@@ -3,15 +3,13 @@
 buildscript {
     
     repositories {
-        google()
         jcenter()
+        google()
         //这里是 LeanCloud 的包仓库
-        maven {
-            url "http://mvn.leancloud.cn/nexus/content/repositories/public"
-        }
+        maven { url 'http://repo.maven.apache.org/maven2' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.4.2'
         
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -21,14 +19,11 @@ buildscript {
 
 allprojects {
     repositories {
-        mavenCentral()
-        mavenLocal()
-        google()
+
         jcenter()
+        google()
         //这里是 LeanCloud 的包仓库
-        maven {
-            url "http://mvn.leancloud.cn/nexus/content/repositories/public"
-        }
+        maven { url 'http://repo.maven.apache.org/maven2' }
     }
 }
 

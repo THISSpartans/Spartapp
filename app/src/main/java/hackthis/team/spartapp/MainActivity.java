@@ -38,12 +38,15 @@ import android.widget.NumberPicker;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
-import com.avos.avoscloud.AVException;
-import com.avos.avoscloud.AVInstallation;
-import com.avos.avoscloud.AVObject;
-import com.avos.avoscloud.AVQuery;
-import com.avos.avoscloud.GetCallback;
-import com.avos.avoscloud.PushService;
+import cn.leancloud.AVException;
+import cn.leancloud.AVInstallation;
+import cn.leancloud.AVOSCloud;
+import cn.leancloud.AVObject;
+import cn.leancloud.AVQuery;
+import cn.leancloud.callback.GetCallback;
+import cn.leancloud.push.PushService;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -250,40 +253,55 @@ public class MainActivity extends Activity {
 
         LogUtil.d("VER","test");
         AVQuery<AVObject> versionQuery = new AVQuery<AVObject>("AndroidVersionInfo");
-        versionQuery.getInBackground("5adf2f749f545433342866ec", new GetCallback<AVObject>() {
+
+        versionQuery.getInBackground("5adf2f749f545433342866ec").subscribe(new Observer<AVObject>() {
             @Override
-            public void done(final AVObject avObject, AVException e) {
-                if(e==null) {
-                    String versionName = avObject.getString("version_name");
-                    int versionCode = avObject.getInt("version_code");
-                    String description = avObject.getString("description");
+            public void onSubscribe(Disposable d) {
 
-                    //dialogue for version name
-                    try {
-                        PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
-                        int localVersionCode = pInfo.versionCode;
-                        LogUtil.d("VER", "local version code is " + localVersionCode);
+            }
 
-                        if (versionCode > localVersionCode) {
-                            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(MainActivity.this);
-                            alertBuilder.setPositiveButton("update", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    download();
-                                }
-                            }).setNegativeButton("ignore", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
+            @Override
+            public void onNext(AVObject avObject) {
+                String versionName = avObject.getString("version_name");
+                int versionCode = avObject.getInt("version_code");
+                String description = avObject.getString("description");
 
-                                }
-                            }).setMessage(description)
-                                    .setCancelable(true);
-                            AlertDialog dialog = alertBuilder.create();
-                            dialog.show();
-                        }
+                //dialogue for version name
+                try {
+                    PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
+                    int localVersionCode = pInfo.versionCode;
+                    LogUtil.d("VER", "local version code is " + localVersionCode);
 
-                    } catch (PackageManager.NameNotFoundException E) {
-                        E.printStackTrace();
+                    if (versionCode > localVersionCode) {
+                        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(MainActivity.this);
+                        alertBuilder.setPositiveButton("update", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                download();
+                            }
+                        }).setNegativeButton("ignore", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                            }
+                        }).setMessage(description)
+                                .setCancelable(true);
+                        AlertDialog dialog = alertBuilder.create();
+                        dialog.show();
                     }
+
+                } catch (PackageManager.NameNotFoundException E) {
+                    E.printStackTrace();
                 }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                LogUtil.d("VER","cannot get online version");
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+
             }
         });
     }
@@ -379,31 +397,79 @@ public class MainActivity extends Activity {
 
     public void init_main(){
         boolean schExist = true;
+        //todo: remove the following before release
+        /*
         try {
             readWeeklySchedule();
         }
         catch(Exception e){
             schExist = false;
         }
+        */
         //determine if the user already logged in, if true do follows:
         if(schExist) {
             setContentView(R.layout.activity_main);
 
-            //初始化schedule
-            if (schedule == null) {
-                schedule = new Schedule();
+            Bundle extras = getIntent().getExtras();
+            String mode = extras==null?null:extras.getString("mode");
+
+            if(current!=null)transaction.hide(current);
+
+            //initialize bottom navigation (part1) (see below for part2)
+            BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+
+
+            //main screen (the functional ones)
+            if(mode != null) {
+                if (mode.equals("news")) {
+                    //launch with the news tab chosen
+                    //news need to be refreshed in case of new info
+                    if(news==null)
+                        news = new News();
+                    else
+                        news.refresh();
+                    current = news;
+                    navigation.setSelectedItemId(R.id.navigation_news);
+                    LogUtil.d("spartapp", "launching in news mode");
+                }
+                else if (mode.equals("services")) {
+                    //launch with the service tab chosen
+                    services = services==null?new Services():services;
+                    current = services;
+                    navigation.setSelectedItemId(R.id.navigation_services);
+                    LogUtil.d("spartapp", "launching in services mode");
+                }
+                else {
+                    //default: use the schedule tab to begin
+                    schedule = schedule==null?new Schedule():schedule;
+                    current = schedule;
+                    navigation.setSelectedItemId(R.id.navigation_schedule);
+                    LogUtil.d("spartapp", "launching in schedule mode");
+                }
             }
-            current = schedule;
+            else {
+                //todo switch back to schedule?
+                //default: use the schedule tab to begin
+                news = news==null?new News():news;
+                current = news;
+                navigation.setSelectedItemId(R.id.navigation_news);
+                LogUtil.d("spartapp", "launching in news mode");
+            }
 
+            if(current == null)
+                LogUtil.d("spartapp","theres nothing!");
+
+            //initialize navigation bar (part 2)
+            navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
+            //clear & find the fragment container
             FrameLayout container_dummy = (FrameLayout)findViewById(R.id.fragment_container);
-            container_dummy.removeAllViews();
+            container_dummy.removeAllViewsInLayout();
 
-            //加到主界面
+            //add current tab to fragment container
             transaction.add(R.id.fragment_container, current).commit();
 
-            //初始化选择栏
-            BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-            navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
         }
         else {
             LogUtil.d("ERR", "IOE");
@@ -419,10 +485,10 @@ public class MainActivity extends Activity {
         if (current != to) {
             current = to;
             transaction = getFragmentManager().beginTransaction();
-            if (!to.isAdded()) {    // 先判断是否被add过
-                transaction.hide(from).add(R.id.fragment_container, to).commit(); // 隐藏当前的fragment，add下一个到Activity中
+            if (!to.isAdded()) {    // see if the tab already exists in the background
+                transaction.hide(from).add(R.id.fragment_container, to).commit(); // hide the 'from' tab, add the 'to' tab: clarify: show != add, see 'show' below
             } else {
-                transaction.hide(from).show(to).commit(); // 隐藏当前的fragment，显示下一个
+                transaction.hide(from).show(to).commit(); // hide the 'from' tab, show the 'to' tab
             }
         }
         to.refresh();
@@ -459,19 +525,29 @@ public class MainActivity extends Activity {
     private void updateClickNum(){
         LogUtil.d("newscontent","clicked");
         AVQuery<AVObject> q = new AVQuery<>("NewsViews");
-        q.getInBackground("5c053423808ca40072d3a1e0", new GetCallback<AVObject>() {
+        q.getInBackground("5c053423808ca40072d3a1e0").subscribe(new Observer<AVObject>() {
             @Override
-            public void done(AVObject avObject, AVException e) {
-                if(e == null){
-                    LogUtil.d("newscontent","got");
-                    int i = avObject.getInt("numOfViews");
-                    AVObject n = AVObject.createWithoutData("NewsViews","5c053423808ca40072d3a1e0");
-                    n.put("numOfViews",i+1);
-                    n.saveInBackground();
-                }
-                else{
-                    LogUtil.d("newscontent",e.getMessage());
-                }
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(AVObject avObject) {
+                LogUtil.d("newscontent","got");
+                int i = avObject.getInt("numOfViews");
+                AVObject n = AVObject.createWithoutData("NewsViews","5c053423808ca40072d3a1e0");
+                n.put("numOfViews",i+1);
+                n.saveInBackground();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                LogUtil.d("newscontent",e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
             }
         });
     }

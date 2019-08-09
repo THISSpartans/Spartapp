@@ -36,8 +36,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.avos.avoscloud.AVException;
-import com.avos.avoscloud.AVObject;
+import cn.leancloud.AVException;
+import cn.leancloud.AVOSCloud;
 
 
 import java.io.BufferedReader;

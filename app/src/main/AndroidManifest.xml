@@ -33,21 +33,11 @@
             android:name=".LoginActivity"
             android:label="@string/title_activity_login" />
 
-        <receiver
-            android:name=".AlarmReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="AlarmReceiver_TimerAction" />
-            </intent-filter>
-        </receiver>
-
         <!-- 即时通讯模块、推送（均需要加入以下声明） START -->
         <!-- 即时通讯模块、推送都要使用 PushService -->
-        <service android:name="com.avos.avoscloud.PushService" android:enabled="true"/>
+        <service android:name="cn.leancloud.push.PushService" />
 
-        <receiver android:name="com.avos.avoscloud.AVBroadcastReceiver"
-           android:exported = "true"
-            android:enabled = "true">
+        <receiver android:name="cn.leancloud.push.AVBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.USER_PRESENT" />
@@ -56,15 +46,7 @@
         </receiver>
         <!-- 即时通讯模块、推送 END -->
 
-        <activity
-            android:name=".FilterActivity"
-            android:label="Announcement Filter" />
-        <activity
-            android:name=".PostLoginActivity"
-            android:label="Sign in" />
-        <activity android:name=".PostGradeActivity" />
-        <activity android:name=".ElectionPage"></activity>
-        <activity android:name=".Lang2019"></activity>
+        <activity android:name=".NewsActivity"></activity>
     </application>
 
 </manifest>

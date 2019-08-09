@@ -2,11 +2,12 @@ package hackthis.team.spartapp;
 
 import android.app.Application;
 
-import com.avos.avoscloud.AVException;
-import com.avos.avoscloud.AVInstallation;
-import com.avos.avoscloud.AVOSCloud;
-import com.avos.avoscloud.PushService;
-import com.avos.avoscloud.SaveCallback;
+import cn.leancloud.AVInstallation;
+import cn.leancloud.AVOSCloud;
+import cn.leancloud.AVObject;
+import cn.leancloud.push.PushService;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 public class MyLeanCloudApp extends Application {
     @Override
@@ -17,18 +18,23 @@ public class MyLeanCloudApp extends Application {
 
         // 初始化参数依次为 this, AppId, AppKey
         AVOSCloud.initialize(this,"cRxhzMwEQJ07JfRuztRYFJ5n-gzGzoHsz","kIvYOVL1hGnkS3n1kh76P8NC");
-        //TODO: remove before release
-        AVOSCloud.setDebugLogEnabled(true);
 
-        AVInstallation.getCurrentInstallation().saveInBackground(new SaveCallback() {
-            public void done(AVException e) {
-                if (e == null) {
-                    // 保存成功
-                    String installationId = AVInstallation.getCurrentInstallation().getInstallationId();
-                    // 关联  installationId 到用户表等操作……
-                } else {
-                    // 保存失败，输出错误信息
-                }
+        AVInstallation.getCurrentInstallation().saveInBackground().subscribe(new Observer<AVObject>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+            }
+            @Override
+            public void onNext(AVObject avObject) {
+                // 关联 installationId 到用户表等操作。
+                String installationId = AVInstallation.getCurrentInstallation().getInstallationId();
+                System.out.println("保存成功：" + installationId );
+            }
+            @Override
+            public void onError(Throwable e) {
+                System.out.println("保存失败，错误信息：" + e.getMessage());
+            }
+            @Override
+            public void onComplete() {
             }
         });
 

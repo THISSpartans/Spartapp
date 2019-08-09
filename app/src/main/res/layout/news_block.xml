@@ -1,29 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:padding="5dp">
+    android:padding="15dp">
     <TextView
         android:layout_width="0dp"
-        android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
+        android:layout_weight="1"
+        android:textSize="12sp"
         android:textStyle="bold"
-        android:layout_marginLeft="20dp"
         android:id="@+id/news_date"
         />
-    <TextView
+    <LinearLayout
         android:layout_width="0dp"
-        android:layout_weight="4"
         android:layout_height="wrap_content"
+        android:layout_weight="4"
         android:background="@drawable/news_bubble"
+        android:padding="15dp"
+        android:layout_marginLeft="5dp"
+        android:orientation="vertical">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
         android:text="apoeifjapeiofjapeiofjapeiofajefpaefjapw"
-        android:padding="11dp"
-        android:layout_margin="20dp"
-        android:translationZ="8dp"
         android:id="@+id/news_body"/>
-
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:id="@+id/news_image"
+        />
+    </LinearLayout>
 </LinearLayout>
