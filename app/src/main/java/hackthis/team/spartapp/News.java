@@ -47,13 +47,12 @@ public class News extends RefreshableFragment {
     ListView list;
     ArrayList<news_element> content = new ArrayList<>();
 
-    static private Context mActivity;
+    private Context mActivity;
 
     /*
     returns if there are new elements
      */
     private boolean getStuff() {
-        //todo internet, remember to do time order (recent -> far)
         AVQuery<AVObject> news = new AVQuery<>("News_Complex");
         //news.orderByDescending("updatedAt");
         news = news.orderByDescending("createdAt");
@@ -111,7 +110,7 @@ public class News extends RefreshableFragment {
                 LogUtil.d("news", title + " " + url + " " + date);
 
                 content.add(new news_element(
-                        (i <= 0 || ((lastMonth == month && lastDate == date) ? false : true)), month, date, title, body, author, attached, url
+                        (i <= 0 || (lastMonth != month || lastDate != date)), month, date, title, body, author, attached, url
                 ));
 
                 lastMonth = month;
@@ -137,7 +136,7 @@ public class News extends RefreshableFragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.news_page, container, false);
-        list = (ListView) root.findViewById(R.id.news_list);
+        list = root.findViewById(R.id.news_list);
         return root;
     }
 
@@ -153,11 +152,11 @@ public class News extends RefreshableFragment {
 
     }
 
-    private static class news_adapter extends BaseAdapter {
+    private class news_adapter extends BaseAdapter {
 
         ArrayList<news_element> item;
 
-        public news_adapter(Context context, ArrayList<news_element> item) {
+        private news_adapter(Context context, ArrayList<news_element> item) {
             super();
             this.item = item;
         }
@@ -187,13 +186,13 @@ public class News extends RefreshableFragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View itemView = null;
+            View itemView;
             Hol holder;
             if (convertView == null) {
                 itemView = View.inflate(mActivity, R.layout.news_block, null);
                 holder = new Hol();
-                holder.d = (TextView) itemView.findViewById(R.id.news_date);
-                holder.b = (TextView) itemView.findViewById(R.id.news_body);
+                holder.d = itemView.findViewById(R.id.news_date);
+                holder.b = itemView.findViewById(R.id.news_body);
                 holder.image = itemView.findViewById(R.id.news_image);
                 //用setTag的方法把ViewHolder与convertView "绑定"在一起
                 itemView.setTag(holder);
@@ -243,24 +242,24 @@ public class News extends RefreshableFragment {
 
 
 
-    private static class news_element {
+    private class news_element {
         SpannableStringBuilder date;
         SpannableStringBuilder body;
         String title;
 
-        String week_day_name[] =
+        String[] week_day_name =
                 {
                         "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat",
                 };
 
-        String month_short[] =
+        String[] month_short =
                 {
                         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"
                 };
         AVFile attach;
         String url;
 
-        public news_element(boolean includeDate, int m,int d, String title, @Nullable String content, @Nullable String author, @Nullable AVFile attach, @Nullable String url) {
+        private news_element(boolean includeDate, int m,int d, String title, @Nullable String content, @Nullable String author, @Nullable AVFile attach, @Nullable String url) {
             this.title = title;
 
             this.attach = attach;
@@ -268,7 +267,6 @@ public class News extends RefreshableFragment {
             if (includeDate) {
                 //concatenate date string
                 String str = month_short[m - 1] + ". " + d;
-                //String str1 = new CastratedDate().get(Calendar.DATE) + "\n" + week_day_name[new CastratedDate().get(Calendar.DAY_OF_WEEK) - 1];
                 date = new SpannableStringBuilder(str);
 
                 if (d == new GregorianCalendar().get(Calendar.DAY_OF_MONTH)

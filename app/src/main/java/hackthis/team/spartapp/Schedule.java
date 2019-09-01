@@ -54,6 +54,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -86,10 +87,7 @@ public class Schedule extends RefreshableFragment {
     private boolean is365(int year){
         if(year % 4 == 0){
             if(year % 100 == 0){
-                if(year % 400 == 0){
-                    return true;
-                }
-                return false;
+                return year % 400 == 0;
             }
             return true;
         }
@@ -108,7 +106,6 @@ public class Schedule extends RefreshableFragment {
     View.OnClickListener FETCH = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            //todo: code for log in
             Intent login = new Intent(mActivity, LoginActivity.class);
             startActivity(login);
         }
@@ -159,13 +156,13 @@ public class Schedule extends RefreshableFragment {
         public void onClick(View v){
             if(expanded) {
                 popup.showAsDropDown(mActivity.findViewById(R.id.expand_calendar));
-                ((Button)(mActivity.findViewById(R.id.expand_calendar)))
+                ((mActivity.findViewById(R.id.expand_calendar)))
                         .setBackground(ContextCompat.getDrawable(mActivity, R.drawable.arrow_down));
                 popup.dismiss();
                 expanded = false;
             }else {
                 popup.showAsDropDown(mActivity.findViewById(R.id.expand_calendar));
-                ((Button)(mActivity.findViewById(R.id.expand_calendar)))
+                ((mActivity.findViewById(R.id.expand_calendar)))
                         .setBackground(ContextCompat.getDrawable(mActivity, R.drawable.arrow_up));
                 expanded = true;
             }
@@ -220,7 +217,6 @@ public class Schedule extends RefreshableFragment {
                     }
                 }
                 else if (school.equals("ISB")){
-                    //todo any modifications for isb?
                     if(browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY)
                         subs[2] = null;
                 }
@@ -231,16 +227,16 @@ public class Schedule extends RefreshableFragment {
                             if (subs[j] != null)
                                 periods.add(new ClassPeriod(subs[j], j));
                         }
-                        LogUtil.d("spartapp_schedule", CastratedDate.getHourMinute() + " b:" + browsingTime + " f:" + focusTime + " r:" + new CastratedDate().toString());
+
                         if (browsingTime.get(Calendar.MONTH)==focusTime.get(Calendar.MONTH) && browsingTime.get(Calendar.DATE) == focusTime.get(Calendar.DATE)){
                             //for today
                             GregorianCalendar gal = new GregorianCalendar();
                             gal.setTime(new Date());
                             if (focusTime.get(Calendar.MONTH) == gal.get(Calendar.MONTH) && focusTime.get(Calendar.DATE) == gal.get(Calendar.DATE)) {
-                                int[] beginning = (new CastratedDate()).get(Calendar.DAY_OF_WEEK) ==
+                                int[] beginning = (new GregorianCalendar()).get(Calendar.DAY_OF_WEEK) ==
                                         Calendar.WEDNESDAY ? wednesdayPeriodBeginning.get(school) :
                                         regularPeriodBeginning.get(school);
-                                int temp = CastratedDate.getHourMinute();
+                                int temp = new GregorianCalendar().get(Calendar.HOUR_OF_DAY)*100+new GregorianCalendar().get(Calendar.MINUTE);
                                 for (ClassPeriod c : periods) {
                                     if (beginning[c.period] > temp) {
                                         c.focus = true;
@@ -286,13 +282,11 @@ public class Schedule extends RefreshableFragment {
         browsingTime = new GregorianCalendar();
         browsingTime.setTime(new Date());
 
-        //todo make sure these are correct
-
         regularPeriodBeginning = new HashMap<>(2);
         wednesdayPeriodBeginning = new HashMap<>(2);
 
-        regularPeriodBeginning.put("THIS", new int[] {815, 855, 950, 1035, 1115, 1300, 1355, 1435});
-        wednesdayPeriodBeginning.put("THIS", new int[] {815, 835, 900, 920, 1045, 1150, 1300, 1320});
+        regularPeriodBeginning.put("THIS", new int[] {815, 855, 950, 1035, 1122, 1305, 1355, 1435});
+        wednesdayPeriodBeginning.put("THIS", new int[] {815, 835, 900, 920, 1045, 1130, 1300, 1320});
 
         regularPeriodBeginning.put("ISB", new int[] {815, 950, 1155, 1225, 1400});
         wednesdayPeriodBeginning.put("ISB",new int[] {815, 945, 1110, 1305});
@@ -390,7 +384,7 @@ public class Schedule extends RefreshableFragment {
             rg.addView(rb, i);
 
             TextView dwk = (TextView) mActivity.getLayoutInflater().inflate(R.layout.date_wk, null);
-            dwk.setText(CastratedDate.dayInWeek(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), i+1).substring(0,1));
+            dwk.setText(dayInWeek(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), i+1).substring(0,1));
             dwk.setLayoutParams(wk_params);
             daywk.addView(dwk);
         }
@@ -541,12 +535,12 @@ public class Schedule extends RefreshableFragment {
                 : regularPeriodBeginning.get(school)[regularPeriodBeginning.get(school).length-1];
         GregorianCalendar temp = new GregorianCalendar();
         temp.setTime(new Date());
-        if(CastratedDate.getHourMinute() > endTime){
+        if(new GregorianCalendar().get(Calendar.HOUR_OF_DAY)*100 + new GregorianCalendar().get(Calendar.MINUTE)
+                > endTime){
             temp.add(Calendar.DATE, 1);
         }
 
         int count = 0;
-        //todo read schedule of date c and return if it is has classes, currently it only returns today or tomorrow
         while(subjectTable.get(temp.get(Calendar.YEAR)+"-"+temp.get(Calendar.MONTH)+"-"+temp.get(Calendar.DATE)) == null && count < 365){
             temp.add(Calendar.DATE, 1);
             count++;
@@ -588,7 +582,7 @@ public class Schedule extends RefreshableFragment {
         daywk.removeAllViews();
         for(int i=0; i < month_length(browsingTime); i++){
             TextView dwk = (TextView) mActivity.getLayoutInflater().inflate(R.layout.date_wk, null);
-            dwk.setText(CastratedDate.dayInWeek(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), i+1).substring(0,1));
+            dwk.setText(dayInWeek(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), i+1).substring(0,1));
             dwk.setLayoutParams(wk_params);
             daywk.addView(dwk);
         }
@@ -614,8 +608,7 @@ public class Schedule extends RefreshableFragment {
     public static float convertDpToPixel(float dp, Context context){
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
-        float px = dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
-        return px;
+        return dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
     public void setCalendarToMonth(){
@@ -748,7 +741,7 @@ public class Schedule extends RefreshableFragment {
         int dayInCycle = 1;
         while((line = in.readLine())!=null){
             StringTokenizer tizer = new StringTokenizer(line, "?");
-            //todo change period number according to school
+
             Subject[] dailySchedule = new Subject[tizer.countTokens()/3];
             for(int period = 0; period < dailySchedule.length; period ++){
                 String name = tizer.nextToken();
@@ -763,5 +756,13 @@ public class Schedule extends RefreshableFragment {
         in.close();
         LogUtil.d("SCHEDULE", "successfully read weekly schedule");
         return schedule;
+    }
+
+    //convert time to day in week
+    public static String dayInWeek(int yr, int m, int d) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(yr, m, d);
+        SimpleDateFormat formatter = new SimpleDateFormat("E", Locale.ENGLISH);
+        return formatter.format(cal.getTime());
     }
 }

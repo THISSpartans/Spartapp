@@ -365,7 +365,7 @@ public class MainActivity extends Activity {
             req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
             DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
 
-            long downloadID = dm.enqueue(req);
+            //long downloadID = dm.enqueue(req);
         }
         else{
             ActivityCompat.requestPermissions(MainActivity.this,
@@ -379,40 +379,34 @@ public class MainActivity extends Activity {
     //https://developer.android.com/training/permissions/requesting?hl=zh-cn
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case RequestCode: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-                    download();
+                                           String[] permissions, int[] grantResults) {
+        if (requestCode == RequestCode) {// If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // permission was granted, yay! Do the
+                // contacts-related task you need to do.
+                download();
 
-                } else {
-                    startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://www.spartapp.org")));
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
+            } else {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.spartapp.org")));
+                // permission denied, boo! Disable the
+                // functionality that depends on this permission.
             }
-
             // other 'case' lines to check for other
             // permissions this app might request
         }
     }
 
     public void init_main(){
-        boolean schExist = true;
-        //todo: remove the following before release
-        /*
+        boolean schExist;
         try {
             readWeeklySchedule();
+            schExist = true;
         }
         catch(Exception e){
             schExist = false;
         }
-        */
+
         //determine if the user already logged in, if true do follows:
         if(schExist) {
             setContentView(R.layout.activity_main);

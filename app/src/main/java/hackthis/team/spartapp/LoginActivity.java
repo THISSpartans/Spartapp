@@ -83,7 +83,6 @@ public class LoginActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //TODO：this does not delete the title bar for some reason, replace
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
         // Set up the login form.
@@ -111,7 +110,6 @@ public class LoginActivity extends AppCompatActivity{
             }
         });
 
-        //TODO depending on THIS/ISB, set schedule params
         SharedPreferences p = this.getSharedPreferences("clubs", Context.MODE_PRIVATE);
         String schl = p.getString("school", "THIS");
         if(schl.equals("THIS")) cycleLen = 6;
@@ -199,13 +197,11 @@ public class LoginActivity extends AppCompatActivity{
 
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
         return true;
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return true;
+        return !(password==null);
     }
 
     private interface ProfileQuery {
@@ -234,7 +230,6 @@ public class LoginActivity extends AppCompatActivity{
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
 
             try {
                 // Simulate network access.
@@ -251,7 +246,6 @@ public class LoginActivity extends AppCompatActivity{
                 }
             }
 
-            // TODO: register the new account here.
             return true;
         }
 
