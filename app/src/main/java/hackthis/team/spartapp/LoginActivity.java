@@ -32,6 +32,8 @@ import cn.leancloud.AVException;
 import cn.leancloud.AVOSCloud;
 import cn.leancloud.AVObject;
 import cn.leancloud.AVQuery;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.Jsoup;
@@ -299,7 +301,7 @@ public class LoginActivity extends AppCompatActivity{
                 startActivity(login);
             }
         };
-        timer.schedule(tt, 10000, 1);
+        //timer.schedule(tt, 10000, 1);
 
         final String url_ = occ.equals("student")?(
                 schl.equals("THIS")?"https://power.this.edu.cn/public/home.html":
@@ -353,7 +355,7 @@ public class LoginActivity extends AppCompatActivity{
                                 public void onReceiveValue(String html_) {
                                     try{
                                         //internet works, fetch calendar on this thread
-                                        Log.d("HTML", "ligma");
+                                        Log.d("HTML", "ligma2");
                                         if(html_.contains("Grades and Attendance")||html_.contains("Current Classes")){
                                             LogUtil.d("HTML", html_);
                                             output(html_, account, password, occ, schl, context);
@@ -376,44 +378,53 @@ public class LoginActivity extends AppCompatActivity{
         LogUtil.d("HTML", "initiated webview operations");
     }
 
-    public void output(String html_, String account, String password, String occ, String schl, Context context) throws Exception{
-        String html = StringEscapeUtils.unescapeJava(html_);
+    public void output(String html_, String account_, String password_, String occ_, String schl_, Context context) throws Exception{
+        final String account = account_;
+        final String password = password_;
+        final String occ = occ_;
+        final String schl = schl_;
+        final Context[] ctxt_ = {context};
+        Log.d("HTML", "pa");
+        //String html = StringEscapeUtils.unescapeJava(html_);
+        final String html = StringEscapeUtils.unescapeJava(html_);
         AVQuery query = new AVQuery("UpdateCalendar");
-        List<AVObject> qList = query.find();
-        String startOfYear = qList.get(0).getString("startOfYear");
-        HashMap<String, Integer> dateDay = fetchDateDayPairs(startOfYear);
-        LogUtil.d("HTML", account);
-        LogUtil.d("HTML", html);
-        HashMap<Integer, Subject[]> weeklySchedule =
-                (occ.equals("student"))?(schl.equals("THIS")?fetchScheduleStudent(html):
-                        fetchScheduleISB(html))
-                        :fetchScheduleTeacher(html);
-        writeDateDayPairs(dateDay);
-        writeWeeklySchedule(weeklySchedule);
-        SharedPreferences prefs = getApplicationContext().getSharedPreferences("verified", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("account", account);
-        editor.putString("password", password);
-        //must use commit instead of apply here
-        editor.commit();
-        triggerRebirth(context);
-    }
+        //breaks here
+        query.findInBackground().subscribe(new Observer() {
+            public void onSubscribe(Disposable disposable) {}
 
-    public HashMap<String, Integer> fetchDateDayPairs(String startOfYear) throws ParseException, AVException {
-        HashMap<String, Integer> pairs = new HashMap<>(0);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Calendar c = Calendar.getInstance();
-        c.setTime(sdf.parse(startOfYear));
-        LogUtil.d("CALENDAR", "pairing day cycle with calendar dates");
-        List<Integer> days = getCalendar();
-        for(Integer day : days){
-            String date = sdf.format(c.getTime());
-            pairs.put(date, day);
-            //LogUtil.d("CALENDAR", date.toString() + " " +day.toString());
-            c.add(Calendar.DATE, 1);
-        }
-        LogUtil.d("CALENDAR", "paired day cycle with calendar dates");
-        return pairs;
+            //@Override
+            public void onNext(Object o) {
+                List<AVObject> qlist = (List<AVObject>)o;
+                String startOfYear = qlist.get(0).getString("startOfYear");
+                Log.d("HTML", "a");
+                try {
+                    getCalendar(startOfYear);
+                    Log.d("HTML", "b");
+                    LogUtil.d("HTML", html);
+                    HashMap<Integer, Subject[]> weeklySchedule =
+                            (occ.equals("student")) ? (schl.equals("THIS") ? fetchScheduleStudent(html) :
+                                    fetchScheduleISB(html))
+                                    : fetchScheduleTeacher(html);
+
+                    writeWeeklySchedule(weeklySchedule);
+                }
+                catch(Exception e){e.printStackTrace();}
+                SharedPreferences prefs = getApplicationContext().getSharedPreferences("verified", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("account", account);
+                editor.putString("password", password);
+                //must use commit instead of apply here
+                editor.commit();
+                triggerRebirth(ctxt_[0]);
+            }
+
+            @Override
+            public void onError(Throwable e) {}
+
+            @Override
+            public void onComplete() {}
+        });
+
     }
 
     public void writeDateDayPairs(HashMap<String, Integer> pairs) throws IOException{
@@ -425,24 +436,53 @@ public class LoginActivity extends AppCompatActivity{
         LogUtil.d("CALENDAR", "wrote date-day pairs");
     }
 
-    public List<Integer> getCalendar() throws AVException {
+    public void getCalendar(String startOfYear_) throws AVException {
+        final String startOfYear = startOfYear_;
         AVQuery calendar = new AVQuery("Calendar");
-        List<AVObject> weeks = calendar.find();
-        List<Integer> days = new ArrayList<>(0);
-        weeks = QSDateHelper(weeks);
-        LogUtil.d("CALENDAR", "downloaded weekly calendar");
-        int curDay = -1;
-        for(AVObject week : weeks){
-            for(Boolean isDay : (List<Boolean>)week.getList("weeklyCalendar")) {
-                if(isDay) {
-                    days.add(curDay+1);
-                    curDay = (curDay+1) % cycleLen;
+        calendar.findInBackground().subscribe(new Observer() {
+            public void onSubscribe(Disposable disposable) {}
+
+            //@Override
+            public void onNext(Object o) {
+                List<AVObject> weeks = (List<AVObject>)o;
+                Log.d("HTML", "3");
+                List<Integer> days = new ArrayList<>(0);
+                Log.d("HTML", "4");
+                weeks = QSDateHelper(weeks);
+                LogUtil.d("CALENDAR", "downloaded weekly calendar");
+                int curDay = -1;
+                for(AVObject week : weeks){
+                    for(Boolean isDay : (List<Boolean>)week.getList("weeklyCalendar")) {
+                        //Log.d(week.getClassName());
+                        if(isDay) {
+                            days.add(curDay+1);
+                            curDay = (curDay+1) % cycleLen;
+                        }
+                        else days.add(-1);
+                    }
                 }
-                else days.add(-1);
+                LogUtil.d("CALENDAR", "generated daily calendar");
+                HashMap<String, Integer> pairs = new HashMap<>(0);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                Calendar c = Calendar.getInstance();
+                try{c.setTime(sdf.parse(startOfYear));} catch(Exception e){e.printStackTrace();}
+                LogUtil.d("CALENDAR", "pairing day cycle with calendar dates");
+                int i =0;
+                for(Integer day : days){
+                    String date = sdf.format(c.getTime());
+                    pairs.put(date, day);
+                    LogUtil.d("CALENDAR", date.toString() + " " +day.toString()+" "+i);
+                    c.add(Calendar.DATE, 1);
+                    i++;
+                }
+                LogUtil.d("CALENDAR", "paired day cycle with calendar dates");
+                try{writeDateDayPairs(pairs);} catch(Exception e){e.printStackTrace();}
             }
-        }
-        LogUtil.d("CALENDAR", "generated daily calendar");
-        return days;
+            @Override
+            public void onError(Throwable e) {}
+            @Override
+            public void onComplete() {}
+        });
     }
 
     public void writeWeeklySchedule(HashMap<Integer, Subject[]> schedule) throws Exception{

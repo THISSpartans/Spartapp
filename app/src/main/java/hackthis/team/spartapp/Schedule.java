@@ -50,6 +50,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,9 +61,40 @@ public class Schedule extends RefreshableFragment {
 
     private Activity mActivity;
 
-    private CastratedDate browsingTime; //the date for the exhibited schedule
-    private CastratedDate focusTime; //the date that contains the next period (will be enlarged)
+    private GregorianCalendar browsingTime; //the date for the exhibited schedule
+    private GregorianCalendar focusTime; //the date that contains the next period (will be enlarged)
                                         //this variable sets to the next school day
+
+    private int[] month_lengths = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    private String[] month_names = {"January", "February", "March", "April",
+                "May", "June", "July", "August", "September", "October",
+                "November", "December"};
+
+    //0 is Jan
+    private int month_length(GregorianCalendar date){
+        int month = date.get(Calendar.MONTH);
+        int year = date.get(Calendar.YEAR);
+        if(month == 1){
+            if(is365(year)) return month_lengths[month];
+            else return month_lengths[month]+1;
+        }
+        else{
+            return month_lengths[month];
+        }
+    }
+
+    private boolean is365(int year){
+        if(year % 4 == 0){
+            if(year % 100 == 0){
+                if(year % 400 == 0){
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
 
     private HashMap<String, Subject[]> subjectTable;
 
@@ -84,11 +117,13 @@ public class Schedule extends RefreshableFragment {
     View.OnClickListener LEFT = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            browsingTime.change(Calendar.MONTH, -1);
+            browsingTime.add(Calendar.MONTH, -1);
             Calendar cal = Calendar.getInstance();
-            cal.set(browsingTime.year, browsingTime.month, 1);
-            if(browsingTime.month == new CastratedDate().month) {
-                browsingTime.set(Calendar.DATE,new CastratedDate().date);
+            GregorianCalendar gal = new GregorianCalendar();
+            gal.setTime(new Date());
+            cal.set(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), 1);
+            if(browsingTime.get(Calendar.MONTH) == gal.get(Calendar.MONTH)) {
+                browsingTime.set(Calendar.DATE, gal.get(Calendar.DATE));
             }
             else {
                 browsingTime.set(Calendar.DATE, cal.getActualMaximum(Calendar.DATE));
@@ -101,9 +136,11 @@ public class Schedule extends RefreshableFragment {
     View.OnClickListener RIGHT = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            browsingTime.change(Calendar.MONTH, 1);
-            if(browsingTime.month == new CastratedDate().month) {
-                browsingTime.set(Calendar.DATE,new CastratedDate().date);
+            browsingTime.add(Calendar.MONTH, 1);
+            GregorianCalendar gal = new GregorianCalendar();
+            gal.setTime(new Date());
+            if(browsingTime.get(Calendar.MONTH) == gal.get(Calendar.MONTH)) {
+                browsingTime.set(Calendar.DATE, gal.get(Calendar.DATE));
             }
             else {
                 browsingTime.set(Calendar.DATE, 1);
@@ -143,7 +180,7 @@ public class Schedule extends RefreshableFragment {
             load();
 
             Calendar cal = Calendar.getInstance();
-            cal.set(browsingTime.year, browsingTime.month, browsingTime.date);
+            cal.set(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), browsingTime.get(Calendar.DATE));
             expcal.setDate(cal.getTimeInMillis());
         }
     };
@@ -161,13 +198,12 @@ public class Schedule extends RefreshableFragment {
 
     //find schedule for browsingTime and display on screen, called when fragment is initialized and when date picker gets clicked
     public void load(){
-        LogUtil.d("spartapp_log",browsingTime.date+" "+browsingTime.month_name());
-
+        LogUtil.d("spartapp_log",browsingTime.get(Calendar.DATE)+" "+month_names[browsingTime.get(Calendar.MONTH)]);
         LogUtil.d("sche_time",browsingTime.toString());
 
-        int month = browsingTime.month + 1;
-        int yr =  browsingTime.year;
-        int day = browsingTime.date;
+        int month = browsingTime.get(Calendar.MONTH) + 1;
+        int yr =  browsingTime.get(Calendar.YEAR);
+        int day = browsingTime.get(Calendar.DATE);
         String m = month<10?"0"+Integer.toString(month):Integer.toString(month);
         String d = day<10?"0"+Integer.toString(day):Integer.toString(day);
         LogUtil.d("TIME", Integer.toString(yr)+"-"+m+"-"+d);
@@ -196,9 +232,11 @@ public class Schedule extends RefreshableFragment {
                                 periods.add(new ClassPeriod(subs[j], j));
                         }
                         LogUtil.d("spartapp_schedule", CastratedDate.getHourMinute() + " b:" + browsingTime + " f:" + focusTime + " r:" + new CastratedDate().toString());
-                        if (browsingTime.equals(focusTime)) {
+                        if (browsingTime.get(Calendar.MONTH)==focusTime.get(Calendar.MONTH) && browsingTime.get(Calendar.DATE) == focusTime.get(Calendar.DATE)){
                             //for today
-                            if (focusTime.equals(new CastratedDate())) {
+                            GregorianCalendar gal = new GregorianCalendar();
+                            gal.setTime(new Date());
+                            if (focusTime.get(Calendar.MONTH) == gal.get(Calendar.MONTH) && focusTime.get(Calendar.DATE) == gal.get(Calendar.DATE)) {
                                 int[] beginning = (new CastratedDate()).get(Calendar.DAY_OF_WEEK) ==
                                         Calendar.WEDNESDAY ? wednesdayPeriodBeginning.get(school) :
                                         regularPeriodBeginning.get(school);
@@ -245,7 +283,8 @@ public class Schedule extends RefreshableFragment {
         LogUtil.d("SCHE", "onattach");
         mActivity = (Activity) context;
 
-        browsingTime = new CastratedDate();
+        browsingTime = new GregorianCalendar();
+        browsingTime.setTime(new Date());
 
         //todo make sure these are correct
 
@@ -304,7 +343,8 @@ public class Schedule extends RefreshableFragment {
         //if(getUserVisibleHint()) {
         focusTime = getFocusedDate();
 
-        browsingTime = new CastratedDate();
+        browsingTime = new GregorianCalendar();
+        browsingTime.setTime(new Date());
 
         LogUtil.d("sche_onstart","onstart called "+browsingTime.toString());
 
@@ -341,7 +381,7 @@ public class Schedule extends RefreshableFragment {
 
         LinearLayout daywk = (LinearLayout) root.findViewById(R.id.days_wk);
         RadioGroup rg = (RadioGroup) root.findViewById(R.id.date_radio_group);
-        for(int i = 0; i < browsingTime.month_length(); i++){
+        for(int i = 0; i < month_length(browsingTime); i++){
             RadioButton rb = (RadioButton) mActivity.getLayoutInflater().inflate(R.layout.date_button, null);
             rb.setOnClickListener(DATE);
             rb.setText(Integer.toString(i+1));
@@ -350,12 +390,14 @@ public class Schedule extends RefreshableFragment {
             rg.addView(rb, i);
 
             TextView dwk = (TextView) mActivity.getLayoutInflater().inflate(R.layout.date_wk, null);
-            dwk.setText(CastratedDate.dayInWeek(browsingTime.year, browsingTime.month, i+1).substring(0,1));
+            dwk.setText(CastratedDate.dayInWeek(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), i+1).substring(0,1));
             dwk.setLayoutParams(wk_params);
             daywk.addView(dwk);
         }
-
-        ((RadioButton)rg.getChildAt(browsingTime.date-1)).setChecked(true);
+        Log.d("BT month length", Integer.toString(month_length(browsingTime)));
+        Log.d("BT month name", month_names[browsingTime.get(Calendar.MONTH)]);
+        Log.d("BT browsingTime.date", Integer.toString(browsingTime.get(Calendar.DATE)));
+        ((RadioButton)rg.getChildAt(browsingTime.get(Calendar.DATE)-1)).setChecked(true);
         HorizontalScrollView scroll = (HorizontalScrollView) root.findViewById(R.id.date_scroll);
 
         scroll.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -365,7 +407,7 @@ public class Schedule extends RefreshableFragment {
                                                                    }
                                                                });
         scroll.setSmoothScrollingEnabled(true);
-        last_date_length = browsingTime.month_length();
+        last_date_length = month_length(browsingTime);
 
 
         //fix week day labels
@@ -444,9 +486,9 @@ public class Schedule extends RefreshableFragment {
             public void onSwipeRight() {
                 if(!expanded) {
                     //decrease date
-                    int month = browsingTime.month;
-                    browsingTime.change(Calendar.DATE, -1);
-                    if(browsingTime.month != month)
+                    int month = browsingTime.get(Calendar.MONTH);
+                    browsingTime.add(Calendar.DATE, -1);
+                    if(browsingTime.get(Calendar.MONTH) != month)
                         updateTitleBar();
                     else
                         autoscroll();
@@ -460,9 +502,9 @@ public class Schedule extends RefreshableFragment {
             public void onSwipeLeft() {
                 //increase date
                 if(!expanded) {
-                    int month = browsingTime.month;
-                    browsingTime.change(Calendar.DATE, 1);
-                    if(browsingTime.month != month)
+                    int month = browsingTime.get(Calendar.MONTH);
+                    browsingTime.add(Calendar.DATE, 1);
+                    if(browsingTime.get(Calendar.MONTH) != month)
                         updateTitleBar();
                     else
                         autoscroll();
@@ -479,33 +521,34 @@ public class Schedule extends RefreshableFragment {
     private void autoscroll(){
         HorizontalScrollView date_scroll = (HorizontalScrollView)getView().findViewById(R.id.date_scroll);
         RadioGroup rg = (RadioGroup) getView().findViewById(R.id.date_radio_group);
-        RadioButton rb = (RadioButton) rg.getChildAt(browsingTime.date-1);
-        LogUtil.d("SCROLL",browsingTime.date + " "+ rb.isChecked());
+        RadioButton rb = (RadioButton) rg.getChildAt(browsingTime.get(Calendar.DATE)-1);
+        LogUtil.d("SCROLL",browsingTime.get(Calendar.DATE) + " "+ rb.isChecked());
         if(!rb.isChecked())
             rb.setChecked(true);
 
-        date_scroll.smoothScrollTo(rg.getChildAt(browsingTime.date-1).getLeft()
-                + rg.getChildAt(browsingTime.date-1).getMeasuredWidth()/2
-                + rg.getChildAt(browsingTime.date-1).getPaddingLeft()
+        date_scroll.smoothScrollTo(rg.getChildAt(browsingTime.get(Calendar.DATE)-1).getLeft()
+                + rg.getChildAt(browsingTime.get(Calendar.DATE)-1).getMeasuredWidth()/2
+                + rg.getChildAt(browsingTime.get(Calendar.DATE)-1).getPaddingLeft()
                 - date_scroll.getMeasuredWidth()/2, 0);
         LogUtil.d("SCROLL", "autoscrolled");
         LogUtil.d("SCROLL", browsingTime.toString());
     }
 
-    private CastratedDate getFocusedDate(){
+    private GregorianCalendar getFocusedDate(){
 
         int endTime = (browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY) ?
                 wednesdayPeriodBeginning.get(school)[wednesdayPeriodBeginning.get(school).length-1]
                 : regularPeriodBeginning.get(school)[regularPeriodBeginning.get(school).length-1];
-        CastratedDate temp = new CastratedDate();
+        GregorianCalendar temp = new GregorianCalendar();
+        temp.setTime(new Date());
         if(CastratedDate.getHourMinute() > endTime){
-            temp.change(Calendar.DATE, 1);
+            temp.add(Calendar.DATE, 1);
         }
 
         int count = 0;
         //todo read schedule of date c and return if it is has classes, currently it only returns today or tomorrow
-        while(subjectTable.get(temp.toString()) == null && count < 365){
-            temp.change(Calendar.DATE, 1);
+        while(subjectTable.get(temp.get(Calendar.YEAR)+"-"+temp.get(Calendar.MONTH)+"-"+temp.get(Calendar.DATE)) == null && count < 365){
+            temp.add(Calendar.DATE, 1);
             count++;
         }
 
@@ -523,8 +566,8 @@ public class Schedule extends RefreshableFragment {
         RadioGroup rg = (RadioGroup) root.findViewById(R.id.date_radio_group);
         LinearLayout daywk = (LinearLayout) root.findViewById(R.id.days_wk);
 
-        if(browsingTime.month_length() > last_date_length){
-            for(int i = last_date_length; i < browsingTime.month_length(); i++){
+        if(month_length(browsingTime) > last_date_length){
+            for(int i = last_date_length; i < month_length(browsingTime); i++){
                 RadioButton rb = (RadioButton) mActivity.getLayoutInflater().inflate(R.layout.date_button, rg, false);
                 rb.setOnClickListener(DATE);
                 rb.setText(Integer.toString(i+1));
@@ -535,24 +578,24 @@ public class Schedule extends RefreshableFragment {
             }
         }
         else{
-            if(browsingTime.month_length() < last_date_length){
-                for(int i = last_date_length - 1; i >= browsingTime.month_length(); i--){
+            if(month_length(browsingTime) < last_date_length){
+                for(int i = last_date_length - 1; i >= month_length(browsingTime); i--){
                     rg.removeViewAt(i);
                 }
             }
 
         }
         daywk.removeAllViews();
-        for(int i=0; i < browsingTime.month_length(); i++){
+        for(int i=0; i < month_length(browsingTime); i++){
             TextView dwk = (TextView) mActivity.getLayoutInflater().inflate(R.layout.date_wk, null);
-            dwk.setText(CastratedDate.dayInWeek(browsingTime.year, browsingTime.month, i+1).substring(0,1));
+            dwk.setText(CastratedDate.dayInWeek(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), i+1).substring(0,1));
             dwk.setLayoutParams(wk_params);
             daywk.addView(dwk);
         }
         //if(browsingTime.date == browsingTime.month_length())
-        ((RadioButton)rg.getChildAt(browsingTime.date-1)).setChecked(true);
+        ((RadioButton)rg.getChildAt(browsingTime.get(Calendar.DATE)-1)).setChecked(true);
         autoscroll();
-        last_date_length = browsingTime.month_length();
+        last_date_length = month_length(browsingTime);
         for(int i = 0; i < rg.getChildCount(); i++){
             if(((RadioButton)rg.getChildAt(i)).isChecked())
                 rg.getChildAt(i).callOnClick();
@@ -576,8 +619,8 @@ public class Schedule extends RefreshableFragment {
     }
 
     public void setCalendarToMonth(){
-        int year = browsingTime.year;
-        int month = browsingTime.month;
+        int year = browsingTime.get(Calendar.YEAR);
+        int month = browsingTime.get(Calendar.MONTH);
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, 1);
         calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
@@ -597,7 +640,7 @@ public class Schedule extends RefreshableFragment {
         expcal.setOnDateChangeListener(new CalendarView.OnDateChangeListener(){
             @Override
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth){
-                if(month!=browsingTime.month){
+                if(month!=browsingTime.get(Calendar.MONTH)){
                     browsingTime.set(Calendar.YEAR, year);
                     browsingTime.set(Calendar.MONTH, month);
                     browsingTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -619,19 +662,19 @@ public class Schedule extends RefreshableFragment {
 
     public void setCalendarToDay(){
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, browsingTime.year);
-        calendar.set(Calendar.MONTH, browsingTime.month);
-        calendar.set(Calendar.DAY_OF_MONTH, browsingTime.date);
+        calendar.set(Calendar.YEAR, browsingTime.get(Calendar.YEAR));
+        calendar.set(Calendar.MONTH, browsingTime.get(Calendar.MONTH));
+        calendar.set(Calendar.DAY_OF_MONTH, browsingTime.get(Calendar.DATE));
         long date = calendar.getTimeInMillis();
         expcal.setDate(date);
     }
 
-    private String month_text(){return browsingTime.month_name();}
+    private String month_text(){return month_names[browsingTime.get(Calendar.MONTH)];}
 
     public HashMap<String, Subject[]> getSchedule() throws Exception{
         HashMap<String, Subject[]> schedule = new HashMap<>(6);
         HashMap<String, Integer> pairs             = getDateDayPairs();
-        HashMap<Integer, Subject[]> weeklySchedule = readWeeklySchedule();
+        HashMap<Integer, Subject[]> weeklySchedule = getWeeklySchedule();
         for(Map.Entry<String, Integer> keyValuePair : pairs.entrySet()){
             String date = keyValuePair.getKey();
             Integer day = keyValuePair.getValue();
@@ -649,7 +692,7 @@ public class Schedule extends RefreshableFragment {
             LogUtil.d("CALENDAR", "date-day pairs read success");
         }catch(IOException e) {
             LogUtil.d("CALENDAR", "read failed; using default");
-            pairs = defaultDateDayPairs("2018-08-27");
+            pairs = defaultDateDayPairs("2019-08-26");
             LogUtil.d("CALENDAR", "date-day pairs defaulted");
         }
         return pairs;
@@ -675,6 +718,25 @@ public class Schedule extends RefreshableFragment {
         HashMap<String, Integer> dateDay = (HashMap<String, Integer>)s.readObject();
         s.close();
         return dateDay;
+    }
+
+    public HashMap<Integer, Subject[]> getWeeklySchedule(){
+        HashMap<Integer, Subject[]> week;
+        try{
+            week = readWeeklySchedule();
+            Log.d("CALENDAR", "read week schedule success");
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            week = new HashMap<>();
+            Subject empty = new Subject("-","-","-");
+            Subject[] day = {empty, empty, empty, empty, empty, empty};
+            for(int i=1; i<=6; i++){
+                week.put(i, day);
+            }
+            Log.d("CALENDAR", "week defaulted");
+        }
+        return week;
     }
 
     public HashMap<Integer, Subject[]> readWeeklySchedule() throws IOException{

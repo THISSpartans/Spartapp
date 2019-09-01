@@ -71,6 +71,10 @@ public class MainActivity extends Activity {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_schedule:
+                    if(schedule == null){
+                        schedule = new Schedule();
+                    }
+                    updateClickNum();
                     switchContent(current, schedule);
                     return true;
                 /*case R.id.navigation_announcement:
@@ -448,10 +452,8 @@ public class MainActivity extends Activity {
                 }
             }
             else {
-                //todo switch back to schedule?
-                //default: use the schedule tab to begin
-                news = news==null?new News():news;
-                current = news;
+                schedule = schedule==null?new Schedule():schedule;
+                current = schedule;
                 navigation.setSelectedItemId(R.id.navigation_news);
                 LogUtil.d("spartapp", "launching in news mode");
             }
@@ -482,6 +484,10 @@ public class MainActivity extends Activity {
 
     //https://blog.csdn.net/caroline_wendy/article/details/48492135
     public void switchContent(RefreshableFragment from, RefreshableFragment to) {
+
+        if (to != null){
+            return;
+        }
         if (current != to) {
             current = to;
             transaction = getFragmentManager().beginTransaction();
