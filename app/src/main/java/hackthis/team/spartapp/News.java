@@ -39,6 +39,7 @@ import io.reactivex.disposables.Disposable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 public class News extends RefreshableFragment {
@@ -91,41 +92,33 @@ public class News extends RefreshableFragment {
     public void updateNews(List<AVObject> news) {
         LogUtil.d("news", "updatenews() called with " + news.size() + " items:\n" + news.toString());
         content = new ArrayList<>(news.size());
-        ArrayList<String> datesIncluded = new ArrayList<>(0);
-        CastratedDate c = new CastratedDate();
-        for (AVObject newsitem : news) {
+
+        int lastMonth=0, lastDate=0;
+
+        for (int i = 0; i < news.size(); i++) {
             try {
                 //leancloud uses xxxx-xx-xx-abcdeaoepfjopae as time, pick first four digits as year, 5~6 as month, etc.
-                String dateStr = newsitem.getCreatedAt();
-                CastratedDate date = new CastratedDate(Integer.parseInt(dateStr.substring(0, 4)),
-                        Integer.parseInt(dateStr.substring(5, 7)),
-                        Integer.parseInt(dateStr.substring(8, 10)));
-                String body = newsitem.getString("Description");
-                String title = newsitem.getString("Title");
-                AVFile attached = newsitem.getAVFile("Attached");
-                String url = newsitem.getString("url");
-                String author = newsitem.getString("author");
+                String dateStr = news.get(i).getCreatedAt();
+                int date = Integer.parseInt(dateStr.substring(8, 10));
+                int month = Integer.parseInt(dateStr.substring(5, 7));
+
+                String body = news.get(i).getString("Description");
+                String title = news.get(i).getString("Title");
+                AVFile attached = news.get(i).getAVFile("Attached");
+                String url = news.get(i).getString("url");
+                String author = news.get(i).getString("author");
 
                 LogUtil.d("news", title + " " + url + " " + date);
 
-                //if(dateInt <= c.year * 10000+c.month*100+100+ c.date) {
                 content.add(new news_element(
-                        date, title, body, author, attached, url
+                        (i <= 0 || ((lastMonth == month && lastDate == date) ? false : true)), month, date, title, body, author, attached, url
                 ));
-                //}
-                //the old version uses: new CastratedDate(year, month - 1, day)
+
+                lastMonth = month;
+                lastDate = date;
             } catch (Exception e1) {
                 String e1str = e1.getLocalizedMessage();
                 LogUtil.d("news", e1str);
-            }
-        }
-        //remove repeated dates
-        for (int i = content.size() - 1; i > 0; i--) {
-            if (content.get(i).date.toString().equals(
-                    content.get(i - 1).date.toString()
-            )) {
-                content.get(i).date = null;
-                Log.d("nullified", content.get(i).title);
             }
         }
     }
@@ -248,6 +241,8 @@ public class News extends RefreshableFragment {
         }
     }
 
+
+
     private static class news_element {
         SpannableStringBuilder date;
         SpannableStringBuilder body;
@@ -257,26 +252,27 @@ public class News extends RefreshableFragment {
                 {
                         "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat",
                 };
+
+        String month_short[] =
+                {
+                        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"
+                };
         AVFile attach;
         String url;
 
-        public news_element(@Nullable CastratedDate d, String title, @Nullable String content, @Nullable String author, @Nullable AVFile attach, @Nullable String url) {
+        public news_element(boolean includeDate, int m,int d, String title, @Nullable String content, @Nullable String author, @Nullable AVFile attach, @Nullable String url) {
             this.title = title;
 
             this.attach = attach;
             this.url = url;
-
-            if (d == null) {
-                //no date text
-            } else {
+            if (includeDate) {
                 //concatenate date string
-                String str = d.month_name_short()+"."+d.date + "\n" + week_day_name[d.get(Calendar.DAY_OF_WEEK) - 1];
+                String str = month_short[m - 1] + ". " + d;
                 //String str1 = new CastratedDate().get(Calendar.DATE) + "\n" + week_day_name[new CastratedDate().get(Calendar.DAY_OF_WEEK) - 1];
                 date = new SpannableStringBuilder(str);
-                LogUtil.d("news",Integer.toString(d.get(Calendar.DATE))+" "+Integer.toString(d.get(Calendar.MONTH))
-                        +" : "+new CastratedDate().get(Calendar.DATE)+" "+new CastratedDate().get(Calendar.MONTH));
-                if (d.get(Calendar.DATE) == new CastratedDate().get(Calendar.DATE)
-                        && d.get(Calendar.MONTH) == new CastratedDate().get(Calendar.MONTH)) {
+
+                if (d == new GregorianCalendar().get(Calendar.DAY_OF_MONTH)
+                        && m == (new GregorianCalendar().get(Calendar.MONTH) + 1)) {//the first month is 0
                     //purple date text
                     date.setSpan(new ForegroundColorSpan(mActivity.getResources().getColor(R.color.purple)),
                             0, str.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
@@ -286,6 +282,7 @@ public class News extends RefreshableFragment {
                     //grey date text
                     //}
                 }
+            }
 
                 body = new SpannableStringBuilder(title + "\n" + (author==null?"":author) + "\n    "+ (content==null?"":content));
                 //body.setSpan(new StyleSpan(Typeface.BOLD), 0, title.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
@@ -295,10 +292,10 @@ public class News extends RefreshableFragment {
 
                 body.setSpan(new ForegroundColorSpan(mActivity.getResources().getColor(R.color.grey)),
                         title.length(), title.length() + ((content==null)?0:content.length()), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-            }
+
         }
         public String toString(){
-            return title+" "+date.toString();
+            return title;
         }
     }
 }
