@@ -71,6 +71,7 @@ public class MainActivity extends Activity {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_schedule:
+                    Log.d("NAVIGATION", "schedule selected");
                     if(schedule == null){
                         schedule = new Schedule();
                     }
@@ -92,6 +93,7 @@ public class MainActivity extends Activity {
                     */
 
                 case R.id.navigation_news:
+                    Log.d("NAVIGATION", "news selected");
                     if(news == null){
                         news = new News();
                     }
@@ -100,6 +102,7 @@ public class MainActivity extends Activity {
                     return true;
 
                 case R.id.navigation_services:
+                    Log.d("NAVIGATION", "services selected");
                     if(services == null){
                         services = new Services();
                     }
@@ -454,8 +457,8 @@ public class MainActivity extends Activity {
             else {
                 schedule = schedule==null?new Schedule():schedule;
                 current = schedule;
-                navigation.setSelectedItemId(R.id.navigation_news);
-                LogUtil.d("spartapp", "launching in news mode");
+                navigation.setSelectedItemId(R.id.navigation_schedule);
+                LogUtil.d("spartapp", "launching in schedule mode");
             }
 
             if(current == null)
@@ -485,7 +488,7 @@ public class MainActivity extends Activity {
     //https://blog.csdn.net/caroline_wendy/article/details/48492135
     public void switchContent(RefreshableFragment from, RefreshableFragment to) {
 
-        if (to != null){
+        if (to == null){
             return;
         }
         if (current != to) {
