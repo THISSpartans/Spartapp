@@ -204,6 +204,8 @@ public class News extends RefreshableFragment {
                             Intent readNews = new Intent(mActivity, NewsActivity.class);
                             readNews.putExtra("url", ((Hol) v.getTag()).url);
                             mActivity.startActivity(readNews);
+
+                            LogUtil.d("news","shit's called from" + v.toString());
                         }
                         else{
                             Toast t = Toast.makeText(mActivity, "no more to show",Toast.LENGTH_SHORT);

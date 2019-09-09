@@ -196,7 +196,7 @@ public class Schedule extends RefreshableFragment {
     //find schedule for browsingTime and display on screen, called when fragment is initialized and when date picker gets clicked
     public void load(){
         LogUtil.d("spartapp_log",browsingTime.get(Calendar.DATE)+" "+month_names[browsingTime.get(Calendar.MONTH)]);
-        //LogUtil.d("sche_time",browsingTime.toString());
+        LogUtil.d("sche_time",browsingTime.toString());
 
         int month = browsingTime.get(Calendar.MONTH) + 1;
         int yr =  browsingTime.get(Calendar.YEAR);
@@ -209,6 +209,7 @@ public class Schedule extends RefreshableFragment {
         //LogUtil.d("SCHEDULE", subjectTable.get("2018-09-13")[0].name());
 
         if(subs != null) {
+            LogUtil.d("flabberducky","there is schedule on that day");
                 if(school.equals("THIS")) {
                     //for THIS
                     for (int i = 1; i < subs.length; i+=2) {
@@ -259,6 +260,7 @@ public class Schedule extends RefreshableFragment {
                 }
             }
         else{
+            LogUtil.d("flabberducky","the schedule is empty today");
             ArrayList<ClassPeriod> empty = new ArrayList<>(0);
             adapter = new PeriodAdapter(mActivity, R.layout.period_small, empty);
             LogUtil.d("SCHE",Integer.toString(browsingTime.get(Calendar.DAY_OF_WEEK)));
@@ -313,7 +315,7 @@ public class Schedule extends RefreshableFragment {
         }
 
         focusTime = getFocusedDate();
-        //LogUtil.d("focustime",focusTime.toString());
+        LogUtil.d("focustime",focusTime.toString());
 
     }
 
@@ -340,7 +342,11 @@ public class Schedule extends RefreshableFragment {
         browsingTime = new GregorianCalendar();
         browsingTime.setTime(new Date());
 
-        //LogUtil.d("sche_onstart","onstart called "+browsingTime.toString());
+        SharedPreferences sp = getActivity().getSharedPreferences("clubs", Context.MODE_PRIVATE);
+        school = sp.getString("school", "");
+
+        focusTime = getFocusedDate();
+        LogUtil.d("sche_onstart","onstart called "+browsingTime.toString());
 
         updateTitleBar();
 
@@ -516,7 +522,7 @@ public class Schedule extends RefreshableFragment {
         HorizontalScrollView date_scroll = (HorizontalScrollView)getView().findViewById(R.id.date_scroll);
         RadioGroup rg = (RadioGroup) getView().findViewById(R.id.date_radio_group);
         RadioButton rb = (RadioButton) rg.getChildAt(browsingTime.get(Calendar.DATE)-1);
-        //LogUtil.d("SCROLL",browsingTime.get(Calendar.DATE) + " "+ rb.isChecked());
+        LogUtil.d("SCROLL",browsingTime.get(Calendar.DATE) + " "+ rb.isChecked());
         if(!rb.isChecked())
             rb.setChecked(true);
 
@@ -525,7 +531,7 @@ public class Schedule extends RefreshableFragment {
                 + rg.getChildAt(browsingTime.get(Calendar.DATE)-1).getPaddingLeft()
                 - date_scroll.getMeasuredWidth()/2, 0);
         LogUtil.d("SCROLL", "autoscrolled");
-        //LogUtil.d("SCROLL", browsingTime.toString());
+        LogUtil.d("SCROLL", browsingTime.toString());
     }
 
     private GregorianCalendar getFocusedDate(){
@@ -546,7 +552,7 @@ public class Schedule extends RefreshableFragment {
             count++;
         }
 
-        //LogUtil.d("focus_time",temp.toString());
+        LogUtil.d("focus_time",temp.toString());
 
         return temp;
     }
@@ -673,6 +679,7 @@ public class Schedule extends RefreshableFragment {
             Integer day = keyValuePair.getValue();
             if(day != -1) schedule.put(date, weeklySchedule.get(day));
             else schedule.put(date, null);
+            LogUtil.d("flabberducky",date+" "+day);
         }
         LogUtil.d("SCHEDULE", "got schedule");
         return schedule;
@@ -717,7 +724,7 @@ public class Schedule extends RefreshableFragment {
         HashMap<Integer, Subject[]> week;
         try{
             week = readWeeklySchedule();
-            Log.d("CALENDAR", "read week schedule success");
+            LogUtil.d("CALENDAR", "read week schedule success");
         }
         catch(Exception e){
             e.printStackTrace();
@@ -727,7 +734,7 @@ public class Schedule extends RefreshableFragment {
             for(int i=1; i<=6; i++){
                 week.put(i, day);
             }
-            Log.d("CALENDAR", "week defaulted");
+            LogUtil.d("CALENDAR", "week defaulted");
         }
         return week;
     }

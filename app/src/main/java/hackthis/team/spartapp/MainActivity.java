@@ -258,6 +258,10 @@ public class MainActivity extends Activity {
                 .detectLeakedSqlLiteObjects().detectLeakedClosableObjects()
                 .penaltyLog().penaltyDeath().build());
 
+        updateNotice();
+    }
+
+    public void updateNotice(){
         LogUtil.d("VER","test");
         AVQuery<AVObject> versionQuery = new AVQuery<AVObject>("AndroidVersionInfo");
 
@@ -365,13 +369,14 @@ public class MainActivity extends Activity {
             req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
             DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
 
-            //long downloadID = dm.enqueue(req);
+            long downloadID = dm.enqueue(req);
+
         }
         else{
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     RequestCode);
-
+            updateNotice();
 
         }
     }
@@ -494,7 +499,9 @@ public class MainActivity extends Activity {
                 transaction.hide(from).show(to).commit(); // hide the 'from' tab, show the 'to' tab
             }
         }
-        to.refresh();
+
+        if (to != schedule)
+            to.refresh();
     }
 
     public HashMap<Integer, Subject[]> readWeeklySchedule() throws Exception{
