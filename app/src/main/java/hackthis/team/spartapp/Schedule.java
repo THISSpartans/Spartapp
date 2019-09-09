@@ -196,7 +196,7 @@ public class Schedule extends RefreshableFragment {
     //find schedule for browsingTime and display on screen, called when fragment is initialized and when date picker gets clicked
     public void load(){
         LogUtil.d("spartapp_log",browsingTime.get(Calendar.DATE)+" "+month_names[browsingTime.get(Calendar.MONTH)]);
-        LogUtil.d("sche_time",browsingTime.toString());
+        //LogUtil.d("sche_time",browsingTime.toString());
 
         int month = browsingTime.get(Calendar.MONTH) + 1;
         int yr =  browsingTime.get(Calendar.YEAR);
@@ -313,7 +313,7 @@ public class Schedule extends RefreshableFragment {
         }
 
         focusTime = getFocusedDate();
-        LogUtil.d("focustime",focusTime.toString());
+        //LogUtil.d("focustime",focusTime.toString());
 
     }
 
@@ -340,7 +340,7 @@ public class Schedule extends RefreshableFragment {
         browsingTime = new GregorianCalendar();
         browsingTime.setTime(new Date());
 
-        LogUtil.d("sche_onstart","onstart called "+browsingTime.toString());
+        //LogUtil.d("sche_onstart","onstart called "+browsingTime.toString());
 
         updateTitleBar();
 
@@ -516,7 +516,7 @@ public class Schedule extends RefreshableFragment {
         HorizontalScrollView date_scroll = (HorizontalScrollView)getView().findViewById(R.id.date_scroll);
         RadioGroup rg = (RadioGroup) getView().findViewById(R.id.date_radio_group);
         RadioButton rb = (RadioButton) rg.getChildAt(browsingTime.get(Calendar.DATE)-1);
-        LogUtil.d("SCROLL",browsingTime.get(Calendar.DATE) + " "+ rb.isChecked());
+        //LogUtil.d("SCROLL",browsingTime.get(Calendar.DATE) + " "+ rb.isChecked());
         if(!rb.isChecked())
             rb.setChecked(true);
 
@@ -525,7 +525,7 @@ public class Schedule extends RefreshableFragment {
                 + rg.getChildAt(browsingTime.get(Calendar.DATE)-1).getPaddingLeft()
                 - date_scroll.getMeasuredWidth()/2, 0);
         LogUtil.d("SCROLL", "autoscrolled");
-        LogUtil.d("SCROLL", browsingTime.toString());
+        //LogUtil.d("SCROLL", browsingTime.toString());
     }
 
     private GregorianCalendar getFocusedDate(){
@@ -546,7 +546,7 @@ public class Schedule extends RefreshableFragment {
             count++;
         }
 
-        LogUtil.d("focus_time",temp.toString());
+        //LogUtil.d("focus_time",temp.toString());
 
         return temp;
     }

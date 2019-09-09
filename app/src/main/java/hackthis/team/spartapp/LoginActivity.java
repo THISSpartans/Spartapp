@@ -438,14 +438,19 @@ public class LoginActivity extends AppCompatActivity{
 
             //@Override
             public void onNext(Object o) {
-                List<AVObject> weeks = (List<AVObject>)o;
-                Log.d("HTML", "3");
+                List<AVObject> weeks_ = (List<AVObject>)o;
+                AVObject[] weeks = new AVObject[53];
+                for(int i = 0; i < weeks_.size(); i++){
+                    AVObject week = weeks_.get(i);
+                    int weekNum = (int)week.get("weekNumber");
+                    weeks[weekNum-1] = week;
+                }
                 List<Integer> days = new ArrayList<>(0);
-                Log.d("HTML", "4");
-                weeks = QSDateHelper(weeks);
                 LogUtil.d("CALENDAR", "downloaded weekly calendar");
                 int curDay = -1;
                 for(AVObject week : weeks){
+                    if(week == null) break;
+                    Log.d("wkorder", week.get("weekNumber").toString());
                     for(Boolean isDay : (List<Boolean>)week.getList("weeklyCalendar")) {
                         //Log.d(week.getClassName());
                         if(isDay) {
