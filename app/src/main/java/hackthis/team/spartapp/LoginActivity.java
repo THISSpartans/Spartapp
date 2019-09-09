@@ -80,6 +80,8 @@ public class LoginActivity extends AppCompatActivity{
     //school schedule settings
     private int cycleLen;
 
+    private final boolean[] threadCompleted = {false};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -372,7 +374,7 @@ public class LoginActivity extends AppCompatActivity{
         LogUtil.d("HTML", "initiated webview operations");
     }
 
-    public void output(String html_, String account_, String password_, String occ_, String schl_, Context context) throws Exception{
+    public void output(String html_, String account_, String password_, String occ_, String schl_, final Context context) throws Exception{
         final String account = account_;
         final String password = password_;
         final String occ = occ_;
@@ -392,15 +394,14 @@ public class LoginActivity extends AppCompatActivity{
                 String startOfYear = qlist.get(0).getString("startOfYear");
                 Log.d("HTML", "a");
                 try {
-                    getCalendar(startOfYear);
                     Log.d("HTML", "b");
                     LogUtil.d("HTML", html);
                     HashMap<Integer, Subject[]> weeklySchedule =
                             (occ.equals("student")) ? (schl.equals("THIS") ? fetchScheduleStudent(html) :
                                     fetchScheduleISB(html))
                                     : fetchScheduleTeacher(html);
-
                     writeWeeklySchedule(weeklySchedule);
+                    getCalendar(startOfYear, context);
                 }
                 catch(Exception e){e.printStackTrace();}
                 SharedPreferences prefs = getApplicationContext().getSharedPreferences("verified", Context.MODE_PRIVATE);
@@ -409,7 +410,7 @@ public class LoginActivity extends AppCompatActivity{
                 editor.putString("password", password);
                 //must use commit instead of apply here
                 editor.commit();
-                triggerRebirth(ctxt_[0]);
+                threadCompletion(ctxt_[0]);
             }
 
             @Override
@@ -430,7 +431,8 @@ public class LoginActivity extends AppCompatActivity{
         LogUtil.d("CALENDAR", "wrote date-day pairs");
     }
 
-    public void getCalendar(String startOfYear_) throws AVException {
+    public void getCalendar(String startOfYear_, Context context) throws AVException {
+        final Context[] ctxt_ = {context};
         final String startOfYear = startOfYear_;
         AVQuery calendar = new AVQuery("Calendar");
         calendar.findInBackground().subscribe(new Observer() {
@@ -476,6 +478,7 @@ public class LoginActivity extends AppCompatActivity{
                 }
                 LogUtil.d("CALENDAR", "paired day cycle with calendar dates");
                 try{writeDateDayPairs(pairs);} catch(Exception e){e.printStackTrace();}
+                threadCompletion(ctxt_[0]);
             }
             @Override
             public void onError(Throwable e) {}
@@ -781,6 +784,11 @@ public class LoginActivity extends AppCompatActivity{
         }
         QuickSortDate(arr, low, i-1);
         QuickSortDate(arr, i+1, high);
+    }
+
+    private void threadCompletion(Context context){
+        if(threadCompleted[0]) triggerRebirth(context);
+        else threadCompleted[0] = true;
     }
 
     public void triggerRebirth(Context context) {
