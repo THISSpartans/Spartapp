@@ -75,16 +75,25 @@ public class Schedule extends RefreshableFragment {
     private int month_length(GregorianCalendar date){
         int month = date.get(Calendar.MONTH);
         int year = date.get(Calendar.YEAR);
+        //Log.d("MONTHL", String.valueOf(year));
+        //Log.d("MONTHL", String.valueOf(month));
         if(month == 1){
-            if(is365(year)) return month_lengths[month];
-            else return month_lengths[month]+1;
+            if(!is366(year)){
+                //Log.d("MONTHL", String.valueOf(month_lengths[month]));
+                return month_lengths[month];
+            }
+            else{
+                //Log.d("MONTHL", String.valueOf(month_lengths[month]+1));
+                return month_lengths[month]+1;
+            }
         }
         else{
+            //Log.d("MONTHL", String.valueOf(month_lengths[month]));
             return month_lengths[month];
         }
     }
 
-    private boolean is365(int year){
+    private boolean is366(int year){
         if(year % 4 == 0){
             if(year % 100 == 0){
                 return year % 400 == 0;
