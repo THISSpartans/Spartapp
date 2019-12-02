@@ -506,7 +506,7 @@ public class MainActivity extends Activity {
 
     public HashMap<Integer, Subject[]> readWeeklySchedule() throws Exception{
         LogUtil.d("HTML_IN", "called");
-        FileInputStream f = this.openFileInput("week_schedule.dat");
+        FileInputStream f = this.openFileInput("weeklySchedule_sem1.dat");
         LogUtil.d("HTML_IN", "found");
         BufferedReader in = new BufferedReader(new InputStreamReader(f));
         LogUtil.d("HTML_IN", "buffer on");

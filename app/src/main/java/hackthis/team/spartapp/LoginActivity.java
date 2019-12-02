@@ -392,16 +392,18 @@ public class LoginActivity extends AppCompatActivity{
             public void onNext(Object o) {
                 List<AVObject> qlist = (List<AVObject>)o;
                 String startOfYear = qlist.get(0).getString("startOfYear");
-                Log.d("HTML", "a");
+                //my lazy ass getting the time when first semester ends
+                String midYear = qlist.get(1).getString("startOfYear");
+
+
                 try {
-                    Log.d("HTML", "b");
                     LogUtil.d("HTML", html);
-                    HashMap<Integer, Subject[]> weeklySchedule =
-                            (occ.equals("student")) ? (schl.equals("THIS") ? fetchScheduleStudent(html) :
-                                    fetchScheduleISB(html))
-                                    : fetchScheduleTeacher(html);
-                    writeWeeklySchedule(weeklySchedule);
-                    getCalendar(startOfYear, context);
+                    Object[] weeklySchedules = fetchScheduleStudent(html);
+                    HashMap<Integer, Subject[]> schedule_sem1 = (HashMap<Integer, Subject[]>)weeklySchedules[0];
+                    HashMap<Integer, Subject[]> schedule_sem2 = (HashMap<Integer, Subject[]>)weeklySchedules[1];
+                    writeWeeklySchedule(schedule_sem1, "weeklySchedule_sem1.dat");
+                    writeWeeklySchedule(schedule_sem2, "weeklySchedule_sem2.dat");
+                    getCalendar(startOfYear, midYear, context);
                 }
                 catch(Exception e){e.printStackTrace();}
                 SharedPreferences prefs = getApplicationContext().getSharedPreferences("verified", Context.MODE_PRIVATE);
@@ -431,9 +433,10 @@ public class LoginActivity extends AppCompatActivity{
         LogUtil.d("CALENDAR", "wrote date-day pairs");
     }
 
-    public void getCalendar(String startOfYear_, Context context) throws AVException {
+    public void getCalendar(String startOfYear_, String midYear_, Context context) throws AVException {
         final Context[] ctxt_ = {context};
         final String startOfYear = startOfYear_;
+        final String midYear = midYear_;
         AVQuery calendar = new AVQuery("Calendar");
         calendar.findInBackground().subscribe(new Observer() {
             public void onSubscribe(Disposable disposable) {}
@@ -471,7 +474,12 @@ public class LoginActivity extends AppCompatActivity{
                 int i =0;
                 for(Integer day : days){
                     String date = sdf.format(c.getTime());
-                    pairs.put(date, day);
+                    Calendar my = Calendar.getInstance();
+                    try{my.setTime(sdf.parse(midYear));} catch(Exception e){e.printStackTrace();}
+                    if(c.before(my))
+                        pairs.put(date, day);
+                    else
+                        pairs.put(date, day+20); //day 1 in second semester is day 21, 2 is 22, so on
                     LogUtil.d("CALENDAR", date.toString() + " " +day.toString()+" "+i);
                     c.add(Calendar.DATE, 1);
                     i++;
@@ -487,12 +495,12 @@ public class LoginActivity extends AppCompatActivity{
         });
     }
 
-    public void writeWeeklySchedule(HashMap<Integer, Subject[]> schedule) throws Exception{
+    public void writeWeeklySchedule(HashMap<Integer, Subject[]> schedule, String filename) throws Exception{
         if(schedule.get(1)==null){
             LogUtil.d("SCHEDULE", "schedule is empty" );
             throw new Exception();
         }
-        FileOutputStream f = this.openFileOutput("week_schedule.dat", Context.MODE_PRIVATE);
+        FileOutputStream f = this.openFileOutput(filename, Context.MODE_PRIVATE);
         PrintWriter out = new PrintWriter(f);
         LogUtil.d("SCHEDULE", "preparing to write week_schedule.dat" );
         for(int i = 1; i < cycleLen+1; i ++) {
@@ -516,8 +524,10 @@ public class LoginActivity extends AppCompatActivity{
         LogUtil.d("SCHEDULE", "wrote week_schedule.dat");
     }
 
-    public HashMap<Integer, Subject[]> fetchScheduleStudent(String html) throws IOException, InterruptedException {
-        HashMap<Integer, Subject[]> schedule = new HashMap<Integer, Subject[]>(0);
+    public Object[] fetchScheduleStudent(String html) throws IOException, InterruptedException {
+        HashMap<Integer, Subject[]> schedule_sem1 = new HashMap<Integer, Subject[]>(0);
+        HashMap<Integer, Subject[]> schedule_sem2 = new HashMap<Integer, Subject[]>(0);
+
         LogUtil.d("HTML", "parsing html source");
         Document doc = Jsoup.parse(html);
         LogUtil.d("HTML", "jsoup parsed");
@@ -525,8 +535,10 @@ public class LoginActivity extends AppCompatActivity{
         LogUtil.d("HTML", "table get0ed");
         Elements rows = table.select("tr");
         LogUtil.d("HTML", "table tr selected");
-        for(int dayNum = 1; dayNum <= cycleLen; dayNum++)
-            schedule.put(new Integer(dayNum), new Subject[8]);
+        for(int dayNum = 1; dayNum <= cycleLen; dayNum++) {
+            schedule_sem1.put(new Integer(dayNum), new Subject[8]);
+            schedule_sem2.put(new Integer(dayNum), new Subject[8]);
+        }
         for(int j=2; j<rows.size()-1; j++) {
             try {
                 LogUtil.d("HTML", "parsing row");
@@ -565,10 +577,19 @@ public class LoginActivity extends AppCompatActivity{
                         }
                         LogUtil.d("HTML", "adding row");
                         LogUtil.d("HTML", period.name());
-                        schedule.get(new Integer(dayNum))[(pN - 1) * 2 + pC] = period;
-                        if (periodInfo.indexOf("(") > 2)
-                            schedule.get(new Integer(dayNum))[(pNe - 1) * 2 + pCe] = period;
-                        LogUtil.d("HTML", "added row");
+                        //determine semester
+                        if (!col.get(16).className().equals("notInSession")){
+                            schedule_sem1.get(new Integer(dayNum))[(pN - 1) * 2 + pC] = period;
+                            if (periodInfo.indexOf("(") > 2)
+                                schedule_sem1.get(new Integer(dayNum))[(pNe - 1) * 2 + pCe] = period;
+                            LogUtil.d("HTML", "added row, semester1");
+                        }
+                        if (!col.get(17).className().equals("notInSession")){
+                            schedule_sem2.get(new Integer(dayNum))[(pN - 1) * 2 + pC] = period;
+                            if (periodInfo.indexOf("(") > 2)
+                                schedule_sem2.get(new Integer(dayNum))[(pNe - 1) * 2 + pCe] = period;
+                            LogUtil.d("HTML", "added row, semester2");
+                        }
                     }
 
                     int endInx = periodInfo.indexOf(")");
@@ -584,7 +605,8 @@ public class LoginActivity extends AppCompatActivity{
             }
         }
         LogUtil.d("HTML", "done parsing; schedule generated");
-        return schedule;
+        Object[] ret = {schedule_sem1, schedule_sem2};
+        return ret;
     }
 
     public HashMap<Integer, Subject[]> fetchScheduleTeacher(String html){

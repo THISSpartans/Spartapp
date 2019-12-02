@@ -673,10 +673,19 @@ public class Schedule extends RefreshableFragment {
     public HashMap<String, Subject[]> getSchedule() throws Exception{
         HashMap<String, Subject[]> schedule = new HashMap<>(6);
         HashMap<String, Integer> pairs             = getDateDayPairs();
-        HashMap<Integer, Subject[]> weeklySchedule = getWeeklySchedule();
+        Object[] weeklySchedules = getWeeklySchedule();
+        HashMap<Integer, Subject[]> weeklySchedule_sem1 = (HashMap<Integer, Subject[]>)weeklySchedules[0];
+        HashMap<Integer, Subject[]> weeklySchedule_sem2 = (HashMap<Integer, Subject[]>)weeklySchedules[1];
         for(Map.Entry<String, Integer> keyValuePair : pairs.entrySet()){
             String date = keyValuePair.getKey();
             Integer day = keyValuePair.getValue();
+            HashMap<Integer, Subject[]> weeklySchedule;
+            if(day > 18){
+                day -= 20;
+                weeklySchedule = weeklySchedule_sem2;
+            }
+            else
+                weeklySchedule = weeklySchedule_sem1;
             if(day != -1) schedule.put(date, weeklySchedule.get(day));
             else schedule.put(date, null);
             LogUtil.d("flabberducky",date+" "+day);
@@ -720,27 +729,32 @@ public class Schedule extends RefreshableFragment {
         return dateDay;
     }
 
-    public HashMap<Integer, Subject[]> getWeeklySchedule(){
-        HashMap<Integer, Subject[]> week;
+    public Object[] getWeeklySchedule(){
+        HashMap<Integer, Subject[]> week_sem1;
+        HashMap<Integer, Subject[]> week_sem2;
         try{
-            week = readWeeklySchedule();
+            week_sem1 = readWeeklySchedule("weeklySchedule_sem1.dat");
+            week_sem2 = readWeeklySchedule("weeklySchedule_sem2.dat");
             LogUtil.d("CALENDAR", "read week schedule success");
         }
         catch(Exception e){
             e.printStackTrace();
-            week = new HashMap<>();
+            week_sem1 = new HashMap<>();
+            week_sem2 = new HashMap<>();
             Subject empty = new Subject("-","-","-");
             Subject[] day = {empty, empty, empty, empty, empty, empty};
             for(int i=1; i<=6; i++){
-                week.put(i, day);
+                week_sem1.put(i, day);
+                week_sem2.put(i, day);
             }
             LogUtil.d("CALENDAR", "week defaulted");
         }
-        return week;
+        Object[] ret = {week_sem1, week_sem2};
+        return ret;
     }
 
-    public HashMap<Integer, Subject[]> readWeeklySchedule() throws IOException{
-        FileInputStream f = mActivity.openFileInput("week_schedule.dat");
+    public HashMap<Integer, Subject[]> readWeeklySchedule(String filename) throws IOException{
+        FileInputStream f = mActivity.openFileInput(filename);
         BufferedReader in = new BufferedReader(new InputStreamReader(f));
         HashMap<Integer, Subject[]> schedule = new HashMap<>(0);
         LogUtil.d("SCHEDULE", "reading weekly schedule");
