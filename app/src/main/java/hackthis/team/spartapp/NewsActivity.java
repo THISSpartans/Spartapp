@@ -12,6 +12,7 @@ import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.just.agentweb.AgentWeb;
 
@@ -34,7 +35,7 @@ public class NewsActivity extends Activity {
     ImageButton backbutton;
 
     //error constants
-    static final int NO_URL = 20170419;
+    static final int NO_URL = 114514;
     static final String[] error_message =
             {
                     "No Online Content",
@@ -73,11 +74,13 @@ public class NewsActivity extends Activity {
 
     }
 
+    //when something wrong happens
     public void displayError(int error_code){
         LogUtil.d("news",Integer.toString(error_code));
         switch (error_code){
             case(NO_URL):{
-                //maybe have an error page instead :)
+                //just quit the thing...
+                Toast.makeText(getApplicationContext(), "no webpage attached",Toast.LENGTH_SHORT).show();
                 backbutton.callOnClick();
             }
             default:{
@@ -85,6 +88,8 @@ public class NewsActivity extends Activity {
             }
         }
     }
+
+    //please refer to the fragment lifecycle for the functions below
 
     @Override
     protected void onPause () {

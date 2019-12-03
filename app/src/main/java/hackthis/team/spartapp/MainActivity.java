@@ -56,12 +56,15 @@ import java.util.StringTokenizer;
 
 public class MainActivity extends Activity {
 
-    RefreshableFragment schedule = null, announcement = null, post = null, current, services, news = null;//schedule程序开始时初始化，其余第一次navigate时初始化
-    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+    //UI holders
+    RefreshableFragment schedule = null, services = null, news = null;//schedule程序开始时初始化，其余第一次navigate时初始化
+    RefreshableFragment current; //current is what stores the current page: if the user is on 'schedule', then current points towards the contents of schedule
+    FragmentTransaction transaction = getFragmentManager().beginTransaction(); //please refer to online tutorials on fragment transactions
 
+    //local file directions
     SharedPreferences sp;
 
-    final int RequestCode = 114514;
+    final int RequestCode = 114514; // :)
 
     //switch between activities
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -69,28 +72,19 @@ public class MainActivity extends Activity {
 
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            //this is called when any item is clicked on the bottom navigation view
+            //the switch handles each choice
+            //if the refreshableFragment (i.e. the content) of the selected page hasn't been initialized, initialize it -> = new xxx()
+            //then, the current page would be taken off, and the selected page would be put on
+            //however, remember that the taken-off page is not deleted. it is still stored in their corresponding variables and could be re-brought to the surface
             switch (item.getItemId()) {
                 case R.id.navigation_schedule:
                     Log.d("NAVIGATION", "schedule selected");
                     if(schedule == null){
                         schedule = new Schedule();
                     }
-                    updateClickNum();
                     switchContent(current, schedule);
                     return true;
-                /*case R.id.navigation_announcement:
-                    if(announcement == null){
-                        announcement = new Announcement();
-                    }
-                    switchContent(current, announcement);
-                    return true;
-                case R.id.navigation_post:
-                    if(post == null){
-                        post = new Post();
-                    }
-                    switchContent(current, post);
-                    return true;
-                    */
 
                 case R.id.navigation_news:
                     Log.d("NAVIGATION", "news selected");
@@ -124,7 +118,7 @@ public class MainActivity extends Activity {
             //RadioButton ISB = (RadioButton) findViewById(R.id.radio_isb);
 
 
-
+            //this parses the selection of buttons into actual data, and saves it in 'shared preferences'
             if(THIS.isChecked()){
                 sp.edit().putString("school","THIS").apply();
                 PushService.subscribe(MainActivity.this,"tsinghua",MainActivity.class);
@@ -153,57 +147,17 @@ public class MainActivity extends Activity {
         }
     };
 
-    private BroadcastReceiver ApkInstallReceiver = new BroadcastReceiver(){
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction() != null && intent.getAction().equals(DownloadManager.ACTION_DOWNLOAD_COMPLETE)) {
-                //https://stackoverflow.com/questions/26210048/how-to-receive-status-of-download-manager-intent-until-download-success-or-faile/38737503#38737503
-                Toast.makeText(context,"downloaded", Toast.LENGTH_SHORT).show();
-                long completeDownloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-                installApk(context, completeDownloadId);
-                LogUtil.d("DownloadManager",Long.toString(completeDownloadId));
-            }
-        }
-    };
-
-        /*
-        ---------------------
-        作者：Chiclaim
-        来源：CSDN
-        原文：https://blog.csdn.net/johnny901114/article/details/51472600
-        版权声明：本文为博主原创文章，转载请附上博文链接！*/
-        private void installApk(Context context, long downloadApkId) {
-            DownloadManager dManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-            Intent install = new Intent(Intent.ACTION_VIEW);
-            try {
-                Uri downloadFileUri = dManager.getUriForDownloadedFile(downloadApkId);
-                if (downloadFileUri != null) {
-                    LogUtil.d("DownloadManager", downloadFileUri.toString());
-                    install.setDataAndType(downloadFileUri, "application/vnd.android.package-archive");
-                    install.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    //Toast.makeText(MainActivity.this, "jier",Toast.LENGTH_LONG).show();
-                    context.startActivity(install);
-                } else {
-                    LogUtil.e("DownloadManager", "download error");
-                }
-            }
-            catch(Exception E){
-                E.printStackTrace();
-            }
-        }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
-
-        registerReceiver(ApkInstallReceiver,new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
         sp = getSharedPreferences("app", Context.MODE_PRIVATE);
         boolean first = sp.getBoolean("first_launch",true);
 
         LogUtil.d("thing",Boolean.toString(first));
 
+        //in the first time launching, the user would be asked to select their school & occupation. This code is for that page
         if(first){
             setContentView(R.layout.walkthrough);
             ImageView yes = (ImageView) findViewById(R.id.yes);
@@ -227,7 +181,7 @@ public class MainActivity extends Activity {
             */
 
         }
-
+        //subsequent launches would go through a normal setup
         else {
 
             sp = getSharedPreferences("clubs",Context.MODE_PRIVATE);
@@ -317,20 +271,6 @@ public class MainActivity extends Activity {
         });
     }
 
-    //https://stackoverflow.com/questions/21477493/android-download-manager-completed
-    @Override
-    public void onStop() {
-        //not sure what this does
-        //gave me receiver not registered error
-        try {
-            unregisterReceiver(ApkInstallReceiver);
-        }catch(Exception e){
-
-        }
-        super.onStop();
-    }
-
-
     //https://stackoverflow.com/questions/40514335/download-manager-android-permissions-error-write-external-storage
     public  boolean haveStoragePermission() {
         if (Build.VERSION.SDK_INT >= 23) {
@@ -350,6 +290,7 @@ public class MainActivity extends Activity {
         }
     }
 
+    //the next two functions prompt a download of the update package to start
     public void download(){
         if(haveStoragePermission()) {
             DownloadManager.Request req = new DownloadManager.Request(Uri.parse("https://thisprogrammingclub.github.io/spartapp_android.apk"));
@@ -403,6 +344,8 @@ public class MainActivity extends Activity {
     }
 
     public void init_main(){
+            //see if there is a schedule stored in local files, if it does, then skip the logging in part
+            //if not, then the user is forced to log in (see LoginActivity)
         boolean schExist;
         try {
             readWeeklySchedule();
@@ -416,6 +359,13 @@ public class MainActivity extends Activity {
         if(schExist) {
             setContentView(R.layout.activity_main);
 
+            //'normally', this function starts with adding the schedule fragment on to the main screen
+            //sometimes this method is called outside of app startup, so there's actually a left-over fragment showing on screen
+            //then, running it 'normally' would cause duplicate fragments to show at the same time
+            //the 'extras' stores data, and in this case, stores the 'mode' that the onCreate function is called
+            //'modes' are null when the onCreate function is called when starting up the app
+            //'modes' are non-null when there is already a fragment existing when the onCreate method is called
+            //see the if statements below for the actual values of mode
             Bundle extras = getIntent().getExtras();
             String mode = extras==null?null:extras.getString("mode");
 
@@ -484,6 +434,7 @@ public class MainActivity extends Activity {
 
 
 
+    //this switches between (i.e. shows/hides) different fragments on screen
     //https://blog.csdn.net/caroline_wendy/article/details/48492135
     public void switchContent(RefreshableFragment from, RefreshableFragment to) {
 
@@ -504,6 +455,7 @@ public class MainActivity extends Activity {
             to.refresh();
     }
 
+    //read weekly schedule from local file
     public HashMap<Integer, Subject[]> readWeeklySchedule() throws Exception{
         LogUtil.d("HTML_IN", "called");
         FileInputStream f = this.openFileInput("weeklySchedule_sem1.dat");
@@ -532,6 +484,7 @@ public class MainActivity extends Activity {
         return schedule;
     }
 
+    //basically counts how much people clicked onto the news button... this is pretty much useless and doesn't need changing
     private void updateClickNum(){
         LogUtil.d("newscontent","clicked");
         AVQuery<AVObject> q = new AVQuery<>("NewsViews");

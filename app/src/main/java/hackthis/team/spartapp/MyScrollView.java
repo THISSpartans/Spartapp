@@ -9,7 +9,7 @@ import android.widget.ScrollView;
 /**
  * Created by HP on 2018/11/24.
  */
-
+//found on some stackoverflow page, basically makes the scroll view 'scroll-able'. The scroll view is what contains all the date buttons
 public class MyScrollView extends ScrollView {
 
     private Runnable scrollerTask;

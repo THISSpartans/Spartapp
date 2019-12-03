@@ -8,6 +8,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
+//found this on some stackoverflow page... not sure what the link is
+//this essentially detects the direction of the user's swiping motion
+//it is used solely in the schedule view, where the user can swipe left and right
 public class OnSwipeTouchListener implements View.OnTouchListener {
     private final GestureDetector gestureDetector;
 

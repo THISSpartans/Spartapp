@@ -10,6 +10,8 @@ import android.util.AttributeSet;
 import android.widget.TextView;
 
 //取自https://stackoverflow.com/questions/21178571/justify-text-in-textview  answer by: rajesh
+//as the name suggests, this creates a textview that is 'justified' --i.e. the text will self-adjust to the left and right bounds
+//unlike a normal left-align or right-align
 public class JustifyTextView extends AppCompatTextView {
 
     private int mLineY;

@@ -112,6 +112,7 @@ public class LoginActivity extends AppCompatActivity{
             }
         });
 
+        //the program is restarted no matter what when logging in, and the status of the last log-in is stored in local files
         SharedPreferences p = this.getSharedPreferences("clubs", Context.MODE_PRIVATE);
         String schl = p.getString("school", "THIS");
         if(schl.equals("THIS")) cycleLen = 6;
@@ -268,7 +269,7 @@ public class LoginActivity extends AppCompatActivity{
             mAuthTask = null;
         }
     }
-
+    //automatic log-in by filling in info on the powerschool page
     public void openWebView(String account_, String password_) throws InterruptedException, AVException, ParseException {
         final WebView webView = new WebView(this.getApplicationContext());
         LogUtil.d("SCHEDULE", "webview starting");

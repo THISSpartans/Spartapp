@@ -2,6 +2,7 @@ package hackthis.team.spartapp;
 
 import android.util.Log;
 
+//basically a wrapped usage of Log, to make sure that nothing leaks in non-debug mode
 public class LogUtil {
     public static void d(String tag, String thing){
         if(BuildConfig.DEBUG)

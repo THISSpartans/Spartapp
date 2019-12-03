@@ -14,7 +14,7 @@ import android.widget.Toast;
 public class Services extends RefreshableFragment {
 
     Context mActivity;
-
+    //election is over :)
     View.OnClickListener toElection = new View.OnClickListener() {
         @Override
         public void onClick(View v) {

@@ -60,24 +60,27 @@ import java.util.StringTokenizer;
 
 public class Schedule extends RefreshableFragment {
 
+    //context
     private Activity mActivity;
 
     private GregorianCalendar browsingTime; //the date for the exhibited schedule
     private GregorianCalendar focusTime; //the date that contains the next period (will be enlarged)
                                         //this variable sets to the next school day
 
+    //basic info
     private int[] month_lengths = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     private String[] month_names = {"January", "February", "March", "April",
                 "May", "June", "July", "August", "September", "October",
                 "November", "December"};
 
+    //return the length of the input month, or actually the month of the input 'date' var
     //0 is Jan
     private int month_length(GregorianCalendar date){
         int month = date.get(Calendar.MONTH);
         int year = date.get(Calendar.YEAR);
         //Log.d("MONTHL", String.valueOf(year));
         //Log.d("MONTHL", String.valueOf(month));
-        if(month == 1){
+        if(month == 1){//feburary is special!
             if(!is366(year)){
                 //Log.d("MONTHL", String.valueOf(month_lengths[month]));
                 return month_lengths[month];
@@ -93,6 +96,7 @@ public class Schedule extends RefreshableFragment {
         }
     }
 
+    //big year or small year (gregorian method)
     private boolean is366(int year){
         if(year % 4 == 0){
             if(year % 100 == 0){
@@ -103,15 +107,18 @@ public class Schedule extends RefreshableFragment {
         return false;
     }
 
+    //storage of online data
     private HashMap<String, Subject[]> subjectTable;
 
     ArrayAdapter<ClassPeriod> adapter;
 
+    //android views
     ImageView listBackground;
-    ListView lv;
+    ListView lv;//the list that contains the schedule
 
     public int unitHeight;
 
+    //refresh button
     View.OnClickListener FETCH = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -120,6 +127,7 @@ public class Schedule extends RefreshableFragment {
         }
     };
 
+    //left arrow button
     View.OnClickListener LEFT = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -139,6 +147,7 @@ public class Schedule extends RefreshableFragment {
         }
     };
 
+    //right arrow button
     View.OnClickListener RIGHT = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -155,11 +164,12 @@ public class Schedule extends RefreshableFragment {
             load();
         }
     };
+    //these are for the popup calendar menu when clicking the down arrow button
     PopupWindow popup;
     CalendarView expcal;
     LinearLayout cal;
     Boolean expanded = false;
-
+    //down arrow button
     View.OnClickListener EXPAND = new View.OnClickListener(){
         @Override
         public void onClick(View v){
@@ -177,14 +187,15 @@ public class Schedule extends RefreshableFragment {
             }
         }
     };
-
+    //for every date button
     View.OnClickListener DATE = new View.OnClickListener() {
         public void onClick(View v) {
+            //v.getTag returns the 'tag' of each date button. See details of the tag in the code for the date button -> it contains a number, which is the date
             browsingTime.set(Calendar.DATE, (int)v.getTag());
             //RadioGroup rg = (RadioGroup)getView().findViewById(R.id.date_radio_group);
             autoscroll();
             load();
-
+            //go to the selected date
             Calendar cal = Calendar.getInstance();
             cal.set(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), browsingTime.get(Calendar.DATE));
             expcal.setDate(cal.getTimeInMillis());
@@ -192,10 +203,11 @@ public class Schedule extends RefreshableFragment {
     };
 
     String school;
-
+    //layout dimensions & parameters. will be used repeatedly
     RadioGroup.LayoutParams date_params;
     LinearLayout.LayoutParams wk_params;
 
+    //starting times of each period
     HashMap<String, int[]> regularPeriodBeginning;
     HashMap<String, int[]> wednesdayPeriodBeginning;
 
@@ -207,6 +219,7 @@ public class Schedule extends RefreshableFragment {
         LogUtil.d("spartapp_log",browsingTime.get(Calendar.DATE)+" "+month_names[browsingTime.get(Calendar.MONTH)]);
         LogUtil.d("sche_time",browsingTime.toString());
 
+        //initialization: transform the current 'browsingTime' into separate variables
         int month = browsingTime.get(Calendar.MONTH) + 1;
         int yr =  browsingTime.get(Calendar.YEAR);
         int day = browsingTime.get(Calendar.DATE);
@@ -216,32 +229,38 @@ public class Schedule extends RefreshableFragment {
         Subject[] subs = subjectTable.get(Integer.toString(yr)+"-"+m+"-"+d);
 
         //LogUtil.d("SCHEDULE", subjectTable.get("2018-09-13")[0].name());
+        //every day's schedule has 8 slots. not every slot has a period in it
+        if(subs != null) { //if the schedule for that day is empty
 
-        if(subs != null) {
-            LogUtil.d("flabberducky","there is schedule on that day");
                 if(school.equals("THIS")) {
                     //for THIS
                     for (int i = 1; i < subs.length; i+=2) {
+                        //if a B period is the same with the last A period, like if you have BC for 3A and 3B, then the BC in 3B will be removed
+                        //so that the schedule doesn't show duplicate classes
                         if (subs[i] != null && subs[i-1]!=null && subs[i].equals(subs[i-1]))
                             subs[i] = null;
                     }
                 }
+                //just ignore this for now
                 else if (school.equals("ISB")){
                     if(browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY)
                         subs[2] = null;
                 }
+                //go through every non-null class (that is, classes that aren't removed) and put them on the schedule
                 for (Subject i : subs) {
                     if (i != null) {
                         List<ClassPeriod> periods = new ArrayList<>(8);
                         for (int j = 0; j < subs.length; j++) {
                             if (subs[j] != null)
-                                periods.add(new ClassPeriod(subs[j], j));
+                                periods.add(new ClassPeriod(subs[j], j));//add to list
                         }
 
                         if (browsingTime.get(Calendar.MONTH)==focusTime.get(Calendar.MONTH) && browsingTime.get(Calendar.DATE) == focusTime.get(Calendar.DATE)){
-                            //for today
                             GregorianCalendar gal = new GregorianCalendar();
                             gal.setTime(new Date());
+                            //focus time is when the next class is. if it's a school day & before school ends, then the 'next period' is at today
+                            //if it's after a school time and tomorrow is a school day, then the 'next period' is at tomorrow
+                            //...etc
                             if (focusTime.get(Calendar.MONTH) == gal.get(Calendar.MONTH) && focusTime.get(Calendar.DATE) == gal.get(Calendar.DATE)) {
                                 int[] beginning = (new GregorianCalendar()).get(Calendar.DAY_OF_WEEK) ==
                                         Calendar.WEDNESDAY ? wednesdayPeriodBeginning.get(school) :
@@ -249,7 +268,7 @@ public class Schedule extends RefreshableFragment {
                                 int temp = new GregorianCalendar().get(Calendar.HOUR_OF_DAY)*100+new GregorianCalendar().get(Calendar.MINUTE);
                                 for (ClassPeriod c : periods) {
                                     if (beginning[c.period] > temp) {
-                                        c.focus = true;
+                                        c.focus = true;//a focused period
                                         break;
                                     }
                                 }
@@ -268,53 +287,51 @@ public class Schedule extends RefreshableFragment {
                     }
                 }
             }
-        else{
-            LogUtil.d("flabberducky","the schedule is empty today");
+        else{//for an empty day
             ArrayList<ClassPeriod> empty = new ArrayList<>(0);
             adapter = new PeriodAdapter(mActivity, R.layout.period_small, empty);
             LogUtil.d("SCHE",Integer.toString(browsingTime.get(Calendar.DAY_OF_WEEK)));
             if(browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
                     || browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-                listBackground.setImageResource(R.drawable.weekend);
+                listBackground.setImageResource(R.drawable.weekend);//for weekends, use this icon (flag thingy) in the background
             }
             else{
-                listBackground.setImageResource(R.drawable.vacation);
+                listBackground.setImageResource(R.drawable.vacation);//else, use this one (the plane thingy)
             }
             lv.setAdapter(adapter);
         }
     }
 
-
+    //initiate
     public void onAttach(Context context) {
         super.onAttach(context);
         LogUtil.d("SCHE", "onattach");
         mActivity = (Activity) context;
-
+        //browsingTime is set to begin 'today'
         browsingTime = new GregorianCalendar();
         browsingTime.setTime(new Date());
 
         regularPeriodBeginning = new HashMap<>(2);
         wednesdayPeriodBeginning = new HashMap<>(2);
 
+        //times for beginning of periods
         regularPeriodBeginning.put("THIS", new int[] {815, 855, 950, 1035, 1122, 1305, 1355, 1435});
         wednesdayPeriodBeginning.put("THIS", new int[] {815, 835, 900, 920, 1045, 1130, 1300, 1320});
 
         regularPeriodBeginning.put("ISB", new int[] {815, 950, 1155, 1225, 1400});
         wednesdayPeriodBeginning.put("ISB",new int[] {815, 945, 1110, 1305});
 
-
-
-
-
+        //loads the 'shared preferences' stored in local files
         SharedPreferences sp = getActivity().getSharedPreferences("clubs", Context.MODE_PRIVATE);
         school = sp.getString("school", "");
 
-
+        //dimensions of layouts
         date_params = new RadioGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         date_params.setMargins(25,0,25,0);
         wk_params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         wk_params.setMargins(25, 0, 25, 0);
 
+        //try to read schedule from local files
         try {
             subjectTable = getSchedule();
             LogUtil.d("SCHE", "got");
@@ -322,50 +339,40 @@ public class Schedule extends RefreshableFragment {
         catch(Exception e){
             LogUtil.d("ERR", "getSchedule failed");
         }
-
+        //figure out where the next period is
         focusTime = getFocusedDate();
         LogUtil.d("focustime",focusTime.toString());
 
     }
-
-    /**
-     * 取自https://blog.csdn.net/ljcitworld/article/details/77528585
-     */
     @Override
     public void onStart() {
         super.onStart();
-
-
-        //SharedPreferences sp = getActivity().getSharedPreferences("clubs", Context.MODE_PRIVATE);
-
-        //school = sp.getString("school", "");
 
         refresh();
     }
 
     public void refresh(){
 
-        //if(getUserVisibleHint()) {
+        //reset time variables
         focusTime = getFocusedDate();
-
         browsingTime = new GregorianCalendar();
         browsingTime.setTime(new Date());
 
+        //re-read local files
         SharedPreferences sp = getActivity().getSharedPreferences("clubs", Context.MODE_PRIVATE);
         school = sp.getString("school", "");
 
-        focusTime = getFocusedDate();
         LogUtil.d("sche_onstart","onstart called "+browsingTime.toString());
 
+        //reset UI
         updateTitleBar();
-
-        //((RadioGroup)getView().findViewById(R.id.date_radio_group)).getChildAt(browsingTime.date-1).callOnClick();
         load();
     }
 
+    //generate the view when called. this is only called by the system, not by the programmer/user
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.schedule, container, false);
-
+        //set onclick events
         ImageButton f = (ImageButton) root.findViewById(R.id.schedule_fetch);
         f.setOnClickListener(FETCH);
         final ImageButton l = (ImageButton) root.findViewById(R.id.schedule_left);
@@ -388,6 +395,7 @@ public class Schedule extends RefreshableFragment {
 
         listBackground = (ImageView) root.findViewById(R.id.schedule_list_background);
 
+        //initialize list of date-buttons
         LinearLayout daywk = (LinearLayout) root.findViewById(R.id.days_wk);
         RadioGroup rg = (RadioGroup) root.findViewById(R.id.date_radio_group);
         for(int i = 0; i < month_length(browsingTime); i++){
@@ -467,7 +475,7 @@ public class Schedule extends RefreshableFragment {
         });
         MyScrollView dpscroll = (MyScrollView)root.findViewById(R.id.datepickerscroll);
 */
-
+        //generate the list view
         lv = (ListView) root.findViewById(R.id.schedule_list);
         lv.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -527,6 +535,8 @@ public class Schedule extends RefreshableFragment {
 
         return root;
     }
+
+    //scroll the upper list of buttons to the correct position--that is, the button for the current browsing date should be centered
     private void autoscroll(){
         HorizontalScrollView date_scroll = (HorizontalScrollView)getView().findViewById(R.id.date_scroll);
         RadioGroup rg = (RadioGroup) getView().findViewById(R.id.date_radio_group);
@@ -543,6 +553,7 @@ public class Schedule extends RefreshableFragment {
         LogUtil.d("SCROLL", browsingTime.toString());
     }
 
+    //figure out when the next period is
     private GregorianCalendar getFocusedDate(){
 
         int endTime = (browsingTime.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY) ?
@@ -626,6 +637,7 @@ public class Schedule extends RefreshableFragment {
         return dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
+    //initialize the calendar menu according to the current month --> each month have different #days, so different # of buttons
     public void setCalendarToMonth(){
         int year = browsingTime.get(Calendar.YEAR);
         int month = browsingTime.get(Calendar.MONTH);
@@ -666,15 +678,6 @@ public class Schedule extends RefreshableFragment {
         cal.addView(expcal);
         expcal.setMaxDate(endOfMonth);
         expcal.setMinDate(startOfMonth);
-    }
-
-    public void setCalendarToDay(){
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, browsingTime.get(Calendar.YEAR));
-        calendar.set(Calendar.MONTH, browsingTime.get(Calendar.MONTH));
-        calendar.set(Calendar.DAY_OF_MONTH, browsingTime.get(Calendar.DATE));
-        long date = calendar.getTimeInMillis();
-        expcal.setDate(date);
     }
 
     private String month_text(){return month_names[browsingTime.get(Calendar.MONTH)];}

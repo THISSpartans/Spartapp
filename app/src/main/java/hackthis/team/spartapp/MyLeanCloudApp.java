@@ -9,6 +9,7 @@ import cn.leancloud.push.PushService;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
+//created following instructions on Leancloud : see their documentations on setting up
 public class MyLeanCloudApp extends Application {
     @Override
     public void onCreate() {

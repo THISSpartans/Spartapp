@@ -20,6 +20,9 @@ import android.widget.TextView;
 
 import java.util.List;
 
+//this converts a list of data (for class periods) into a list of actual views
+//please read the official tutorials and stackoverflow usage ArrayAdapter! it is basically copied from that
+//if the 'class Hol' is still confusing, please google 'holders for listview items' or something like that...
 public class PeriodAdapter extends ArrayAdapter {
 
     Context context;
@@ -112,6 +115,7 @@ public class PeriodAdapter extends ArrayAdapter {
         return itemView;
     }
 
+    //this compiles all the texts into styled format
     private SpannableStringBuilder TextSize(String text) {
         RelativeSizeSpan smallSizeText = new RelativeSizeSpan(.7f);
         StyleSpan bold = new StyleSpan(Typeface.BOLD);

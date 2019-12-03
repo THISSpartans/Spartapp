@@ -15,6 +15,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 
+//found this online in some stackoverflow page... not sure what the link is anymore
+//essentially, as the name states, it makes a circular image view
 public class CircleImageView extends AppCompatImageView {
     //画笔
     private Paint mPaint;

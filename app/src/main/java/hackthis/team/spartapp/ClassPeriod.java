@@ -14,6 +14,10 @@ public class ClassPeriod {
     int period; //0 ~ 7, 1 per half-period (0=1a, 1=1b, etc.)
     boolean focus; //if the adapted list item should be enlarged
 
+
+    //this is just a list of all classes, each element starts with a icon, followed by a color, and then a list of strings that are contained
+    //by each classes that uses that icon & color
+
     static ArrayList<periodData> pd;
 
     static
@@ -165,6 +169,7 @@ public class ClassPeriod {
         pd.add(new periodData(R.drawable.course_humanities, R.color.blue, Arrays.asList("currentaffairs", "digitalethnography", "foundationsofmodernchina", "humanities", "philosophy")));
     }
 
+    //struct form of each class, essentially encapsulating one subject, one period number (i.e. 3A/3B and etc), and the marker that one is focused or not
     public ClassPeriod(Subject s, int p){
         sub = s;
         period = p;

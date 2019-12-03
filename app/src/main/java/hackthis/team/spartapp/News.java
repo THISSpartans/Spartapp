@@ -44,13 +44,20 @@ import java.util.List;
 
 public class News extends RefreshableFragment {
 
+    //UI holders
     ListView list;
     ArrayList<news_element> content = new ArrayList<>();
 
+    //context
     private Context mActivity;
 
     /*
     returns if there are new elements
+    while, in the process, fetches all the news elements
+    please read the Leancloud documentations on the following
+        Query
+        FindInBackground
+        general info on AVObject
      */
     private boolean getStuff() {
         AVQuery<AVObject> news = new AVQuery<>("News_Complex");
@@ -88,8 +95,10 @@ public class News extends RefreshableFragment {
         return true;
     }
 
+    //(as the name states: it updates the list of news)
     public void updateNews(List<AVObject> news) {
         LogUtil.d("news", "updatenews() called with " + news.size() + " items:\n" + news.toString());
+        //a list of all the news items
         content = new ArrayList<>(news.size());
 
         int lastMonth=0, lastDate=0;
@@ -97,10 +106,12 @@ public class News extends RefreshableFragment {
         for (int i = 0; i < news.size(); i++) {
             try {
                 //leancloud uses xxxx-xx-xx-abcdeaoepfjopae as time, pick first four digits as year, 5~6 as month, etc.
+                //if something goes wrong here, please refer to the newest format used by Leancloud to represent time
                 String dateStr = news.get(i).getCreatedAt();
                 int date = Integer.parseInt(dateStr.substring(8, 10));
                 int month = Integer.parseInt(dateStr.substring(5, 7));
 
+                //parse the AVObject object (the news item) into several variables, then use those variables to create a news_element class-ed variable
                 String body = news.get(i).getString("Description");
                 String title = news.get(i).getString("Title");
                 AVFile attached = news.get(i).getAVFile("Attached");
@@ -122,6 +133,7 @@ public class News extends RefreshableFragment {
         }
     }
 
+    //for these 3 functions, please refer to the fragment lifecycle in the official tutorial or any stackoverflow explanation
     public void onAttach(Context context) {
         super.onAttach(context);
         mActivity = context;
@@ -134,24 +146,19 @@ public class News extends RefreshableFragment {
         getStuff();
     }
 
+
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.news_page, container, false);
         list = root.findViewById(R.id.news_list);
         return root;
     }
 
+    //re-gets all the news items
     public void refresh() {
         getStuff();
     }
 
-    public void display() {
-        //re-download news and call ondatachange
-        news_adapter NA = new news_adapter(mActivity, content);
-        list.setAdapter(NA);
-        NA.notifyDataSetChanged();
-
-    }
-
+    //please refer to online tutorials for the format of BaseAdapter, it is very much a re-use of online formats
     private class news_adapter extends BaseAdapter {
 
         ArrayList<news_element> item;
@@ -189,6 +196,8 @@ public class News extends RefreshableFragment {
             View itemView;
             Hol holder;
             if (convertView == null) {
+                //inject data into each view to show the news items
+                //please refer the to xml files that are referenced for the actual appearance
                 itemView = View.inflate(mActivity, R.layout.news_block, null);
                 holder = new Hol();
                 holder.d = itemView.findViewById(R.id.news_date);
@@ -228,6 +237,7 @@ public class News extends RefreshableFragment {
             }
             holder.b.setText(i.body);
             holder.url = i.url;
+            //picasso is an online tool to open browsers in apps. the following basically gives picasso the url and tells it to load
             if(i.attach!=null) {
                 LogUtil.d("news_browser","looking at '"+i.title+"' url: "+i.attach.getUrl());
                 Picasso.get().load(i.attach.getUrl())
@@ -266,6 +276,9 @@ public class News extends RefreshableFragment {
 
             this.attach = attach;
             this.url = url;
+
+            //styled texts
+
             if (includeDate) {
                 //concatenate date string
                 String str = month_short[m - 1] + ". " + d;
@@ -283,7 +296,6 @@ public class News extends RefreshableFragment {
                     //}
                 }
             }
-
                 body = new SpannableStringBuilder(title + "\n" + (author==null?"":author) + "\n    "+ (content==null?"":content));
                 //body.setSpan(new StyleSpan(Typeface.BOLD), 0, title.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                 body.setSpan(new RelativeSizeSpan(1.3f), 0, title.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
