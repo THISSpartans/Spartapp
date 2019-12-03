@@ -57,7 +57,7 @@ public class ClassPeriod {
         pd.add(new periodData(R.drawable.course_linguistics, R.color.linguistics, Arrays.asList(
                 "linguistics"
         )));
-        pd.add(new periodData(R.drawable.course_math, R.color.math, Arrays.asList("algebra","math"
+        pd.add(new periodData(R.drawable.course_math, R.color.math, Arrays.asList("algebra","math","statistics"
         )));
         pd.add(new periodData(R.drawable.course_calculus, R.color.math, Arrays.asList("calculus")));
         pd.add(new periodData(R.drawable.course_geometry,R.color.math,Arrays.asList("geometry")));
@@ -111,7 +111,7 @@ public class ClassPeriod {
         )));
         pd.add(new periodData(R.drawable.course_sport, R.color.sport, Arrays.asList(
                 "outdooreducation", "pe6", "pe7", "pe8", "pe9", "sportsmanagement","p.e.","sportsexer",
-                "strengthtraining", "ultimatesports"
+                "strengthtraining", "ultimatesports","martial"
         )));
         pd.add(new periodData(R.drawable.course_business,R.color.chemistry,Arrays.asList(
                 "business","entrepreneurship","investment","stockmarket","finance","enterprise"
@@ -159,13 +159,13 @@ public class ClassPeriod {
         pd.add(new periodData(R.drawable.course_theoryofknowledge, R.color.computer,Arrays.asList("theoryofknowledge")));
         pd.add(new periodData(R.drawable.course_astronomy, R.color.english, Arrays.asList("astronomy")));
         pd.add(new periodData(R.drawable.course_middleeast, R.color.socialstudy, Arrays.asList("middleeast")));
-        pd.add(new periodData(R.drawable.course_easternandwesternthought, R.color.chemistry, Arrays.asList("easternandwestern")));
+        pd.add(new periodData(R.drawable.course_easternandwesternthought, R.color.chemistry, Arrays.asList("easternandwestern", "relations")));
         pd.add(new periodData(R.drawable.course_seminar, R.color.english, Arrays.asList("seminarap")));
         pd.add(new periodData(R.drawable.course_environmental, R.color.choir, Arrays.asList("environmental")));
         pd.add(new periodData(R.drawable.course_empty, R.color.grey, Arrays.asList(
                 "--"
         )));
-        pd.add(new periodData(R.drawable.course_researchskills, R.color.red, Arrays.asList("research")));
+        pd.add(new periodData(R.drawable.course_researchskills, R.color.red, Arrays.asList("research","*")));
         pd.add(new periodData(R.drawable.course_humanities, R.color.blue, Arrays.asList("currentaffairs", "digitalethnography", "foundationsofmodernchina", "humanities", "philosophy")));
     }
 
